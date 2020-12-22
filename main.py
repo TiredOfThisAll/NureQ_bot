@@ -14,7 +14,9 @@ if not path.exists(TOKEN_FILE_NAME):
     exit(1)
 
 with open(TOKEN_FILE_NAME) as token_file:
-    token = token_file.readline()[:-1] # drop the final '\n' character
+    token = token_file.readline()
+    if token[-1] == "\n":
+        token = token[:-1]
 
 # the 'game' loop that listens for new messages and responds to them
 offset = None
