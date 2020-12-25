@@ -34,7 +34,9 @@ with urlopen(TELEGRAM_BOT_API_URL + token + "/setMyCommands?" \
 
 # create DB schema if it doesn't exist yet
 with sqlite3.connect(DATABASE_NAME) as connection:
-    Repository(connection).create_schema()
+    repository = Repository(connection)
+    repository.create_schema()
+    repository.commit()
 
 # the 'game' loop that listens for new messages and responds to them
 offset = None
@@ -73,6 +75,7 @@ while True:
                 else:
                     if "reply_to_message" in message and message["reply_to_message"]["text"] == NEW_QUEUE_COMMAND_RESPONSE_TEXT:
                         repository.create_queue(text)
+                        repository.commit()
                         response_text = "Создана новая очередь: " + text
                         send_message_url = TELEGRAM_BOT_API_URL + token \
                             + "/sendMessage?" \
