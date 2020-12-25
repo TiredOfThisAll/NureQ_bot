@@ -7,7 +7,6 @@ import json
 # constants
 TELEGRAM_BOT_API_URL = "https://api.telegram.org/bot"
 TOKEN_FILE_NAME = "token"
-SLEEP_DURATION_IN_SECONDS = 1
 
 # load the token if available
 if not path.exists(TOKEN_FILE_NAME):
@@ -18,6 +17,13 @@ with open(TOKEN_FILE_NAME) as token_file:
     token = token_file.readline()
     if token[-1] == "\n":
         token = token[:-1]
+
+# notify Telegram about supported commands
+with open("bot_commands.json") as bot_commands_file:
+    bot_commands = json.dumps(json.loads(bot_commands_file.read()))
+with urlopen(TELEGRAM_BOT_API_URL + token + "/setMyCommands?" \
+    + urlencode({ "commands": bot_commands })):
+    pass
 
 # the 'game' loop that listens for new messages and responds to them
 offset = None
@@ -38,9 +44,9 @@ while True:
         chat_id = update["message"]["chat"]["id"]
         text = update["message"]["text"]
         send_message_url = TELEGRAM_BOT_API_URL + token + "/sendMessage?" \
-            + urlencode({ 'chat_id': chat_id, 'text': text })
-        with urlopen(send_message_url) as response:
+            + urlencode({ "chat_id": chat_id, "text": text })
+        with urlopen(send_message_url):
             pass
 
-    time.sleep(SLEEP_DURATION_IN_SECONDS)
+    time.sleep(1)
 
