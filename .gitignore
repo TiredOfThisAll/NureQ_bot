@@ -1,2 +1,4 @@
 token
 .idea
+*.db
+__pycache__

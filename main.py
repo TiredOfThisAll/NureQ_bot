@@ -3,10 +3,17 @@ from urllib.parse import urlencode
 import time
 from os import path
 import json
+import sqlite3
+
+from repository import Repository
 
 # constants
 TELEGRAM_BOT_API_URL = "https://api.telegram.org/bot"
 TOKEN_FILE_NAME = "token"
+DATABASE_NAME = "nureq.db"
+
+NEW_QUEUE_COMMAND_RESPONSE_TEXT \
+    = "Введите имя новой очереди в ответ на это сообщение"
 
 # load the token if available
 if not path.exists(TOKEN_FILE_NAME):
@@ -25,6 +32,10 @@ with urlopen(TELEGRAM_BOT_API_URL + token + "/setMyCommands?" \
     + urlencode({ "commands": bot_commands })):
     pass
 
+# create DB schema if it doesn't exist yet
+with sqlite3.connect(DATABASE_NAME) as connection:
+    Repository(connection).create_schema()
+
 # the 'game' loop that listens for new messages and responds to them
 offset = None
 while True:
@@ -37,16 +48,50 @@ while True:
     response_object = json.loads(response_string)
     updates = response_object["result"]
 
-    # iterate over the latest messages
-    for update in updates:
-        if offset is None or update["update_id"] >= offset:
-            offset = update["update_id"] + 1
-        chat_id = update["message"]["chat"]["id"]
-        text = update["message"]["text"]
-        send_message_url = TELEGRAM_BOT_API_URL + token + "/sendMessage?" \
-            + urlencode({ "chat_id": chat_id, "text": text })
-        with urlopen(send_message_url):
-            pass
+    with sqlite3.connect(DATABASE_NAME) as connection:
+        repository = Repository(connection)
+        # iterate over the latest messages
+        for update in updates:
+            if offset is None or update["update_id"] >= offset:
+                offset = update["update_id"] + 1
+
+            if "message" in update:
+                message = update["message"]
+                chat_id = message["chat"]["id"]
+                text = message["text"]
+
+                if text == "/newqueue":
+                    response_text = NEW_QUEUE_COMMAND_RESPONSE_TEXT
+                    send_message_url = TELEGRAM_BOT_API_URL + token \
+                        + "/sendMessage?" \
+                        + urlencode({
+                            "chat_id": chat_id,
+                            "text": response_text
+                        })
+                    with urlopen(send_message_url):
+                        pass
+                else:
+                    if "reply_to_message" in message and message["reply_to_message"]["text"] == NEW_QUEUE_COMMAND_RESPONSE_TEXT:
+                        repository.create_queue(text)
+                        response_text = "Создана новая очередь: " + text
+                        send_message_url = TELEGRAM_BOT_API_URL + token \
+                            + "/sendMessage?" \
+                            + urlencode({
+                                "chat_id": chat_id,
+                                "text": response_text
+                            })
+                        with urlopen(send_message_url):
+                            pass
+                    else:
+                        response_text = text
+                        send_message_url = TELEGRAM_BOT_API_URL + token \
+                            + "/sendMessage?" \
+                            + urlencode({
+                                "chat_id": chat_id,
+                                "text": response_text
+                            })
+                        with urlopen(send_message_url):
+                            pass
 
     time.sleep(1)
 
