@@ -1,4 +1,5 @@
 from urllib.request import urlopen
+from urllib.parse import urlencode
 import time
 from os import path
 import json
@@ -36,8 +37,8 @@ while True:
             offset = update["update_id"] + 1
         chat_id = update["message"]["chat"]["id"]
         text = update["message"]["text"]
-        send_message_url = TELEGRAM_BOT_API_URL + token \
-            + "/sendMessage?chat_id=" + str(chat_id) + "&text=" + text
+        send_message_url = TELEGRAM_BOT_API_URL + token + "/sendMessage?" \
+            + urlencode({ 'chat_id': chat_id, 'text': text })
         with urlopen(send_message_url) as response:
             pass
 
