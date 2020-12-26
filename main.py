@@ -1,11 +1,10 @@
-from urllib.request import urlopen
-from urllib.parse import urlencode
 import time
 from os import path
-import json
+
 import sqlite3
 
 from repository import Repository
+from telegram_message_manager import TelegramMessageManager
 
 # constants
 TELEGRAM_BOT_API_URL = "https://api.telegram.org/bot"
@@ -25,12 +24,9 @@ with open(TOKEN_FILE_NAME) as token_file:
     if token[-1] == "\n":
         token = token[:-1]
 
-# notify Telegram about supported commands
-with open("bot_commands.json") as bot_commands_file:
-    bot_commands = json.dumps(json.loads(bot_commands_file.read()))
-with urlopen(TELEGRAM_BOT_API_URL + token + "/setMyCommands?" \
-    + urlencode({ "commands": bot_commands })):
-    pass
+
+telegram_message_manager = TelegramMessageManager(None)
+telegram_message_manager.set_bot_commands()
 
 # create DB schema if it doesn't exist yet
 with sqlite3.connect(DATABASE_NAME) as connection:
@@ -41,14 +37,9 @@ with sqlite3.connect(DATABASE_NAME) as connection:
 # the 'game' loop that listens for new messages and responds to them
 offset = None
 while True:
-    # get latest messages
-    get_updates_url = TELEGRAM_BOT_API_URL + token + "/getUpdates"
-    if offset is not None:
-        get_updates_url += "?offset=" + str(offset)
-    with urlopen(get_updates_url) as response:
-        response_string = response.read().decode("utf-8")
-    response_object = json.loads(response_string)
-    updates = response_object["result"]
+
+    telegram_message_manager = TelegramMessageManager(offset)
+    updates = telegram_message_manager.get_latest_messages()
 
     with sqlite3.connect(DATABASE_NAME) as connection:
         repository = Repository(connection)
@@ -64,37 +55,15 @@ while True:
 
                 if text == "/newqueue":
                     response_text = NEW_QUEUE_COMMAND_RESPONSE_TEXT
-                    send_message_url = TELEGRAM_BOT_API_URL + token \
-                        + "/sendMessage?" \
-                        + urlencode({
-                            "chat_id": chat_id,
-                            "text": response_text
-                        })
-                    with urlopen(send_message_url):
-                        pass
+                    telegram_message_manager.send_message(chat_id, response_text)
                 else:
                     if "reply_to_message" in message and message["reply_to_message"]["text"] == NEW_QUEUE_COMMAND_RESPONSE_TEXT:
                         repository.create_queue(text)
                         repository.commit()
                         response_text = "Создана новая очередь: " + text
-                        send_message_url = TELEGRAM_BOT_API_URL + token \
-                            + "/sendMessage?" \
-                            + urlencode({
-                                "chat_id": chat_id,
-                                "text": response_text
-                            })
-                        with urlopen(send_message_url):
-                            pass
+                        telegram_message_manager.send_message(chat_id, response_text)
                     else:
                         response_text = text
-                        send_message_url = TELEGRAM_BOT_API_URL + token \
-                            + "/sendMessage?" \
-                            + urlencode({
-                                "chat_id": chat_id,
-                                "text": response_text
-                            })
-                        with urlopen(send_message_url):
-                            pass
+                        telegram_message_manager.send_message(chat_id, response_text)
 
     time.sleep(1)
-
