@@ -4,6 +4,7 @@ import sqlite3
 
 from repository import Repository
 from telegram_message_manager import TelegramMessageManager
+from controller import Controller
 
 # constants
 TELEGRAM_BOT_API_URL = "https://api.telegram.org/bot"
@@ -47,12 +48,10 @@ while True:
                 chat_id = message["chat"]["id"]
                 text = message["text"]
 
+                controller = Controller(token, chat_id)
+
                 if text == "/newqueue":
-                    # prompt queue name
-                    telegram_message_manager.send_message(
-                        chat_id,
-                        NEW_QUEUE_COMMAND_RESPONSE_TEXT
-                    )
+                    controller.prompt_queue_name()
                 else:
                     if "reply_to_message" in message \
                         and message["reply_to_message"]["text"] \
@@ -60,12 +59,9 @@ while True:
                         # create new queue
                         repository.create_queue(text)
                         repository.commit()
-                        telegram_message_manager.send_message(
-                            chat_id,
-                            "Создана новая очередь: " + text
-                        )
+
+                        controller.respond_to_prompted_queue_name(text)
                     else:
-                        # echo
-                        telegram_message_manager.send_message(chat_id, text)
+                        controller.echo_message(text)
 
     time.sleep(1)
