@@ -1,6 +1,5 @@
 import time
 from os import path
-
 import sqlite3
 
 from repository import Repository
@@ -24,47 +23,49 @@ with open(TOKEN_FILE_NAME) as token_file:
     if token[-1] == "\n":
         token = token[:-1]
 
-
-with open("bot_commands.json") as bot_commands_file:
-    telegram_message_manager = TelegramMessageManager(None, token)
-    telegram_message_manager.set_bot_commands(bot_commands_file)
-
 # create DB schema if it doesn't exist yet
 with sqlite3.connect(DATABASE_NAME) as connection:
     repository = Repository(connection)
     repository.create_schema()
     repository.commit()
 
-# the 'game' loop that listens for new messages and responds to them
-offset = None
-while True:
+telegram_message_manager = TelegramMessageManager(token)
 
-    telegram_message_manager = TelegramMessageManager(offset, token)
+with open("bot_commands.json") as bot_commands_file:
+    telegram_message_manager.set_bot_commands(bot_commands_file.read())
+
+# the 'game' loop that listens for new messages and responds to them
+while True:
     updates = telegram_message_manager.get_latest_messages()
 
     with sqlite3.connect(DATABASE_NAME) as connection:
         repository = Repository(connection)
         # iterate over the latest messages
         for update in updates:
-            if offset is None or update["update_id"] >= offset:
-                offset = update["update_id"] + 1
-
             if "message" in update:
                 message = update["message"]
                 chat_id = message["chat"]["id"]
                 text = message["text"]
 
                 if text == "/newqueue":
-                    response_text = NEW_QUEUE_COMMAND_RESPONSE_TEXT
-                    TelegramMessageManager.send_message(chat_id, response_text)
+                    # prompt queue name
+                    telegram_message_manager.send_message(
+                        chat_id,
+                        NEW_QUEUE_COMMAND_RESPONSE_TEXT
+                    )
                 else:
-                    if "reply_to_message" in message and message["reply_to_message"]["text"] == NEW_QUEUE_COMMAND_RESPONSE_TEXT:
+                    if "reply_to_message" in message \
+                        and message["reply_to_message"]["text"] \
+                            == NEW_QUEUE_COMMAND_RESPONSE_TEXT:
+                        # create new queue
                         repository.create_queue(text)
                         repository.commit()
-                        response_text = "Создана новая очередь: " + text
-                        telegram_message_manager.send_message(chat_id, response_text)
+                        telegram_message_manager.send_message(
+                            chat_id,
+                            "Создана новая очередь: " + text
+                        )
                     else:
-                        response_text = text
-                        telegram_message_manager.send_message(chat_id, response_text)
+                        # echo
+                        telegram_message_manager.send_message(chat_id, text)
 
     time.sleep(1)
