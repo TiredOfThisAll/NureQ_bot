@@ -25,8 +25,9 @@ with open(TOKEN_FILE_NAME) as token_file:
         token = token[:-1]
 
 
-telegram_message_manager = TelegramMessageManager(None)
-telegram_message_manager.set_bot_commands()
+with open("bot_commands.json") as bot_commands_file:
+    telegram_message_manager = TelegramMessageManager(None, token)
+    telegram_message_manager.set_bot_commands(bot_commands_file)
 
 # create DB schema if it doesn't exist yet
 with sqlite3.connect(DATABASE_NAME) as connection:
@@ -38,7 +39,7 @@ with sqlite3.connect(DATABASE_NAME) as connection:
 offset = None
 while True:
 
-    telegram_message_manager = TelegramMessageManager(offset)
+    telegram_message_manager = TelegramMessageManager(offset, token)
     updates = telegram_message_manager.get_latest_messages()
 
     with sqlite3.connect(DATABASE_NAME) as connection:
@@ -55,7 +56,7 @@ while True:
 
                 if text == "/newqueue":
                     response_text = NEW_QUEUE_COMMAND_RESPONSE_TEXT
-                    telegram_message_manager.send_message(chat_id, response_text)
+                    TelegramMessageManager.send_message(chat_id, response_text)
                 else:
                     if "reply_to_message" in message and message["reply_to_message"]["text"] == NEW_QUEUE_COMMAND_RESPONSE_TEXT:
                         repository.create_queue(text)
