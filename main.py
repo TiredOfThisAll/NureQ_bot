@@ -7,7 +7,6 @@ from telegram_message_manager import TelegramMessageManager
 from controller import Controller
 
 # constants
-TELEGRAM_BOT_API_URL = "https://api.telegram.org/bot"
 TOKEN_FILE_NAME = "token"
 DATABASE_NAME = "nureq.db"
 
