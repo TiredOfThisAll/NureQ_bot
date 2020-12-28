@@ -1,0 +1,10 @@
+[
+    {
+        "command": "/help",
+        "description": "get help"
+    },
+    {
+        "command": "/newqueue",
+        "description": "create new queue"
+    }
+]
