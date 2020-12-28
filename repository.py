@@ -41,11 +41,24 @@ class Repository:
             WHERE name =?
             LIMIT 1
         """, (queue_name,))
-        queue_id = str(self.cursor.fetchone())
+        queue_id = self.cursor.fetchone()
+        if queue_id is None:
+            return "Данной очереди не существует "
         self.cursor.execute("""
-            INSERT INTO pupils (name, queue_id)
-            VALUES (?, ?)
-        """, (name, queue_id))
+            SELECT name
+            FROM pupils
+            WHERE name =?
+            LIMIT 1
+        """, (name,))
+        duplicate_names = self.cursor.fetchone()
+        if duplicate_names is None:
+            self.cursor.execute("""
+                        INSERT INTO pupils (name, queue_id)
+                        VALUES (?, ?)
+                    """, (name, queue_id[0]))
+            return ""
+        else:
+            return "Вы уже состоите в данной очереди "
 
     def commit(self):
         self.connection.commit()

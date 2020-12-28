@@ -40,11 +40,22 @@ class Controller:
     def respond_to_add_me_to_queue(self, message):
         queue_name = message["text"]
         username = message["from"]["username"]
-        self.repository.add_me_to_queue(username, queue_name)
-        self.telegram_message_manager.send_message(
-            message["chat"]["id"],
-            "Вы добавлены в очередь " + queue_name
-        )
+        duplicate_members = self.repository.add_me_to_queue(username, queue_name)
+        if duplicate_members == "":
+            self.telegram_message_manager.send_message(
+                message["chat"]["id"],
+                "Вы добавлены в очередь " + queue_name
+            )
+        elif duplicate_members == "Вы уже состоите в данной очереди ":
+            self.telegram_message_manager.send_message(
+                message["chat"]["id"],
+                duplicate_members + queue_name
+            )
+        elif duplicate_members == "Данной очереди не существует ":
+            self.telegram_message_manager.send_message(
+                message["chat"]["id"],
+                duplicate_members
+            )
 
     def echo_message(self, message):
         self.telegram_message_manager.send_message(
