@@ -2,7 +2,7 @@ Infrastructure:
 - [x] Repository
 - [x] TelegramMessageManager
 - [x] Controller
-- [ ] Error handling
+- [x] Error handling
 
 Features:
 - [x] /newqueue
@@ -10,4 +10,7 @@ Features:
 - [ ] /showqueue
 - [ ] /crossoutfromqueue
 - [ ] /removemefromqueue
+
+Later:
+- [ ] Models
 
