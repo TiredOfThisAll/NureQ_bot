@@ -2,3 +2,4 @@ token
 .idea
 *.db
 __pycache__
+*.swp
