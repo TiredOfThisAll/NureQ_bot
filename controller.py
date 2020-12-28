@@ -1,5 +1,3 @@
-from telegram_message_manager import TelegramMessageManager
-
 NEW_QUEUE_COMMAND_RESPONSE_TEXT \
     = "Введите имя новой очереди в ответ на это сообщение"
 
@@ -17,7 +15,13 @@ class Controller:
 
     def respond_to_prompted_queue_name(self, message):
         queue_name = message["text"]
-        self.repository.create_queue(queue_name)
+        error = self.repository.create_queue(queue_name)
+        if error == "INTEGRITY_ERROR":
+            self.telegram_message_manager.send_message(
+                message["chat"]["id"],
+                "Очередь с именем " + queue_name + " уже существует"
+            )
+            return
         self.repository.commit()
 
         self.telegram_message_manager.send_message(

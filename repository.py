@@ -1,3 +1,6 @@
+import sqlite3
+
+
 class Repository:
     def __init__(self, connection):
         self.connection = connection
@@ -23,10 +26,13 @@ class Repository:
         """)
 
     def create_queue(self, queue_name):
-        self.cursor.execute("""
-            INSERT INTO queues (name)
-            VALUES (?)
-        """, (queue_name,))
+        try:
+            self.cursor.execute("""
+                INSERT INTO queues (name)
+                VALUES (?)
+            """, (queue_name,))
+        except sqlite3.IntegrityError as integrity_error:
+            return "INTEGRITY_ERROR"
 
     def commit(self):
         self.connection.commit()

@@ -37,26 +37,30 @@ with open("bot_commands.json") as bot_commands_file:
 
 # the 'game' loop that listens for new messages and responds to them
 while True:
-    updates = telegram_message_manager.get_latest_messages()
+    try:
+        time.sleep(1)
 
-    with sqlite3.connect(DATABASE_NAME) as connection:
-        repository = Repository(connection)
-        controller = Controller(telegram_message_manager, repository)
+        updates = telegram_message_manager.get_latest_messages()
 
-        # iterate over the latest messages
-        for update in updates:
-            if "message" in update:
-                message = update["message"]
-                text = message["text"]
+        with sqlite3.connect(DATABASE_NAME) as connection:
+            repository = Repository(connection)
+            controller = Controller(telegram_message_manager, repository)
 
-                if text == "/newqueue":
-                    controller.prompt_queue_name(message)
-                else:
-                    if "reply_to_message" in message \
+            # iterate over the latest messages for update in updates:
+            for update in updates:
+                if "message" in update:
+                    message = update["message"]
+                    text = message["text"]
+
+                    if text == "/newqueue":
+                        controller.prompt_queue_name(message)
+                    elif "reply_to_message" in message \
                         and message["reply_to_message"]["text"] \
                             == NEW_QUEUE_COMMAND_RESPONSE_TEXT:
                         controller.respond_to_prompted_queue_name(message)
                     else:
                         controller.echo_message(message)
-
-    time.sleep(1)
+    except KeyboardInterrupt:
+        exit()
+    except Exception as error:
+        print(error)
