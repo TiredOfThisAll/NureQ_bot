@@ -1,7 +1,8 @@
 Infrastructure:
 - [x] Repository
 - [x] TelegramMessageManager
-- [ ] Controller
+- [x] Controller
+- [ ] Error handling
 
 Features:
 - [x] /newqueue
