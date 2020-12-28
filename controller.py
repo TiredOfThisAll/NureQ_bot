@@ -5,24 +5,28 @@ NEW_QUEUE_COMMAND_RESPONSE_TEXT \
 
 
 class Controller:
-    def __init__(self, token, chat_id):
-        self.token = token
-        self.chat_id = chat_id
+    def __init__(self, telegram_message_manager, repository):
+        self.telegram_message_manager = telegram_message_manager
+        self.repository = repository
 
-    def prompt_queue_name(self):
-        telegram_message_manager = TelegramMessageManager(self.token)
-        telegram_message_manager.send_message(
-            self.chat_id,
+    def prompt_queue_name(self, message):
+        self.telegram_message_manager.send_message(
+            message["chat"]["id"],
             NEW_QUEUE_COMMAND_RESPONSE_TEXT
         )
 
-    def respond_to_prompted_queue_name(self, text):
-        telegram_message_manager = TelegramMessageManager(self.token)
-        telegram_message_manager.send_message(
-            self.chat_id,
-            "Создана новая очередь: " + text
+    def respond_to_prompted_queue_name(self, message):
+        queue_name = message["text"]
+        self.repository.create_queue(queue_name)
+        self.repository.commit()
+
+        self.telegram_message_manager.send_message(
+            message["chat"]["id"],
+            "Создана новая очередь: " + queue_name
         )
 
-    def echo_message(self, text):
-        telegram_message_manager = TelegramMessageManager(self.token)
-        telegram_message_manager.send_message(self.chat_id, text)
+    def echo_message(self, message):
+        self.telegram_message_manager.send_message(
+            message["chat"]["id"],
+            message["text"]
+        )

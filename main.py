@@ -41,27 +41,22 @@ while True:
 
     with sqlite3.connect(DATABASE_NAME) as connection:
         repository = Repository(connection)
+        controller = Controller(telegram_message_manager, repository)
+
         # iterate over the latest messages
         for update in updates:
             if "message" in update:
                 message = update["message"]
-                chat_id = message["chat"]["id"]
                 text = message["text"]
 
-                controller = Controller(token, chat_id)
-
                 if text == "/newqueue":
-                    controller.prompt_queue_name()
+                    controller.prompt_queue_name(message)
                 else:
                     if "reply_to_message" in message \
                         and message["reply_to_message"]["text"] \
                             == NEW_QUEUE_COMMAND_RESPONSE_TEXT:
-                        # create new queue
-                        repository.create_queue(text)
-                        repository.commit()
-
-                        controller.respond_to_prompted_queue_name(text)
+                        controller.respond_to_prompted_queue_name(message)
                     else:
-                        controller.echo_message(text)
+                        controller.echo_message(message)
 
     time.sleep(1)
