@@ -6,5 +6,9 @@
     {
         "command": "/newqueue",
         "description": "create new queue"
+    },
+    {
+        "command": "/addmetoqueue",
+        "description": "Add yourself into the queue"
     }
 ]
