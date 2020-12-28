@@ -34,5 +34,18 @@ class Repository:
         except sqlite3.IntegrityError as integrity_error:
             return "INTEGRITY_ERROR"
 
+    def add_me_to_queue(self, name, queue_name):
+        self.cursor.execute("""
+            SELECT id
+            FROM queues
+            WHERE name =?
+            LIMIT 1
+        """, (queue_name,))
+        queue_id = str(self.cursor.fetchone())
+        self.cursor.execute("""
+            INSERT INTO pupils (name, queue_id)
+            VALUES (?, ?)
+        """, (name, queue_id))
+
     def commit(self):
         self.connection.commit()

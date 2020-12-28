@@ -12,6 +12,8 @@ DATABASE_NAME = "nureq.db"
 
 NEW_QUEUE_COMMAND_RESPONSE_TEXT \
     = "Введите имя новой очереди в ответ на это сообщение"
+ADD_ME_TO_QUEUE_RESPONSE_TEXT \
+    = "Введите имя очереди, к которой желаете присоедениться"
 
 # load the token if available
 if not path.exists(TOKEN_FILE_NAME):
@@ -57,6 +59,12 @@ while True:
                         and message["reply_to_message"]["text"] \
                             == NEW_QUEUE_COMMAND_RESPONSE_TEXT:
                         controller.respond_to_prompted_queue_name(message)
+                    elif text == "/addmetoqueue":
+                        controller.add_me_to_queue(message)
+                    elif "reply_to_message" in message \
+                        and message["reply_to_message"]["text"] \
+                            == ADD_ME_TO_QUEUE_RESPONSE_TEXT:
+                        controller.respond_to_add_me_to_queue(message)
                     else:
                         controller.echo_message(message)
     except KeyboardInterrupt:

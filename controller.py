@@ -1,5 +1,7 @@
 NEW_QUEUE_COMMAND_RESPONSE_TEXT \
     = "Введите имя новой очереди в ответ на это сообщение"
+ADD_ME_TO_QUEUE_RESPONSE_TEXT \
+    = "Введите имя очереди, к которой желаете присоедениться"
 
 
 class Controller:
@@ -27,6 +29,21 @@ class Controller:
         self.telegram_message_manager.send_message(
             message["chat"]["id"],
             "Создана новая очередь: " + queue_name
+        )
+
+    def add_me_to_queue(self, message):
+        self.telegram_message_manager.send_message(
+            message["chat"]["id"],
+            ADD_ME_TO_QUEUE_RESPONSE_TEXT
+        )
+
+    def respond_to_add_me_to_queue(self, message):
+        queue_name = message["text"]
+        username = message["from"]["username"]
+        self.repository.add_me_to_queue(username, queue_name)
+        self.telegram_message_manager.send_message(
+            message["chat"]["id"],
+            "Вы добавлены в очередь " + queue_name
         )
 
     def echo_message(self, message):
