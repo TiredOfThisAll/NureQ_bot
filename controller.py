@@ -40,8 +40,9 @@ class Controller:
     def respond_to_add_me_to_queue(self, message):
         queue_name = message["text"]
         username = message["from"]["username"]
-        duplicate_members = self.repository.add_me_to_queue(username, queue_name)
-        if duplicate_members == "":
+        duplicate_members = self.repository \
+            .add_me_to_queue(username, queue_name)
+        if duplicate_members is None:
             self.telegram_message_manager.send_message(
                 message["chat"]["id"],
                 "Вы добавлены в очередь " + queue_name

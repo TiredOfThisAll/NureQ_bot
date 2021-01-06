@@ -16,12 +16,13 @@ class Repository:
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS pupils (
                 id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL UNIQUE,
+                name TEXT NOT NULL,
                 queue_id INTEGER NOT NULL,
                 FOREIGN KEY (queue_id)
                     REFERENCES queues (id)
                         ON DELETE CASCADE
-                        ON UPDATE NO ACTION
+                        ON UPDATE NO ACTION,
+                UNIQUE(name, queue_id)
             )
         """)
 
@@ -31,7 +32,7 @@ class Repository:
                 INSERT INTO queues (name)
                 VALUES (?)
             """, (queue_name,))
-        except sqlite3.IntegrityError as integrity_error:
+        except sqlite3.IntegrityError:
             return "INTEGRITY_ERROR"
 
     def add_me_to_queue(self, name, queue_name):
@@ -41,23 +42,17 @@ class Repository:
             WHERE name =?
             LIMIT 1
         """, (queue_name,))
-        queue_id = self.cursor.fetchone()
-        if queue_id is None:
+        queue_id_tuple = self.cursor.fetchone()
+        if queue_id_tuple is None:
             return "Данной очереди не существует "
-        self.cursor.execute("""
-            SELECT name
-            FROM pupils
-            WHERE name =?
-            LIMIT 1
-        """, (name,))
-        duplicate_names = self.cursor.fetchone()
-        if duplicate_names is None:
+        queue_id = queue_id_tuple[0]
+
+        try:
             self.cursor.execute("""
-                        INSERT INTO pupils (name, queue_id)
-                        VALUES (?, ?)
-                    """, (name, queue_id[0]))
-            return ""
-        else:
+                INSERT INTO pupils (name, queue_id)
+                VALUES (?, ?)
+            """, (name, queue_id))
+        except sqlite3.IntegrityError:
             return "Вы уже состоите в данной очереди "
 
     def commit(self):

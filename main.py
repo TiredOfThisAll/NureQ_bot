@@ -1,10 +1,11 @@
 import time
 from os import path
 import sqlite3
+import traceback
 
 from repository import Repository
 from telegram_message_manager import TelegramMessageManager
-from controller import Controller
+from controller import Controller, ADD_ME_TO_QUEUE_RESPONSE_TEXT
 
 # constants
 TOKEN_FILE_NAME = "token"
@@ -12,8 +13,6 @@ DATABASE_NAME = "nureq.db"
 
 NEW_QUEUE_COMMAND_RESPONSE_TEXT \
     = "Введите имя новой очереди в ответ на это сообщение"
-ADD_ME_TO_QUEUE_RESPONSE_TEXT \
-    = "Введите имя очереди, к которой желаете присоедениться"
 
 # load the token if available
 if not path.exists(TOKEN_FILE_NAME):
@@ -70,4 +69,4 @@ while True:
     except KeyboardInterrupt:
         exit()
     except Exception as error:
-        print(error)
+        print(traceback.format_exc())
