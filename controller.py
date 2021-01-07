@@ -94,6 +94,29 @@ class Controller:
             callback_query["id"]
         )
 
+    def handle_show_previous_queue_page_callback(self, callback_query):
+        callback_query_data = json.loads(callback_query["data"])
+        queue_pagination_reply_markup = build_queue_pagination_reply_markup(
+            self.repository,
+            callback_query_data["current_page_index"] - 1,
+            DEFAULT_QUEUES_PAGE_SIZE
+        )
+        if queue_pagination_reply_markup is None:
+            self.telegram_message_manager.send_message(
+                message["chat"]["id"],
+                "Пока что нету ни одной доступной очереди."
+            )
+            return
+
+        self.telegram_message_manager.edit_message_reply_markup(
+            callback_query["message"]["chat"]["id"],
+            callback_query["message"]["message_id"],
+            queue_pagination_reply_markup
+        )
+        self.telegram_message_manager.answer_callback_query(
+            callback_query["id"]
+        )
+
 
 def build_queue_pagination_reply_markup(repository, page_index, page_size):
     total_queue_count = repository.get_total_queue_count()
