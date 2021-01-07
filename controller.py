@@ -129,16 +129,17 @@ class Controller:
         callback_query_data
     ):
         queue_id = callback_query_data["queue_id"]
+        queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
         queue_members = self.repository.get_queue_members_by_queue_id(queue_id)
 
         if len(queue_members) != 0:
-            queue_description = "".join(map(
+            queue_description = f"{queue_name}:\n" + "".join(map(
                 lambda member_index:
                     f"{member_index[0] + 1}. {member_index[1].member_name}\n",
                 enumerate(queue_members)
             ))
         else:
-            queue_description = "Очередь пуста"
+            queue_description = f"{queue_name}:\nОчередь пуста"
 
         self.telegram_message_manager.send_message(
             callback_query["message"]["chat"]["id"],
