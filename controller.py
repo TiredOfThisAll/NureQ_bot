@@ -76,84 +76,84 @@ class Controller:
         callback_query,
         callback_query_data
     ):
-        queue_pagination_reply_markup = build_queue_pagination_reply_markup(
-            self.repository,
-            page_index=callback_query_data["current_page_index"] + 1,
-            page_size=DEFAULT_QUEUES_PAGE_SIZE
-        )
-        if queue_pagination_reply_markup is None:
-            self.telegram_message_manager.send_message(
-                message["chat"]["id"],
-                "Пока что нету ни одной доступной очереди."
+        try:
+            queue_pagination_reply_markup = build_queue_pagination_reply_markup(
+                self.repository,
+                page_index=callback_query_data["current_page_index"] + 1,
+                page_size=DEFAULT_QUEUES_PAGE_SIZE
             )
+            if queue_pagination_reply_markup is None:
+                self.telegram_message_manager.send_message(
+                    message["chat"]["id"],
+                    "Пока что нету ни одной доступной очереди."
+                )
+                return
+
+            self.telegram_message_manager.edit_message_reply_markup(
+                callback_query["message"]["chat"]["id"],
+                callback_query["message"]["message_id"],
+                queue_pagination_reply_markup
+            )
+        finally:
             self.telegram_message_manager.answer_callback_query(
                 callback_query["id"]
             )
-            return
-
-        self.telegram_message_manager.edit_message_reply_markup(
-            callback_query["message"]["chat"]["id"],
-            callback_query["message"]["message_id"],
-            queue_pagination_reply_markup
-        )
-        self.telegram_message_manager.answer_callback_query(
-            callback_query["id"]
-        )
 
     def handle_show_previous_queue_page_callback(
         self,
         callback_query,
         callback_query_data
     ):
-        queue_pagination_reply_markup = build_queue_pagination_reply_markup(
-            self.repository,
-            page_index=callback_query_data["current_page_index"] - 1,
-            page_size=DEFAULT_QUEUES_PAGE_SIZE
-        )
-        if queue_pagination_reply_markup is None:
-            self.telegram_message_manager.send_message(
-                message["chat"]["id"],
-                "Пока что нету ни одной доступной очереди."
+        try:
+            queue_pagination_reply_markup = build_queue_pagination_reply_markup(
+                self.repository,
+                page_index=callback_query_data["current_page_index"] - 1,
+                page_size=DEFAULT_QUEUES_PAGE_SIZE
             )
+            if queue_pagination_reply_markup is None:
+                self.telegram_message_manager.send_message(
+                    message["chat"]["id"],
+                    "Пока что нету ни одной доступной очереди."
+                )
+                return
+
+            self.telegram_message_manager.edit_message_reply_markup(
+                callback_query["message"]["chat"]["id"],
+                callback_query["message"]["message_id"],
+                queue_pagination_reply_markup
+            )
+        finally:
             self.telegram_message_manager.answer_callback_query(
                 callback_query["id"]
             )
-            return
-
-        self.telegram_message_manager.edit_message_reply_markup(
-            callback_query["message"]["chat"]["id"],
-            callback_query["message"]["message_id"],
-            queue_pagination_reply_markup
-        )
-        self.telegram_message_manager.answer_callback_query(
-            callback_query["id"]
-        )
 
     def handle_show_queue_callback(
         self,
         callback_query,
         callback_query_data
     ):
-        queue_id = callback_query_data["queue_id"]
-        queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
-        queue_members = self.repository.get_queue_members_by_queue_id(queue_id)
+        try:
+            queue_id = callback_query_data["queue_id"]
+            queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
+            queue_members = self.repository.get_queue_members_by_queue_id(queue_id)
 
-        if len(queue_members) != 0:
-            queue_description = f"{queue_name}:\n" + "".join(map(
-                lambda member_index:
-                    f"{member_index[0] + 1}. {member_index[1].member_name}\n",
-                enumerate(queue_members)
-            ))
-        else:
-            queue_description = f"{queue_name}:\nОчередь пуста"
+            if len(queue_members) != 0:
+                queue_description = f"{queue_name}:\n" + "".join(map(
+                    lambda member_index:
+                        f"{member_index[0] + 1}. {member_index[1].member_name}\n",
+                    enumerate(queue_members)
+                ))
+            else:
+                queue_description = f"{queue_name}:\nОчередь пуста"
 
-        self.telegram_message_manager.send_message(
-            callback_query["message"]["chat"]["id"],
-            queue_description
-        )
-        self.telegram_message_manager.answer_callback_query(
-            callback_query["id"]
-        )
+            self.telegram_message_manager.send_message(
+                callback_query["message"]["chat"]["id"],
+                queue_description
+            )
+        finally:
+            self.telegram_message_manager.answer_callback_query(
+                callback_query["id"]
+            )
 
 
 def build_queue_pagination_reply_markup(repository, page_index, page_size):
