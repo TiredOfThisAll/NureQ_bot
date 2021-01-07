@@ -69,6 +69,11 @@ while True:
 
                     if callback_query_type == ButtonCallbackType.NOOP:
                         controller.handle_noop_callback(callback_query)
+                    elif callback_query_type == \
+                            ButtonCallbackType.SHOW_NEXT_QUEUE_PAGE:
+                        controller.handle_show_next_queue_page_callback(
+                            callback_query
+                        )
                     else:
                         print(
                             "Received an unknown callback query type: "

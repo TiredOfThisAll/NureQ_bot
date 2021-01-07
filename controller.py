@@ -48,39 +48,71 @@ class Controller:
         )
 
     def prompt_queue_name_to_show(self, message):
-        total_queue_count = self.repository.get_total_queue_count()
-        if total_queue_count == 0:
+        queue_pagination_reply_markup = build_queue_pagination_reply_markup(
+            self.repository,
+            1,
+            DEFAULT_QUEUES_PAGE_SIZE
+        )
+        if queue_pagination_reply_markup is None:
             self.telegram_message_manager.send_message(
                 message["chat"]["id"],
                 "Пока что нету ни одной доступной очереди."
             )
             return
 
-        page_index = 1
-        page_size = DEFAULT_QUEUES_PAGE_SIZE
-        first_queues_page = self.repository.get_queues_page(
-            page_index=page_index,
-            page_size=page_size
-        )
-
-        queue_choice_buttons = make_queue_choice_buttons(
-            first_queues_page,
-            page_index,
-            page_size,
-            total_queue_count
-        )
         self.telegram_message_manager.send_message(
             message["chat"]["id"],
             "Выберите очередь, которую хотите посмотреть.",
-            reply_markup={
-                "inline_keyboard": queue_choice_buttons,
-            }
+            queue_pagination_reply_markup
         )
 
     def handle_noop_callback(self, callback_query):
         self.telegram_message_manager.answer_callback_query(
             callback_query["id"]
         )
+
+    def handle_show_next_queue_page_callback(self, callback_query):
+        callback_query_data = json.loads(callback_query["data"])
+        queue_pagination_reply_markup = build_queue_pagination_reply_markup(
+            self.repository,
+            callback_query_data["current_page_index"] + 1,
+            DEFAULT_QUEUES_PAGE_SIZE
+        )
+        if queue_pagination_reply_markup is None:
+            self.telegram_message_manager.send_message(
+                message["chat"]["id"],
+                "Пока что нету ни одной доступной очереди."
+            )
+            return
+
+        self.telegram_message_manager.edit_message_reply_markup(
+            callback_query["message"]["chat"]["id"],
+            callback_query["message"]["message_id"],
+            queue_pagination_reply_markup
+        )
+        self.telegram_message_manager.answer_callback_query(
+            callback_query["id"]
+        )
+
+
+def build_queue_pagination_reply_markup(repository, page_index, page_size):
+    total_queue_count = repository.get_total_queue_count()
+    if total_queue_count == 0:
+        return None
+
+    queues_page = repository.get_queues_page(
+        page_index,
+        page_size
+    )
+
+    queue_choice_buttons = make_queue_choice_buttons(
+        queues_page,
+        page_index,
+        page_size,
+        total_queue_count
+    )
+
+    return {"inline_keyboard": queue_choice_buttons}
 
 
 def make_queue_choice_buttons(
