@@ -79,6 +79,8 @@ while True:
                         controller.handle_show_previous_queue_page_callback(
                             callback_query
                         )
+                    elif callback_query_type == ButtonCallbackType.SHOW_QUEUE:
+                        controller.handle_show_queue_callback(callback_query)
                     else:
                         print(
                             "Received an unknown callback query type: "

@@ -117,6 +117,28 @@ class Controller:
             callback_query["id"]
         )
 
+    def handle_show_queue_callback(self, callback_query):
+        callback_query_data = json.loads(callback_query["data"])
+        queue_id = callback_query_data["queue_id"]
+        queue_members = self.repository.get_queue_members_by_queue_id(queue_id)
+
+        if len(queue_members) != 0:
+            queue_description = "".join(map(
+                lambda member_index:
+                    f"{member_index[0] + 1}. {member_index[1].member_name}\n",
+                enumerate(queue_members)
+            ))
+        else:
+            queue_description = "Очередь пуста"
+
+        self.telegram_message_manager.send_message(
+            callback_query["message"]["chat"]["id"],
+            queue_description
+        )
+        self.telegram_message_manager.answer_callback_query(
+            callback_query["id"]
+        )
+
 
 def build_queue_pagination_reply_markup(repository, page_index, page_size):
     total_queue_count = repository.get_total_queue_count()
