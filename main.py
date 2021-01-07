@@ -57,6 +57,8 @@ while True:
                         and message["reply_to_message"]["text"] \
                             == NEW_QUEUE_COMMAND_RESPONSE_TEXT:
                         controller.respond_to_prompted_queue_name(message)
+                    elif text == "/showqueue":
+                        controller.prompt_queue_name_to_show(message)
                     else:
                         controller.echo_message(message)
     except KeyboardInterrupt:
