@@ -71,8 +71,11 @@ class Controller:
             callback_query["id"]
         )
 
-    def handle_show_next_queue_page_callback(self, callback_query):
-        callback_query_data = json.loads(callback_query["data"])
+    def handle_show_next_queue_page_callback(
+        self,
+        callback_query,
+        callback_query_data
+    ):
         queue_pagination_reply_markup = build_queue_pagination_reply_markup(
             self.repository,
             callback_query_data["current_page_index"] + 1,
@@ -94,8 +97,11 @@ class Controller:
             callback_query["id"]
         )
 
-    def handle_show_previous_queue_page_callback(self, callback_query):
-        callback_query_data = json.loads(callback_query["data"])
+    def handle_show_previous_queue_page_callback(
+        self,
+        callback_query,
+        callback_query_data
+    ):
         queue_pagination_reply_markup = build_queue_pagination_reply_markup(
             self.repository,
             callback_query_data["current_page_index"] - 1,
@@ -117,8 +123,11 @@ class Controller:
             callback_query["id"]
         )
 
-    def handle_show_queue_callback(self, callback_query):
-        callback_query_data = json.loads(callback_query["data"])
+    def handle_show_queue_callback(
+        self,
+        callback_query,
+        callback_query_data
+    ):
         queue_id = callback_query_data["queue_id"]
         queue_members = self.repository.get_queue_members_by_queue_id(queue_id)
 
