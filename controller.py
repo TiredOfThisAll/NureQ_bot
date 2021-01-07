@@ -195,7 +195,10 @@ def make_queue_choice_buttons(
         {
             "text": "<" if not is_first_page else "x",
             "callback_data":
-                json.dumps({"type": ButtonCallbackType.NOOP})
+                json.dumps({
+                    "type": ButtonCallbackType.NOOP,
+                    "distinction_factor": random.random(),
+                })
                 if is_first_page
                 else json.dumps({
                     "type": ButtonCallbackType.SHOW_PREVIOUS_QUEUE_PAGE,
