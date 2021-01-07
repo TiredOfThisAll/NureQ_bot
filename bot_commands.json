@@ -6,5 +6,9 @@
     {
         "command": "/newqueue",
         "description": "create new queue"
+    },
+    {
+        "command": "/showqueue",
+        "description": "Show list of students in a queue"
     }
 ]
