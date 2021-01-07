@@ -1,5 +1,6 @@
 import sqlite3
 from models.queue import Queue
+from models.queue_member import QueueMember
 
 
 class Repository:
@@ -49,6 +50,14 @@ class Repository:
             LIMIT ?, ?
         """, (skip_amount, page_size)).fetchall()
         return list(map(Queue.from_tuple, queue_tuples))
+
+    def get_queue_members_by_queue_id(self, queue_id):
+        queue_member_tuples = self.cursor.execute("""
+            SELECT *
+            FROM pupils
+            WHERE queue_id = ?
+        """, (queue_id,)).fetchall()
+        return list(map(QueueMember.from_tuple, queue_member_tuples))
 
     def commit(self):
         self.connection.commit()
