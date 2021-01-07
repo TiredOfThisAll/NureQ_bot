@@ -1,4 +1,5 @@
 import sqlite3
+from models.queue import Queue
 
 
 class Repository:
@@ -39,6 +40,15 @@ class Repository:
             SELECT COUNT(*)
             FROM queues
         """).fetchone()[0]
+
+    def get_queues_page(self, page_index, page_size):
+        skip_amount = (page_index - 1) * page_size
+        queue_tuples = self.cursor.execute("""
+            SELECT *
+            FROM queues
+            LIMIT ?, ?
+        """, (skip_amount, page_size)).fetchall()
+        return list(map(Queue.from_tuple, queue_tuples))
 
     def commit(self):
         self.connection.commit()
