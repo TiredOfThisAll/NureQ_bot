@@ -34,5 +34,11 @@ class Repository:
         except sqlite3.IntegrityError as integrity_error:
             return "INTEGRITY_ERROR"
 
+    def get_total_queue_count(self):
+        return self.cursor.execute("""
+            SELECT COUNT(*)
+            FROM queues
+        """).fetchone()[0]
+
     def commit(self):
         self.connection.commit()
