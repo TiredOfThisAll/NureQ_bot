@@ -53,3 +53,13 @@ class TelegramMessageManager:
             })
         with urlopen(target_url):
             pass
+
+    def edit_message_reply_markup(self, chat_id, message_id, reply_markup):
+        target_url = TELEGRAM_BOT_API_URL + self.token \
+            + "/editMessageReplyMarkup?" + urlencode({
+                "chat_id": chat_id,
+                "message_id": message_id,
+                "reply_markup": json.dumps(reply_markup),
+            })
+        with urlopen(target_url):
+            pass
