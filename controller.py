@@ -86,6 +86,9 @@ class Controller:
                 message["chat"]["id"],
                 "Пока что нету ни одной доступной очереди."
             )
+            self.telegram_message_manager.answer_callback_query(
+                callback_query["id"]
+            )
             return
 
         self.telegram_message_manager.edit_message_reply_markup(
@@ -111,6 +114,9 @@ class Controller:
             self.telegram_message_manager.send_message(
                 message["chat"]["id"],
                 "Пока что нету ни одной доступной очереди."
+            )
+            self.telegram_message_manager.answer_callback_query(
+                callback_query["id"]
             )
             return
 
