@@ -166,6 +166,11 @@ class Controller:
         try:
             queue_id = callback_query_data["queue_id"]
             queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
+            if queue_name is None:
+                self.telegram_message_manager.send_message(
+                    callback_query["message"]["chat"]["id"],
+                    "Очереди с ID: " + queue_id + " не существует"
+                )
             queue_members \
                 = self.repository.get_queue_members_by_queue_id(queue_id)
 

@@ -80,11 +80,14 @@ class Repository:
         return list(map(QueueMember.from_tuple, queue_member_tuples))
 
     def get_queue_name_by_queue_id(self, queue_id):
-        return self.cursor.execute("""
+        queue_name_tuple = self.cursor.execute("""
             SELECT name
             FROM queues
             WHERE id = ?
-        """, (queue_id,)).fetchone()[0]
+        """, (queue_id,)).fetchone()
+        if queue_name_tuple is None:
+            return None
+        return queue_name_tuple[0]
 
     def commit(self):
         self.connection.commit()
