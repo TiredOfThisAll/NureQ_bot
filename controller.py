@@ -1,5 +1,6 @@
 import math
 import json
+import random
 
 NEW_QUEUE_COMMAND_RESPONSE_TEXT \
     = "Введите имя новой очереди в ответ на это сообщение"
@@ -76,6 +77,11 @@ class Controller:
             }
         )
 
+    def handle_noop_callback(self, callback_query):
+        self.telegram_message_manager.answer_callback_query(
+            callback_query["id"]
+        )
+
 
 def make_queue_choice_buttons(
     queues_page,
@@ -111,12 +117,18 @@ def make_queue_choice_buttons(
         },
         {
             "text": f"{page_index}/{total_page_count}",
-            "callback_data": json.dumps({"type": ButtonCallbackType.NOOP}),
+            "callback_data": json.dumps({
+                "type": ButtonCallbackType.NOOP,
+                "distinction_factor": random.random(),
+            }),
         },
         {
             "text": ">" if not is_last_page else "x",
             "callback_data":
-                json.dumps({"type": ButtonCallbackType.NOOP})
+                json.dumps({
+                    "type": ButtonCallbackType.NOOP,
+                    "distinction_factor": random.random(),
+                })
                 if is_last_page
                 else json.dumps({
                     "type": ButtonCallbackType.SHOW_NEXT_QUEUE_PAGE,
