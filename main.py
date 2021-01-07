@@ -2,10 +2,12 @@ import time
 from os import path
 import sqlite3
 import traceback
+import json
 
 from repository import Repository
 from telegram_message_manager import TelegramMessageManager
-from controller import Controller, ADD_ME_TO_QUEUE_RESPONSE_TEXT
+from controller import Controller, ADD_ME_TO_QUEUE_RESPONSE_TEXT, \
+    ButtonCallbackType
 
 # constants
 TOKEN_FILE_NAME = "token"
@@ -64,8 +66,40 @@ while True:
                         and message["reply_to_message"]["text"] \
                             == ADD_ME_TO_QUEUE_RESPONSE_TEXT:
                         controller.respond_to_add_me_to_queue(message)
+                    elif text == "/showqueue":
+                        controller.prompt_queue_name_to_show(message)
                     else:
                         controller.echo_message(message)
+                elif "callback_query" in update:
+                    callback_query = update["callback_query"]
+                    callback_query_data = json.loads(callback_query["data"])
+                    callback_query_type = callback_query_data["type"]
+
+                    if callback_query_type == ButtonCallbackType.NOOP:
+                        controller.handle_noop_callback(callback_query)
+                    elif callback_query_type == \
+                            ButtonCallbackType.SHOW_NEXT_QUEUE_PAGE:
+                        controller.handle_show_next_queue_page_callback(
+                            callback_query,
+                            callback_query_data
+                        )
+                    elif callback_query_type == \
+                            ButtonCallbackType.SHOW_PREVIOUS_QUEUE_PAGE:
+                        controller.handle_show_previous_queue_page_callback(
+                            callback_query,
+                            callback_query_data
+                        )
+                    elif callback_query_type == ButtonCallbackType.SHOW_QUEUE:
+                        controller.handle_show_queue_callback(
+                            callback_query,
+                            callback_query_data
+                        )
+                    else:
+                        print(
+                            "Received an unknown callback query type: "
+                            + callback_query_type
+                        )
+                        controller.handle_noop_callback(callback_query)
     except KeyboardInterrupt:
         exit()
     except Exception as error:

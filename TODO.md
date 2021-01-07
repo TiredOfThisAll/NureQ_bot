@@ -3,14 +3,12 @@ Infrastructure:
 - [x] TelegramMessageManager
 - [x] Controller
 - [x] Error handling
+- [x] Models
 
 Features:
 - [x] /newqueue
 - [ ] /addmetoqueue
-- [ ] /showqueue
+- [x] /showqueue
 - [ ] /crossoutfromqueue
 - [ ] /removemefromqueue
-
-Later:
-- [ ] Models
 
