@@ -50,8 +50,8 @@ class Controller:
     def prompt_queue_name_to_show(self, message):
         queue_pagination_reply_markup = build_queue_pagination_reply_markup(
             self.repository,
-            1,
-            DEFAULT_QUEUES_PAGE_SIZE
+            page_index=1,
+            page_size=DEFAULT_QUEUES_PAGE_SIZE
         )
         if queue_pagination_reply_markup is None:
             self.telegram_message_manager.send_message(
@@ -78,8 +78,8 @@ class Controller:
     ):
         queue_pagination_reply_markup = build_queue_pagination_reply_markup(
             self.repository,
-            callback_query_data["current_page_index"] + 1,
-            DEFAULT_QUEUES_PAGE_SIZE
+            page_index=callback_query_data["current_page_index"] + 1,
+            page_size=DEFAULT_QUEUES_PAGE_SIZE
         )
         if queue_pagination_reply_markup is None:
             self.telegram_message_manager.send_message(
@@ -104,8 +104,8 @@ class Controller:
     ):
         queue_pagination_reply_markup = build_queue_pagination_reply_markup(
             self.repository,
-            callback_query_data["current_page_index"] - 1,
-            DEFAULT_QUEUES_PAGE_SIZE
+            page_index=callback_query_data["current_page_index"] - 1,
+            page_size=DEFAULT_QUEUES_PAGE_SIZE
         )
         if queue_pagination_reply_markup is None:
             self.telegram_message_manager.send_message(
