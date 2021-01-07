@@ -38,15 +38,14 @@ class Repository:
             return "INTEGRITY_ERROR"
 
     def add_me_to_queue(self, name, queue_name):
-        self.cursor.execute("""
+        queue_id_tuple = self.cursor.execute("""
             SELECT id
             FROM queues
-            WHERE name =?
+            WHERE name = ?
             LIMIT 1
-        """, (queue_name,))
-        queue_id_tuple = self.cursor.fetchone()
+        """, (queue_name,)).fetchone()
         if queue_id_tuple is None:
-            return "Данной очереди не существует "
+            return "NO_QUEUE"
         queue_id = queue_id_tuple[0]
 
         try:
@@ -55,7 +54,7 @@ class Repository:
                 VALUES (?, ?)
             """, (name, queue_id))
         except sqlite3.IntegrityError:
-            return "Вы уже состоите в данной очереди "
+            return "DUPLICATE_MEMBERS"
 
     def get_total_queue_count(self):
         return self.cursor.execute("""
