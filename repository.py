@@ -59,5 +59,12 @@ class Repository:
         """, (queue_id,)).fetchall()
         return list(map(QueueMember.from_tuple, queue_member_tuples))
 
+    def get_queue_name_by_queue_id(self, queue_id):
+        return self.cursor.execute("""
+            SELECT name
+            FROM queues
+            WHERE id = ?
+        """, (queue_id,)).fetchone()[0]
+
     def commit(self):
         self.connection.commit()
