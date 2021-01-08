@@ -61,7 +61,7 @@ while True:
                             == NEW_QUEUE_COMMAND_RESPONSE_TEXT:
                         controller.respond_to_prompted_queue_name(message)
                     elif text == "/addmetoqueue":
-                        controller.add_me_to_queue(message)
+                        controller.handle_add_me_to_queue_command(message)
                     elif "reply_to_message" in message \
                         and message["reply_to_message"]["text"] \
                             == ADD_ME_TO_QUEUE_RESPONSE_TEXT:
