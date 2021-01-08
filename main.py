@@ -3,6 +3,7 @@ from os import path
 import sqlite3
 import traceback
 import json
+from urllib.error import HTTPError
 
 from repository import Repository
 from telegram_message_manager import TelegramMessageManager
@@ -104,5 +105,11 @@ while True:
                         controller.handle_noop_callback(callback_query)
     except KeyboardInterrupt:
         exit()
+    except HTTPError as http_error:
+        print("Encountered an HTTP error")
+        print("Stack trace:")
+        print(traceback.format_exc())
+        print("URL: " + http_error.url)
+        print("Response: " + http_error.file.read().decode("UTF-8") + "\n")
     except Exception as error:
         print(traceback.format_exc())
