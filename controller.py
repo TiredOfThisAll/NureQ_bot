@@ -87,16 +87,7 @@ class Controller:
             self.repository,
             page_index=1,
             page_size=DEFAULT_QUEUES_PAGE_SIZE,
-            main_button_generator=lambda queue:
-                [
-                    {
-                        "text": queue.name,
-                        "callback_data": json.dumps({
-                            "type": ButtonCallbackType.SHOW_QUEUE,
-                            "queue_id": queue.id,
-                        }),
-                    }
-                ]
+            main_button_type=ButtonCallbackType.SHOW_QUEUE
         )
         if queue_pagination_reply_markup is None:
             self.telegram_message_manager.send_message(
@@ -122,21 +113,13 @@ class Controller:
         callback_query_data
     ):
         try:
+            main_button_type = callback_query_data["main_button_type"]
             queue_pagination_reply_markup \
                 = build_queue_pagination_reply_markup(
                     self.repository,
-                    page_index=callback_query_data["current_page_index"] + 1,
+                    page_index=callback_query_data["page_index"] + 1,
                     page_size=DEFAULT_QUEUES_PAGE_SIZE,
-                    main_button_generator=lambda queue:
-                        [
-                            {
-                                "text": queue.name,
-                                "callback_data": json.dumps({
-                                    "type": ButtonCallbackType.SHOW_QUEUE,
-                                    "queue_id": queue.id,
-                                }),
-                            }
-                        ]
+                    main_button_type=main_button_type
                 )
             if queue_pagination_reply_markup is None:
                 self.telegram_message_manager.send_message(
@@ -161,21 +144,13 @@ class Controller:
         callback_query_data
     ):
         try:
+            main_button_type = callback_query_data["main_button_type"]
             queue_pagination_reply_markup \
                 = build_queue_pagination_reply_markup(
                     self.repository,
-                    page_index=callback_query_data["current_page_index"] - 1,
+                    page_index=callback_query_data["page_index"] - 1,
                     page_size=DEFAULT_QUEUES_PAGE_SIZE,
-                    main_button_generator=lambda queue:
-                        [
-                            {
-                                "text": queue.name,
-                                "callback_data": json.dumps({
-                                    "type": ButtonCallbackType.SHOW_QUEUE,
-                                    "queue_id": queue.id,
-                                }),
-                            }
-                        ]
+                    main_button_type=main_button_type
                 )
             if queue_pagination_reply_markup is None:
                 self.telegram_message_manager.send_message(
@@ -233,16 +208,7 @@ class Controller:
             self.repository,
             page_index=1,
             page_size=DEFAULT_QUEUES_PAGE_SIZE,
-            main_button_generator=lambda queue:
-                [
-                    {
-                        "text": queue.name,
-                        "callback_data": json.dumps({
-                            "type": ButtonCallbackType.ADD_ME_TO_QUEUE,
-                            "queue_id": queue.id,
-                        }),
-                    }
-                ]
+            main_button_type=ButtonCallbackType.ADD_ME_TO_QUEUE
         )
         if queue_pagination_reply_markup is None:
             self.telegram_message_manager.send_message(
@@ -262,7 +228,7 @@ def build_queue_pagination_reply_markup(
     repository,
     page_index,
     page_size,
-    main_button_generator
+    main_button_type
 ):
     total_queue_count = repository.get_total_queue_count()
     if total_queue_count == 0:
@@ -278,7 +244,7 @@ def build_queue_pagination_reply_markup(
         page_index,
         page_size,
         total_queue_count,
-        main_button_generator
+        main_button_type
     )
 
     return {"inline_keyboard": queue_choice_buttons}
@@ -289,12 +255,24 @@ def make_queue_choice_buttons(
     page_index,
     page_size,
     total_queue_count,
-    main_button_generator
+    main_button_type
 ):
     total_page_count = math.ceil(total_queue_count / page_size)
     is_first_page = page_index == 1
     is_last_page = page_index == total_page_count
-    return list(map(main_button_generator, queues_page)) + [[
+    return list(map(
+        lambda queue:
+            [
+                {
+                    "text": queue.name,
+                    "callback_data": json.dumps({
+                        "type": main_button_type,
+                        "queue_id": queue.id,
+                    }),
+                }
+            ],
+        queues_page
+    )) + [[
         {
             "text": "<" if not is_first_page else "x",
             "callback_data":
@@ -305,7 +283,8 @@ def make_queue_choice_buttons(
                 if is_first_page
                 else json.dumps({
                     "type": ButtonCallbackType.SHOW_PREVIOUS_QUEUE_PAGE,
-                    "current_page_index": page_index,
+                    "page_index": page_index,
+                    "main_button_type": main_button_type,
                 }),
         },
         {
@@ -325,7 +304,8 @@ def make_queue_choice_buttons(
                 if is_last_page
                 else json.dumps({
                     "type": ButtonCallbackType.SHOW_NEXT_QUEUE_PAGE,
-                    "current_page_index": page_index,
+                    "page_index": page_index,
+                    "main_button_type": main_button_type,
                 }),
         },
     ]]
