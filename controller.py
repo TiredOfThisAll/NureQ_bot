@@ -223,6 +223,18 @@ class Controller:
             queue_pagination_reply_markup
         )
 
+    def handle_error_while_processing_update(self, update):
+        if "message" in update:
+            chat_id = update["message"]["chat"]["id"]
+        elif "callback_query" in update:
+            chat_id = update["callback_query"]["message"]["chat"]["id"]
+        else:
+            return
+        self.telegram_message_manager.send_message(
+            chat_id,
+            "???"
+        )
+
 
 def build_queue_pagination_reply_markup(
     repository,
