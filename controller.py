@@ -44,26 +44,37 @@ class Controller:
             "Создана новая очередь: " + queue_name
         )
 
-    def respond_to_add_me_to_queue(self, message):
-        queue_name = message["text"]
-        username = message["from"]["username"]
-        error = self.repository.add_me_to_queue(username, queue_name)
-        if error == "DUPLICATE_MEMBERS":
+    def handle_add_me_to_queue_callback(
+            self,
+            callback_query,
+            callback_query_data
+    ):
+        try:
+            username = callback_query["from"]["username"]
+            queue_id = callback_query_data["queue_id"]
+            error = self.repository.add_me_to_queue(username, queue_id)
+            queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
+
+            if error == "DUPLICATE_MEMBERS":
+                self.telegram_message_manager.send_message(
+                    callback_query["message"]["chat"]["id"],
+                    "Вы уже состоите в данной очереди: " + queue_name
+                )
+                return
+            if error == "NO_QUEUE":
+                self.telegram_message_manager.send_message(
+                    callback_query["message"]["chat"]["id"],
+                    "Данной очереди не существует: " + queue_name
+                )
+                return
             self.telegram_message_manager.send_message(
-                message["chat"]["id"],
-                "Вы уже состоите в данной очереди: " + queue_name
+                callback_query["message"]["chat"]["id"],
+                "Вы добавлены в очередь: " + queue_name
             )
-            return
-        if error == "NO_QUEUE":
-            self.telegram_message_manager.send_message(
-                message["chat"]["id"],
-                "Данной очереди не существует: " + queue_name,
+        finally:
+            self.telegram_message_manager.answer_callback_query(
+                callback_query["id"]
             )
-            return
-        self.telegram_message_manager.send_message(
-            message["chat"]["id"],
-            "Вы добавлены в очередь: " + queue_name
-        )
 
     def echo_message(self, message):
         self.telegram_message_manager.send_message(

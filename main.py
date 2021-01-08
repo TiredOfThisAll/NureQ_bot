@@ -62,10 +62,6 @@ while True:
                         controller.respond_to_prompted_queue_name(message)
                     elif text == "/addmetoqueue":
                         controller.handle_add_me_to_queue_command(message)
-                    elif "reply_to_message" in message \
-                        and message["reply_to_message"]["text"] \
-                            == ADD_ME_TO_QUEUE_RESPONSE_TEXT:
-                        controller.respond_to_add_me_to_queue(message)
                     elif text == "/showqueue":
                         controller.prompt_queue_name_to_show(message)
                     else:
@@ -91,6 +87,12 @@ while True:
                         )
                     elif callback_query_type == ButtonCallbackType.SHOW_QUEUE:
                         controller.handle_show_queue_callback(
+                            callback_query,
+                            callback_query_data
+                        )
+                    elif callback_query_type == \
+                            ButtonCallbackType.ADD_ME_TO_QUEUE:
+                        controller.handle_add_me_to_queue_callback(
                             callback_query,
                             callback_query_data
                         )

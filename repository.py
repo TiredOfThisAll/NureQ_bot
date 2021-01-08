@@ -37,17 +37,7 @@ class Repository:
         except sqlite3.IntegrityError:
             return "INTEGRITY_ERROR"
 
-    def add_me_to_queue(self, name, queue_name):
-        queue_id_tuple = self.cursor.execute("""
-            SELECT id
-            FROM queues
-            WHERE name = ?
-            LIMIT 1
-        """, (queue_name,)).fetchone()
-        if queue_id_tuple is None:
-            return "NO_QUEUE"
-        queue_id = queue_id_tuple[0]
-
+    def add_me_to_queue(self, name, queue_id):
         try:
             self.cursor.execute("""
                 INSERT INTO pupils (name, queue_id)
