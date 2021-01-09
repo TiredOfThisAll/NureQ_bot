@@ -7,8 +7,7 @@ from urllib.error import HTTPError
 
 from repository import Repository
 from telegram_message_manager import TelegramMessageManager
-from controller import Controller, ADD_ME_TO_QUEUE_RESPONSE_TEXT, \
-    ButtonCallbackType
+from controller import Controller, ButtonCallbackType
 
 # constants
 TOKEN_FILE_NAME = "token"
@@ -111,7 +110,7 @@ while True:
                 print(traceback.format_exc())
                 print("URL: " + http_error.url)
                 print("Response: " + http_error.file.read().decode("UTF-8") \
-                    + "\n")
+                      + "\n")
                 controller.handle_error_while_processing_update(update)
             except Exception as error:
                 print(traceback.format_exc())
