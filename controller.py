@@ -4,8 +4,6 @@ import random
 
 NEW_QUEUE_COMMAND_RESPONSE_TEXT \
     = "Введите имя новой очереди в ответ на это сообщение"
-ADD_ME_TO_QUEUE_RESPONSE_TEXT \
-    = "Введите имя очереди, к которой желаете присоедениться"
 DEFAULT_QUEUES_PAGE_SIZE = 3
 
 
@@ -182,6 +180,7 @@ class Controller:
                     callback_query["message"]["chat"]["id"],
                     "Очереди с ID: " + queue_id + " не существует"
                 )
+                return
             queue_members \
                 = self.repository.get_queue_members_by_queue_id(queue_id)
 
