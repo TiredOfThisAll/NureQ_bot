@@ -9,6 +9,8 @@ Features:
 - [x] /newqueue
 - [x] /addmetoqueue
 - [x] /showqueue
-- [ ] /crossoutfromqueue
+- [ ] /crossout
+- [ ] /uncrossout
 - [ ] /removemefromqueue
+- [ ] responsive button interface
 
