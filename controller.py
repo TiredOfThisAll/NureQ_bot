@@ -8,10 +8,11 @@ DEFAULT_QUEUES_PAGE_SIZE = 3
 
 
 class ButtonCallbackType:
-    NOOP = "NOOP"
-    SHOW_NEXT_QUEUE_PAGE = "SHOW_NEXT_QUEUE_PAGE"
-    SHOW_PREVIOUS_QUEUE_PAGE = "SHOW_PREVIOUS_QUEUE_PAGE"
-    SHOW_QUEUE = "SHOW_QUEUE"
+    NOOP = 1
+    SHOW_NEXT_QUEUE_PAGE = 2
+    SHOW_PREVIOUS_QUEUE_PAGE = 3
+    SHOW_QUEUE = 4
+    ADD_ME_TO_QUEUE = 5
 
 
 class Controller:
@@ -41,6 +42,38 @@ class Controller:
             "Создана новая очередь: " + queue_name
         )
 
+    def handle_add_me_to_queue_callback(
+            self,
+            callback_query,
+            callback_query_data
+    ):
+        try:
+            username = callback_query["from"]["username"]
+            queue_id = callback_query_data["queue_id"]
+            error = self.repository.add_me_to_queue(username, queue_id)
+            queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
+
+            if error == "DUPLICATE_MEMBERS":
+                self.telegram_message_manager.send_message(
+                    callback_query["message"]["chat"]["id"],
+                    "Вы уже состоите в данной очереди: " + queue_name
+                )
+                return
+            if error == "NO_QUEUE":
+                self.telegram_message_manager.send_message(
+                    callback_query["message"]["chat"]["id"],
+                    "Данной очереди не существует: " + queue_name
+                )
+                return
+            self.telegram_message_manager.send_message(
+                callback_query["message"]["chat"]["id"],
+                "Вы добавлены в очередь: " + queue_name
+            )
+        finally:
+            self.telegram_message_manager.answer_callback_query(
+                callback_query["id"]
+            )
+
     def echo_message(self, message):
         self.telegram_message_manager.send_message(
             message["chat"]["id"],
@@ -51,7 +84,8 @@ class Controller:
         queue_pagination_reply_markup = build_queue_pagination_reply_markup(
             self.repository,
             page_index=1,
-            page_size=DEFAULT_QUEUES_PAGE_SIZE
+            page_size=DEFAULT_QUEUES_PAGE_SIZE,
+            main_button_type=ButtonCallbackType.SHOW_QUEUE
         )
         if queue_pagination_reply_markup is None:
             self.telegram_message_manager.send_message(
@@ -77,15 +111,17 @@ class Controller:
         callback_query_data
     ):
         try:
+            main_button_type = callback_query_data["main_button_type"]
             queue_pagination_reply_markup \
                 = build_queue_pagination_reply_markup(
                     self.repository,
-                    page_index=callback_query_data["current_page_index"] + 1,
-                    page_size=DEFAULT_QUEUES_PAGE_SIZE
+                    page_index=callback_query_data["page_index"] + 1,
+                    page_size=DEFAULT_QUEUES_PAGE_SIZE,
+                    main_button_type=main_button_type
                 )
             if queue_pagination_reply_markup is None:
                 self.telegram_message_manager.send_message(
-                    message["chat"]["id"],
+                    callback_query["message"]["chat"]["id"],
                     "Пока что нету ни одной доступной очереди."
                 )
                 return
@@ -106,15 +142,17 @@ class Controller:
         callback_query_data
     ):
         try:
+            main_button_type = callback_query_data["main_button_type"]
             queue_pagination_reply_markup \
                 = build_queue_pagination_reply_markup(
                     self.repository,
-                    page_index=callback_query_data["current_page_index"] - 1,
-                    page_size=DEFAULT_QUEUES_PAGE_SIZE
+                    page_index=callback_query_data["page_index"] - 1,
+                    page_size=DEFAULT_QUEUES_PAGE_SIZE,
+                    main_button_type=main_button_type
                 )
             if queue_pagination_reply_markup is None:
                 self.telegram_message_manager.send_message(
-                    message["chat"]["id"],
+                    callback_query["message"]["chat"]["id"],
                     "Пока что нету ни одной доступной очереди."
                 )
                 return
@@ -137,6 +175,12 @@ class Controller:
         try:
             queue_id = callback_query_data["queue_id"]
             queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
+            if queue_name is None:
+                self.telegram_message_manager.send_message(
+                    callback_query["message"]["chat"]["id"],
+                    "Очереди с ID: " + queue_id + " не существует"
+                )
+                return
             queue_members \
                 = self.repository.get_queue_members_by_queue_id(queue_id)
 
@@ -158,8 +202,45 @@ class Controller:
                 callback_query["id"]
             )
 
+    def handle_add_me_to_queue_command(self, message):
+        queue_pagination_reply_markup = build_queue_pagination_reply_markup(
+            self.repository,
+            page_index=1,
+            page_size=DEFAULT_QUEUES_PAGE_SIZE,
+            main_button_type=ButtonCallbackType.ADD_ME_TO_QUEUE
+        )
+        if queue_pagination_reply_markup is None:
+            self.telegram_message_manager.send_message(
+                message["chat"]["id"],
+                "Пока что нету ни одной доступной очереди."
+            )
+            return
 
-def build_queue_pagination_reply_markup(repository, page_index, page_size):
+        self.telegram_message_manager.send_message(
+            message["chat"]["id"],
+            "Выберите очередь, в которую хотите добавиться.",
+            queue_pagination_reply_markup
+        )
+
+    def handle_error_while_processing_update(self, update):
+        if "message" in update:
+            chat_id = update["message"]["chat"]["id"]
+        elif "callback_query" in update:
+            chat_id = update["callback_query"]["message"]["chat"]["id"]
+        else:
+            return
+        self.telegram_message_manager.send_message(
+            chat_id,
+            "???"
+        )
+
+
+def build_queue_pagination_reply_markup(
+    repository,
+    page_index,
+    page_size,
+    main_button_type
+):
     total_queue_count = repository.get_total_queue_count()
     if total_queue_count == 0:
         return None
@@ -173,7 +254,8 @@ def build_queue_pagination_reply_markup(repository, page_index, page_size):
         queues_page,
         page_index,
         page_size,
-        total_queue_count
+        total_queue_count,
+        main_button_type
     )
 
     return {"inline_keyboard": queue_choice_buttons}
@@ -183,7 +265,8 @@ def make_queue_choice_buttons(
     queues_page,
     page_index,
     page_size,
-    total_queue_count
+    total_queue_count,
+    main_button_type
 ):
     total_page_count = math.ceil(total_queue_count / page_size)
     is_first_page = page_index == 1
@@ -194,7 +277,7 @@ def make_queue_choice_buttons(
                 {
                     "text": queue.name,
                     "callback_data": json.dumps({
-                        "type": ButtonCallbackType.SHOW_QUEUE,
+                        "type": main_button_type,
                         "queue_id": queue.id,
                     }),
                 }
@@ -211,7 +294,8 @@ def make_queue_choice_buttons(
                 if is_first_page
                 else json.dumps({
                     "type": ButtonCallbackType.SHOW_PREVIOUS_QUEUE_PAGE,
-                    "current_page_index": page_index,
+                    "page_index": page_index,
+                    "main_button_type": main_button_type,
                 }),
         },
         {
@@ -231,7 +315,8 @@ def make_queue_choice_buttons(
                 if is_last_page
                 else json.dumps({
                     "type": ButtonCallbackType.SHOW_NEXT_QUEUE_PAGE,
-                    "current_page_index": page_index,
+                    "page_index": page_index,
+                    "main_button_type": main_button_type,
                 }),
         },
     ]]

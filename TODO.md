@@ -7,7 +7,7 @@ Infrastructure:
 
 Features:
 - [x] /newqueue
-- [ ] /addmetoqueue
+- [x] /addmetoqueue
 - [x] /showqueue
 - [ ] /crossoutfromqueue
 - [ ] /removemefromqueue

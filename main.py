@@ -1,7 +1,9 @@
 import time
 from os import path
 import sqlite3
+import traceback
 import json
+from urllib.error import HTTPError
 
 from repository import Repository
 from telegram_message_manager import TelegramMessageManager
@@ -37,17 +39,17 @@ with open("bot_commands.json") as bot_commands_file:
 
 # the 'game' loop that listens for new messages and responds to them
 while True:
-    try:
-        time.sleep(1)
+    time.sleep(1)
 
-        updates = telegram_message_manager.get_latest_messages()
+    updates = telegram_message_manager.get_latest_messages()
 
-        with sqlite3.connect(DATABASE_NAME) as connection:
-            repository = Repository(connection)
-            controller = Controller(telegram_message_manager, repository)
+    with sqlite3.connect(DATABASE_NAME) as connection:
+        repository = Repository(connection)
+        controller = Controller(telegram_message_manager, repository)
 
-            # iterate over the latest messages for update in updates:
-            for update in updates:
+        # iterate over the latest messages for update in updates:
+        for update in updates:
+            try:
                 if "message" in update:
                     message = update["message"]
                     text = message["text"]
@@ -58,6 +60,8 @@ while True:
                         and message["reply_to_message"]["text"] \
                             == NEW_QUEUE_COMMAND_RESPONSE_TEXT:
                         controller.respond_to_prompted_queue_name(message)
+                    elif text == "/addmetoqueue":
+                        controller.handle_add_me_to_queue_command(message)
                     elif text == "/showqueue":
                         controller.prompt_queue_name_to_show(message)
                     else:
@@ -86,13 +90,28 @@ while True:
                             callback_query,
                             callback_query_data
                         )
+                    elif callback_query_type == \
+                            ButtonCallbackType.ADD_ME_TO_QUEUE:
+                        controller.handle_add_me_to_queue_callback(
+                            callback_query,
+                            callback_query_data
+                        )
                     else:
                         print(
                             "Received an unknown callback query type: "
                             + callback_query_type
                         )
                         controller.handle_noop_callback(callback_query)
-    except KeyboardInterrupt:
-        exit()
-    except Exception as error:
-        print(error)
+            except KeyboardInterrupt:
+                exit()
+            except HTTPError as http_error:
+                print("Encountered an HTTP error")
+                print("Stack trace:")
+                print(traceback.format_exc())
+                print("URL: " + http_error.url)
+                print("Response: " + http_error.file.read().decode("UTF-8") +
+                      "\n")
+                controller.handle_error_while_processing_update(update)
+            except Exception as error:
+                print(traceback.format_exc())
+                controller.handle_error_while_processing_update(update)

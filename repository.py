@@ -18,12 +18,13 @@ class Repository:
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS pupils (
                 id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL UNIQUE,
+                name TEXT NOT NULL,
                 queue_id INTEGER NOT NULL,
                 FOREIGN KEY (queue_id)
                     REFERENCES queues (id)
                         ON DELETE CASCADE
-                        ON UPDATE NO ACTION
+                        ON UPDATE NO ACTION,
+                UNIQUE(name, queue_id)
             )
         """)
 
@@ -33,8 +34,17 @@ class Repository:
                 INSERT INTO queues (name)
                 VALUES (?)
             """, (queue_name,))
-        except sqlite3.IntegrityError as integrity_error:
+        except sqlite3.IntegrityError:
             return "INTEGRITY_ERROR"
+
+    def add_me_to_queue(self, name, queue_id):
+        try:
+            self.cursor.execute("""
+                INSERT INTO pupils (name, queue_id)
+                VALUES (?, ?)
+            """, (name, queue_id))
+        except sqlite3.IntegrityError:
+            return "DUPLICATE_MEMBERS"
 
     def get_total_queue_count(self):
         return self.cursor.execute("""
@@ -60,11 +70,14 @@ class Repository:
         return list(map(QueueMember.from_tuple, queue_member_tuples))
 
     def get_queue_name_by_queue_id(self, queue_id):
-        return self.cursor.execute("""
+        queue_name_tuple = self.cursor.execute("""
             SELECT name
             FROM queues
             WHERE id = ?
-        """, (queue_id,)).fetchone()[0]
+        """, (queue_id,)).fetchone()
+        if queue_name_tuple is None:
+            return None
+        return queue_name_tuple[0]
 
     def commit(self):
         self.connection.commit()

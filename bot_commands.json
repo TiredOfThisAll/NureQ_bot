@@ -8,6 +8,10 @@
         "description": "create new queue"
     },
     {
+      "command": "/addmetoqueue",
+      "description": "Add yourself into the queue"
+    },
+    {
         "command": "/showqueue",
         "description": "Show list of students in a queue"
     }
