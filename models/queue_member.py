@@ -4,7 +4,7 @@ class QueueMember:
         self.member_name = member_name
         self.queue_id = queue_id
 
-    def from_tuple(queue_member_tuple):
+    def from_tuple(self, queue_member_tuple):
         return QueueMember(
             queue_member_tuple[0],
             queue_member_tuple[1],
