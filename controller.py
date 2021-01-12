@@ -102,21 +102,20 @@ class Controller:
     ):
         try:
             queue_id = callback_query_data["queue_id"]
-            error = self.repository.find_uncrossed_queue_member(queue_id)
+            username = self.repository.find_uncrossed_queue_member(queue_id)
             queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
 
-            if error is None:
+            if username is None:
                 self.telegram_message_manager.send_message(
                     callback_query["message"]["chat"]["id"],
                     "В данной очереди не осталось участников: " + queue_name
                 )
                 return
 
-            username = error
             self.repository.cross_out_the_queue_member(username, queue_id)
             self.telegram_message_manager.send_message(
                 callback_query["message"]["chat"]["id"],
-                "Участник " + error + " вычеркнут из очереди: " + queue_name
+                "Участник " + username + " вычеркнут из очереди: " + queue_name
             )
         finally:
             self.telegram_message_manager.answer_callback_query(
