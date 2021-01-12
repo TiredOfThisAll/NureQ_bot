@@ -105,7 +105,7 @@ class Controller:
             error = self.repository.find_uncrossed_queue_member(queue_id)
             queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
 
-            if error == "NO_REMAINING_QUEUE_MEMBERS":
+            if error is None:
                 self.telegram_message_manager.send_message(
                     callback_query["message"]["chat"]["id"],
                     "В данной очереди не осталось участников: " + queue_name
@@ -245,8 +245,7 @@ class Controller:
             self.telegram_message_manager.send_message(
                 callback_query["message"]["chat"]["id"],
                 queue_description,
-                None,
-                "HTML"
+                parse_mode="HTML"
             )
         finally:
             self.telegram_message_manager.answer_callback_query(

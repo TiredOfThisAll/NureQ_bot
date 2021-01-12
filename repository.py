@@ -54,7 +54,7 @@ class Repository:
             WHERE crossed = 0 and queue_id = ?
         """, (queue_id,)).fetchone()
         if name is None:
-            return "NO_REMAINING_QUEUE_MEMBERS"
+            return None
         return name[0]
 
     def cross_out_the_queue_member(self, name, queue_id):
