@@ -72,6 +72,7 @@ class Controller:
             username = callback_query["from"]["username"]
             queue_id = callback_query_data["queue_id"]
             error = self.repository.add_me_to_queue(username, queue_id)
+            self.repository.commit()
             queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
 
             if error == "DUPLICATE_MEMBERS":
@@ -113,6 +114,7 @@ class Controller:
                 return
 
             self.repository.cross_out_the_queue_member(username, queue_id)
+            self.repository.commit()
             self.telegram_message_manager.send_message(
                 callback_query["message"]["chat"]["id"],
                 "Участник " + username + " вычеркнут из очереди: " + queue_name
