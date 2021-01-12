@@ -32,6 +32,7 @@ class TelegramMessageManager:
         query_parameters = {
             "chat_id": chat_id,
             "text": response_text,
+            #"parse_mode": "MarkdownV2"
         }
         if reply_markup is not None:
             query_parameters["reply_markup"] = json.dumps(reply_markup)

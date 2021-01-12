@@ -52,16 +52,17 @@ class Repository:
         name = self.cursor.execute("""
             SELECT name
             FROM queue_members
-            WHERE crossed = 0 and queue_id = ?
-        """, queue_id).fetchone()
-        name = str(name[0])
+            WHERE crossed = ? and queue_id = ?
+        """, (0, queue_id)).fetchone()
         if name is None:
             return "NO_REMAINING_QUEUE_MEMBERS"
+        name = str(name[0])
         self.cursor.execute("""
             UPDATE queue_members
             SET crossed = 1
             WHERE name = ? and queue_id = ?
         """, (name, queue_id))
+        return name
 
     def get_total_queue_count(self):
         return self.cursor.execute("""

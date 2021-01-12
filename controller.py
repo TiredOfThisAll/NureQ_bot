@@ -13,6 +13,7 @@ class ButtonCallbackType:
     SHOW_PREVIOUS_QUEUE_PAGE = 3
     SHOW_QUEUE = 4
     ADD_ME_TO_QUEUE = 5
+    CROSS_OUT_NEXT = 6
 
 
 class Controller:
@@ -24,6 +25,26 @@ class Controller:
         self.telegram_message_manager.send_message(
             message["chat"]["id"],
             NEW_QUEUE_COMMAND_RESPONSE_TEXT
+        )
+
+    def handle_cross_out_next_command(self, message):
+        queue_pagination_reply_markup = build_queue_pagination_reply_markup(
+            self.repository,
+            page_index=1,
+            page_size=DEFAULT_QUEUES_PAGE_SIZE,
+            main_button_type=ButtonCallbackType.CROSS_OUT_NEXT
+        )
+        if queue_pagination_reply_markup is None:
+            self.telegram_message_manager.send_message(
+                message["chat"]["id"],
+                "Пока что нету ни одной доступной очереди."
+            )
+            return
+
+        self.telegram_message_manager.send_message(
+            message["chat"]["id"],
+            "Выберите очередь, из которой необходимо вычеркнуть участника",
+            queue_pagination_reply_markup
         )
 
     def respond_to_prompted_queue_name(self, message):
@@ -68,6 +89,31 @@ class Controller:
             self.telegram_message_manager.send_message(
                 callback_query["message"]["chat"]["id"],
                 "Вы добавлены в очередь: " + queue_name
+            )
+        finally:
+            self.telegram_message_manager.answer_callback_query(
+                callback_query["id"]
+            )
+
+    def handle_cross_out_next_callback(
+            self,
+            callback_query,
+            callback_query_data
+    ):
+        try:
+            queue_id = callback_query_data["queue_id"]
+            error = self.repository.cross_out_next(queue_id)
+            queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
+
+            if error == "NO_REMAINING_QUEUE_MEMBERS":
+                self.telegram_message_manager.send_message(
+                    callback_query["message"]["chat"]["id"],
+                    "В данной очереди не осталось участников: " + queue_name
+                )
+                return
+            self.telegram_message_manager.send_message(
+                callback_query["message"]["chat"]["id"],
+                "Участник " + error + " вычеркнут из очереди: " + queue_name
             )
         finally:
             self.telegram_message_manager.answer_callback_query(
