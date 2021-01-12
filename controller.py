@@ -232,8 +232,8 @@ class Controller:
 
             if len(queue_members) != 0:
                 queue_description = f"{queue_name}:\n" + "".join(map(
-                    lambda member_index: str(member_index[0] + 1) + ". @"
-                    + member_index[1].member_name + "\n",
+                    lambda member_index: member_index[1]
+                    .format_queue_string(member_index[0] + 1),
                     enumerate(queue_members)
                 ))
             else:
