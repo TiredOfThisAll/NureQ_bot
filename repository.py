@@ -16,10 +16,11 @@ class Repository:
             )
         """)
         self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS pupils (
+            CREATE TABLE IF NOT EXISTS queue_members (
                 id INTEGER PRIMARY KEY,
                 name TEXT NOT NULL,
                 queue_id INTEGER NOT NULL,
+                crossed INTEGER NOT NULL,
                 FOREIGN KEY (queue_id)
                     REFERENCES queues (id)
                         ON DELETE CASCADE
@@ -38,11 +39,12 @@ class Repository:
             return "INTEGRITY_ERROR"
 
     def add_me_to_queue(self, name, queue_id):
+        crossed = 0
         try:
             self.cursor.execute("""
-                INSERT INTO pupils (name, queue_id)
-                VALUES (?, ?)
-            """, (name, queue_id))
+                INSERT INTO queue_members (name, queue_id, crossed)
+                VALUES (?, ?, ?)
+            """, (name, queue_id, crossed))
         except sqlite3.IntegrityError:
             return "DUPLICATE_MEMBERS"
 
@@ -64,7 +66,7 @@ class Repository:
     def get_queue_members_by_queue_id(self, queue_id):
         queue_member_tuples = self.cursor.execute("""
             SELECT *
-            FROM pupils
+            FROM queue_members
             WHERE queue_id = ?
         """, (queue_id,)).fetchall()
         return list(map(QueueMember.from_tuple, queue_member_tuples))
