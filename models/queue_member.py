@@ -21,4 +21,5 @@ class QueueMember:
 
     def __str__(self):
         return "QueueMember: id = " + str(self.id) + ", member_name = " \
-            + self.member_name + ", queue_id = " + str(self.queue_id)
+            + self.member_name + ", queue_id = " + str(self.queue_id) \
+            + ", crossed = " + str(self.crossed)

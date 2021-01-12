@@ -28,12 +28,14 @@ class TelegramMessageManager:
 
         return updates
 
-    def send_message(self, chat_id, response_text, reply_markup=None):
+    def send_message(self, chat_id, response_text, reply_markup=None,
+                     parse_mode=None):
         query_parameters = {
             "chat_id": chat_id,
             "text": response_text,
-            "parse_mode": "HTML"
         }
+        if parse_mode is not None:
+            query_parameters["parse_mode"] = parse_mode
         if reply_markup is not None:
             query_parameters["reply_markup"] = json.dumps(reply_markup)
         send_message_url = TELEGRAM_BOT_API_URL + self.token \

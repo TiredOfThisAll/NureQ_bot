@@ -20,7 +20,7 @@ class Repository:
                 id INTEGER PRIMARY KEY,
                 name TEXT NOT NULL,
                 queue_id INTEGER NOT NULL,
-                crossed INTEGER NOT NULL,
+                crossed INTEGER DEFAULT 0,
                 FOREIGN KEY (queue_id)
                     REFERENCES queues (id)
                         ON DELETE CASCADE
@@ -39,30 +39,30 @@ class Repository:
             return "INTEGRITY_ERROR"
 
     def add_me_to_queue(self, name, queue_id):
-        crossed = 0
         try:
             self.cursor.execute("""
-                INSERT INTO queue_members (name, queue_id, crossed)
-                VALUES (?, ?, ?)
-            """, (name, queue_id, crossed))
+                INSERT INTO queue_members (name, queue_id)
+                VALUES (?, ?)
+            """, (name, queue_id))
         except sqlite3.IntegrityError:
             return "DUPLICATE_MEMBERS"
 
-    def cross_out_next(self, queue_id):
+    def find_uncrossed_queue_member(self, queue_id):
         name = self.cursor.execute("""
-            SELECT name
-            FROM queue_members
-            WHERE crossed = ? and queue_id = ?
-        """, (0, queue_id)).fetchone()
+                    SELECT name
+                    FROM queue_members
+                    WHERE crossed = 0 and queue_id = ?
+                """, (queue_id,)).fetchone()
         if name is None:
             return "NO_REMAINING_QUEUE_MEMBERS"
-        name = str(name[0])
+        return name[0]
+
+    def cross_out_the_queue_member(self, name, queue_id):
         self.cursor.execute("""
-            UPDATE queue_members
-            SET crossed = 1
-            WHERE name = ? and queue_id = ?
-        """, (name, queue_id))
-        return name
+                    UPDATE queue_members
+                    SET crossed = 1
+                    WHERE name = ? and queue_id = ?
+                """, (name, queue_id))
 
     def get_total_queue_count(self):
         return self.cursor.execute("""
