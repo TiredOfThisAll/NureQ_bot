@@ -20,7 +20,7 @@ class Repository:
                 id INTEGER PRIMARY KEY,
                 name TEXT NOT NULL,
                 queue_id INTEGER NOT NULL,
-                crossed INTEGER DEFAULT 0,
+                crossed INTEGER DEFAULT 0 NOT NULL,
                 FOREIGN KEY (queue_id)
                     REFERENCES queues (id)
                         ON DELETE CASCADE
