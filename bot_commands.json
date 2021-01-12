@@ -14,5 +14,9 @@
     {
         "command": "/showqueue",
         "description": "Show list of students in a queue"
+    },
+    {
+        "command": "/crossoutnext",
+        "description": "Cross out the first active queue member"
     }
 ]

@@ -16,10 +16,11 @@ class Repository:
             )
         """)
         self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS pupils (
+            CREATE TABLE IF NOT EXISTS queue_members (
                 id INTEGER PRIMARY KEY,
                 name TEXT NOT NULL,
                 queue_id INTEGER NOT NULL,
+                crossed INTEGER DEFAULT 0 NOT NULL,
                 FOREIGN KEY (queue_id)
                     REFERENCES queues (id)
                         ON DELETE CASCADE
@@ -40,11 +41,28 @@ class Repository:
     def add_me_to_queue(self, name, queue_id):
         try:
             self.cursor.execute("""
-                INSERT INTO pupils (name, queue_id)
+                INSERT INTO queue_members (name, queue_id)
                 VALUES (?, ?)
             """, (name, queue_id))
         except sqlite3.IntegrityError:
             return "DUPLICATE_MEMBERS"
+
+    def find_uncrossed_queue_member(self, queue_id):
+        name = self.cursor.execute("""
+            SELECT name
+            FROM queue_members
+            WHERE crossed = 0 and queue_id = ?
+        """, (queue_id,)).fetchone()
+        if name is None:
+            return None
+        return name[0]
+
+    def cross_out_the_queue_member(self, name, queue_id):
+        self.cursor.execute("""
+            UPDATE queue_members
+            SET crossed = 1
+            WHERE name = ? and queue_id = ?
+        """, (name, queue_id))
 
     def get_total_queue_count(self):
         return self.cursor.execute("""
@@ -64,7 +82,7 @@ class Repository:
     def get_queue_members_by_queue_id(self, queue_id):
         queue_member_tuples = self.cursor.execute("""
             SELECT *
-            FROM pupils
+            FROM queue_members
             WHERE queue_id = ?
         """, (queue_id,)).fetchall()
         return list(map(QueueMember.from_tuple, queue_member_tuples))

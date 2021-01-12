@@ -64,6 +64,8 @@ while True:
                         controller.handle_add_me_to_queue_command(message)
                     elif text == "/showqueue":
                         controller.prompt_queue_name_to_show(message)
+                    elif text == "/crossoutnext":
+                        controller.handle_cross_out_next_command(message)
                     else:
                         controller.echo_message(message)
                 elif "callback_query" in update:
@@ -93,6 +95,12 @@ while True:
                     elif callback_query_type == \
                             ButtonCallbackType.ADD_ME_TO_QUEUE:
                         controller.handle_add_me_to_queue_callback(
+                            callback_query,
+                            callback_query_data
+                        )
+                    elif callback_query_type == \
+                            ButtonCallbackType.CROSS_OUT_NEXT:
+                        controller.handle_cross_out_next_callback(
                             callback_query,
                             callback_query_data
                         )
