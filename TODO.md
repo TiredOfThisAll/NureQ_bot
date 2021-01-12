@@ -9,6 +9,6 @@ Features:
 - [x] /newqueue
 - [x] /addmetoqueue
 - [x] /showqueue
-- [ ] /crossoutfromqueue
+- [x] /crossoutnext
 - [ ] /removemefromqueue
 
