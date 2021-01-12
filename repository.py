@@ -48,6 +48,21 @@ class Repository:
         except sqlite3.IntegrityError:
             return "DUPLICATE_MEMBERS"
 
+    def cross_out_next(self, queue_id):
+        name = self.cursor.execute("""
+            SELECT name
+            FROM queue_members
+            WHERE crossed = 0 and queue_id = ?
+        """, queue_id).fetchone()
+        name = str(name[0])
+        if name is None:
+            return "NO_REMAINING_QUEUE_MEMBERS"
+        self.cursor.execute("""
+            UPDATE queue_members
+            SET crossed = 1
+            WHERE name = ? and queue_id = ?
+        """, (name, queue_id))
+
     def get_total_queue_count(self):
         return self.cursor.execute("""
             SELECT COUNT(*)
