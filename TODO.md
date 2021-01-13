@@ -11,6 +11,6 @@ Features:
 - [x] /showqueue
 - [x] /crossoutnext
 - [ ] /crossout
-- [ ] /uncrossout
+- [x] /uncrossout
 - [ ] /removemefromqueue
 
