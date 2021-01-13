@@ -51,17 +51,33 @@ class Repository:
         name = self.cursor.execute("""
             SELECT name
             FROM queue_members
-            WHERE crossed = 0 and queue_id = ?
+            WHERE crossed = 0 AND queue_id = ?
         """, (queue_id,)).fetchone()
         if name is None:
             return None
         return name[0]
 
+    def find_last_crossed_queue_member(self, queue_id):
+        name = self.cursor.execute("""
+            SELECT name
+            FROM queue_members
+            WHERE crossed = 1 AND queue_id = ?
+            GROUP BY id
+        """, (queue_id,)).fetchall()
+        return name[-1]
+
     def cross_out_the_queue_member(self, name, queue_id):
         self.cursor.execute("""
             UPDATE queue_members
             SET crossed = 1
-            WHERE name = ? and queue_id = ?
+            WHERE name = ? AND queue_id = ?
+        """, (name, queue_id))
+
+    def un_cross_out_the_queue_member(self, name, queue_id):
+        self.cursor.execute("""
+            UPDATE queue_members
+            SET crossed = 0
+            WHERE name = ? AND queue_id = ?
         """, (name, queue_id))
 
     def get_total_queue_count(self):
