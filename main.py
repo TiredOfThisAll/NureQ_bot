@@ -66,6 +66,8 @@ while True:
                         controller.prompt_queue_name_to_show(message)
                     elif text == "/crossoutnext":
                         controller.handle_cross_out_next_command(message)
+                    elif text == "/uncrossoutlast":
+                        controller.handle_uncross_out_last_command(message)
                     else:
                         controller.echo_message(message)
                 elif "callback_query" in update:
@@ -101,6 +103,12 @@ while True:
                     elif callback_query_type == \
                             ButtonCallbackType.CROSS_OUT_NEXT:
                         controller.handle_cross_out_next_callback(
+                            callback_query,
+                            callback_query_data
+                        )
+                    elif callback_query_type == \
+                            ButtonCallbackType.UNCROSS_OUT_LAST:
+                        controller.handle_uncross_out_last_callback(
                             callback_query,
                             callback_query_data
                         )

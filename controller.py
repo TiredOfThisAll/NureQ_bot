@@ -14,6 +14,7 @@ class ButtonCallbackType:
     SHOW_QUEUE = 4
     ADD_ME_TO_QUEUE = 5
     CROSS_OUT_NEXT = 6
+    UNCROSS_OUT_LAST = 7
 
 
 class Controller:
@@ -44,6 +45,26 @@ class Controller:
         self.telegram_message_manager.send_message(
             message["chat"]["id"],
             "Выберите очередь, из которой необходимо вычеркнуть участника",
+            queue_pagination_reply_markup
+        )
+
+    def handle_uncross_out_last_command(self, message):
+        queue_pagination_reply_markup = build_queue_pagination_reply_markup(
+            self.repository,
+            page_index=1,
+            page_size=DEFAULT_QUEUES_PAGE_SIZE,
+            main_button_type=ButtonCallbackType.UNCROSS_OUT_LAST
+        )
+        if queue_pagination_reply_markup is None:
+            self.telegram_message_manager.send_message(
+                message["chat"]["id"],
+                "Пока что нету ни одной доступной очереди."
+            )
+            return
+
+        self.telegram_message_manager.send_message(
+            message["chat"]["id"],
+            "Выберите очередь, в которую необходимо вернуть участника",
             queue_pagination_reply_markup
         )
 
@@ -118,6 +139,35 @@ class Controller:
             self.telegram_message_manager.send_message(
                 callback_query["message"]["chat"]["id"],
                 "Участник " + username + " вычеркнут из очереди: " + queue_name
+            )
+        finally:
+            self.telegram_message_manager.answer_callback_query(
+                callback_query["id"]
+            )
+
+    def handle_uncross_out_last_callback(
+            self,
+            callback_query,
+            callback_query_data
+    ):
+        try:
+            queue_id = callback_query_data["queue_id"]
+            username = self.repository.find_last_crossed_queue_member(queue_id)
+            queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
+
+            if username is None:
+                self.telegram_message_manager.send_message(
+                    callback_query["message"]["chat"]["id"],
+                    "В данной очереди не осталось подходящих участников: "
+                    + queue_name
+                )
+                return
+
+            self.repository.uncross_out_the_queue_member(username, queue_id)
+            self.repository.commit()
+            self.telegram_message_manager.send_message(
+                callback_query["message"]["chat"]["id"],
+                "Участник " + username + " снова в очереди: " + queue_name
             )
         finally:
             self.telegram_message_manager.answer_callback_query(

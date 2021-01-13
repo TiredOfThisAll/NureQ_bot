@@ -18,5 +18,9 @@
     {
         "command": "/crossoutnext",
         "description": "Cross out the first active queue member"
+    },
+    {
+        "command": "/uncrossoutlast",
+        "description": "Uncross out the last crossed queue member"
     }
 ]
