@@ -11,6 +11,6 @@ Features:
 - [x] /showqueue
 - [x] /crossoutnext
 - [x] /uncrossout
-- [ ] /removemefromqueue
+- [x] /removemefromqueue
 - [ ] responsive button interface
 

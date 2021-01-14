@@ -15,6 +15,7 @@ class ButtonCallbackType:
     ADD_ME_TO_QUEUE = 5
     CROSS_OUT_NEXT = 6
     UNCROSS_OUT_LAST = 7
+    REMOVE_ME_FROM_QUEUE = 8
 
 
 class Controller:
@@ -174,6 +175,32 @@ class Controller:
                 callback_query["id"]
             )
 
+    def handle_remove_me_from_queue_callback(
+            self,
+            callback_query,
+            callback_query_data
+    ):
+        try:
+            username = callback_query["from"]["username"]
+            queue_id = callback_query_data["queue_id"]
+            queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
+            success = self.repository.remove_user_from_queue(username, queue_id)
+            if not success:
+                self.telegram_message_manager.send_message(
+                            callback_query["message"]["chat"]["id"],
+                            "Вы не состоите в данной очереди: " + queue_name
+                        )
+                return
+            self.repository.commit()
+            self.telegram_message_manager.send_message(
+                callback_query["message"]["chat"]["id"],
+                "Участник " + username + " удален из очереди: " + queue_name
+            )
+        finally:
+            self.telegram_message_manager.answer_callback_query(
+                callback_query["id"]
+            )
+
     def echo_message(self, message):
         self.telegram_message_manager.send_message(
             message["chat"]["id"],
@@ -322,6 +349,28 @@ class Controller:
             "Выберите очередь, в которую хотите добавиться.",
             queue_pagination_reply_markup
         )
+
+    def handle_remove_me_from_queue_command(self, message):
+        queue_pagination_reply_markup = build_queue_pagination_reply_markup(
+            self.repository,
+            page_index=1,
+            page_size=DEFAULT_QUEUES_PAGE_SIZE,
+            main_button_type=ButtonCallbackType.REMOVE_ME_FROM_QUEUE
+        )
+        if queue_pagination_reply_markup is None:
+            self.telegram_message_manager.send_message(
+                message["chat"]["id"],
+                "Пока что нету ни одной доступной очереди."
+            )
+            return
+
+        self.telegram_message_manager.send_message(
+            message["chat"]["id"],
+            "Выберите очередь, которую хотите покинуть.",
+            queue_pagination_reply_markup
+        )
+
+
 
     def handle_error_while_processing_update(self, update):
         if "message" in update:
