@@ -184,7 +184,8 @@ class Controller:
             username = callback_query["from"]["username"]
             queue_id = callback_query_data["queue_id"]
             queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
-            success = self.repository.remove_user_from_queue(username, queue_id)
+            success\
+                = self.repository.remove_user_from_queue(username, queue_id)
             if not success:
                 self.telegram_message_manager.send_message(
                             callback_query["message"]["chat"]["id"],
@@ -369,8 +370,6 @@ class Controller:
             "Выберите очередь, которую хотите покинуть.",
             queue_pagination_reply_markup
         )
-
-
 
     def handle_error_while_processing_update(self, update):
         if "message" in update:
