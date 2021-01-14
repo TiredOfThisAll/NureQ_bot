@@ -68,6 +68,8 @@ while True:
                         controller.handle_cross_out_next_command(message)
                     elif text == "/uncrossoutlast":
                         controller.handle_uncross_out_last_command(message)
+                    elif text == "/removemefromqueue":
+                        controller.handle_remove_me_from_queue_command(message)
                     else:
                         controller.echo_message(message)
                 elif "callback_query" in update:
@@ -109,6 +111,12 @@ while True:
                     elif callback_query_type == \
                             ButtonCallbackType.UNCROSS_OUT_LAST:
                         controller.handle_uncross_out_last_callback(
+                            callback_query,
+                            callback_query_data
+                        )
+                    elif callback_query_type == \
+                            ButtonCallbackType.REMOVE_ME_FROM_QUEUE:
+                        controller.handle_remove_me_from_queue_callback(
                             callback_query,
                             callback_query_data
                         )
