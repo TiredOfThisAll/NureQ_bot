@@ -23,7 +23,7 @@ class Controller:
         self.telegram_message_manager = telegram_message_manager
         self.repository = repository
 
-    def prompt_queue_name(self, message):
+    def handle_new_queue_command(self, message):
         self.telegram_message_manager.send_message(
             message["chat"]["id"],
             NEW_QUEUE_COMMAND_RESPONSE_TEXT,

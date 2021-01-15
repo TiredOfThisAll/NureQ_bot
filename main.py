@@ -55,7 +55,7 @@ while True:
                     text = message["text"]
 
                     if text == "/newqueue":
-                        controller.prompt_queue_name(message)
+                        controller.handle_new_queue_command(message)
                     elif "reply_to_message" in message \
                         and message["reply_to_message"]["text"] \
                             == NEW_QUEUE_COMMAND_RESPONSE_TEXT:
