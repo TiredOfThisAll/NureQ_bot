@@ -26,7 +26,8 @@ class Controller:
     def prompt_queue_name(self, message):
         self.telegram_message_manager.send_message(
             message["chat"]["id"],
-            NEW_QUEUE_COMMAND_RESPONSE_TEXT
+            NEW_QUEUE_COMMAND_RESPONSE_TEXT,
+            reply_markup={"force_reply": True}
         )
 
     def handle_show_queue_command(self, message):
