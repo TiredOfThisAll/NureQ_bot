@@ -129,11 +129,13 @@ while True:
             except KeyboardInterrupt:
                 exit()
             except HTTPError as http_error:
-                print("Encountered an HTTP error")
-                print("Stack trace:")
-                print(traceback.format_exc())
-                print("URL: " + http_error.url)
-                print(f"Response: {http_error.file.read().decode('UTF-8')}\n")
+                print(
+                    "Encountered an HTTP error\n"
+                    + "Stack trace:\n"
+                    + f"{traceback.format_exc()}\n"
+                    + f"URL: {http_error.url}\n"
+                    + f"Response: {http_error.file.read().decode('UTF-8')}\n\n"
+                )
                 controller.handle_error_while_processing_update(update)
             except Exception as error:
                 print(traceback.format_exc())
