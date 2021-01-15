@@ -65,7 +65,7 @@ class Controller:
             "Выберите очередь, которую хотите покинуть."
         )
 
-    def respond_to_prompted_queue_name(self, message):
+    def handle_new_queue_response(self, message):
         queue_name = message["text"]
         error = self.repository.create_queue(queue_name)
         if error == "INTEGRITY_ERROR":

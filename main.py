@@ -59,7 +59,7 @@ while True:
                     elif "reply_to_message" in message \
                         and message["reply_to_message"]["text"] \
                             == NEW_QUEUE_COMMAND_RESPONSE_TEXT:
-                        controller.respond_to_prompted_queue_name(message)
+                        controller.handle_new_queue_response(message)
                     elif text == "/addmetoqueue":
                         controller.handle_add_me_to_queue_command(message)
                     elif text == "/showqueue":
