@@ -63,7 +63,7 @@ while True:
                     elif text == "/addmetoqueue":
                         controller.handle_add_me_to_queue_command(message)
                     elif text == "/showqueue":
-                        controller.prompt_queue_name_to_show(message)
+                        controller.handle_show_queue_command(message)
                     elif text == "/crossoutnext":
                         controller.handle_cross_out_next_command(message)
                     elif text == "/uncrossoutlast":
