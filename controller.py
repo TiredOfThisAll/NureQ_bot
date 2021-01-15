@@ -82,9 +82,9 @@ class Controller:
         )
 
     def handle_add_me_to_queue_callback(
-            self,
-            callback_query,
-            callback_query_data
+        self,
+        callback_query,
+        callback_query_data
     ):
         try:
             username = callback_query["from"]["username"]
@@ -115,9 +115,9 @@ class Controller:
             )
 
     def handle_cross_out_next_callback(
-            self,
-            callback_query,
-            callback_query_data
+        self,
+        callback_query,
+        callback_query_data
     ):
         try:
             queue_id = callback_query_data["queue_id"]
@@ -143,9 +143,9 @@ class Controller:
             )
 
     def handle_uncross_out_last_callback(
-            self,
-            callback_query,
-            callback_query_data
+        self,
+        callback_query,
+        callback_query_data
     ):
         try:
             queue_id = callback_query_data["queue_id"]
@@ -172,9 +172,9 @@ class Controller:
             )
 
     def handle_remove_me_from_queue_callback(
-            self,
-            callback_query,
-            callback_query_data
+        self,
+        callback_query,
+        callback_query_data
     ):
         try:
             username = callback_query["from"]["username"]
@@ -290,8 +290,9 @@ class Controller:
 
             if len(queue_members) != 0:
                 queue_description = f"{queue_name}:\n" + "".join(map(
-                    lambda member_index: member_index[1]
-                    .format_queue_string(member_index[0] + 1),
+                    lambda member_index: member_index[1].format_queue_string(
+                        member_index[0] + 1
+                    ),
                     enumerate(queue_members)
                 ))
             else:

@@ -28,8 +28,13 @@ class TelegramMessageManager:
 
         return updates
 
-    def send_message(self, chat_id, response_text, reply_markup=None,
-                     parse_mode=None):
+    def send_message(
+        self,
+        chat_id,
+        response_text,
+        reply_markup=None,
+        parse_mode=None
+    ):
         query_parameters = {
             "chat_id": chat_id,
             "text": response_text,

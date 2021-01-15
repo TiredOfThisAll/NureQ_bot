@@ -133,8 +133,7 @@ while True:
                 print("Stack trace:")
                 print(traceback.format_exc())
                 print("URL: " + http_error.url)
-                print("Response: " + http_error.file.read().decode("UTF-8") +
-                      "\n")
+                print(f"Response: {http_error.file.read().decode('UTF-8')}\n")
                 controller.handle_error_while_processing_update(update)
             except Exception as error:
                 print(traceback.format_exc())
