@@ -12,58 +12,40 @@ registered_default_callback_handler = None
 def command_handler(command_name):
     def decorator(function):
         registered_command_handlers[command_name] = function
-
-        def wrapper(*args, **kwargs):
-            return function(*args, **kwargs)
-        return wrapper
+        return function
     return decorator
 
 
 def response_handler(response_text):
     def decorator(function):
         registered_response_handlers[response_text] = function
-
-        def wrapper(*args, **kwargs):
-            return function(*args, **kwargs)
-        return wrapper
+        return function
     return decorator
 
 
 def callback_handler(callback_type=None):
     def decorator(function):
         registered_callback_handlers[callback_type] = function
-
-        def wrapper(*args, **kwargs):
-            return function(*args, **kwargs)
-        return wrapper
+        return function
     return decorator
 
 
 def default_command_handler(function):
     global registered_default_command_handler
     registered_default_command_handler = function
-
-    def wrapper(*args, **kwargs):
-        return function(*args, **kwargs)
-    return wrapper
+    return function
 
 
 def default_response_handler(function):
     global registered_default_response_handler
     registered_default_response_handler = function
-
-    def wrapper(*args, **kwargs):
-        return function(*args, **kwargs)
-    return wrapper
+    return function
 
 
 def default_callback_handler(function):
     global registered_default_callback_handler
     registered_default_callback_handler = function
-
-    def wrapper(*args, **kwargs):
-        return function(*args, **kwargs)
-    return wrapper
+    return function
 
 
 def route(update):
