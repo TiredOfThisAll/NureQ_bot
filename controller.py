@@ -2,6 +2,9 @@ import math
 import json
 import random
 
+from router import command_handler, response_handler, callback_handler, \
+    default_callback_handler, default_command_handler, default_response_handler
+
 NEW_QUEUE_COMMAND_RESPONSE_TEXT \
     = "Введите имя новой очереди в ответ на это сообщение"
 DEFAULT_QUEUES_PAGE_SIZE = 3
@@ -23,53 +26,56 @@ class Controller:
         self.telegram_message_manager = telegram_message_manager
         self.repository = repository
 
-    def prompt_queue_name(self, message):
+    @command_handler("/newqueue")
+    def handle_new_queue_command(self, message):
         self.telegram_message_manager.send_message(
             message["chat"]["id"],
-            NEW_QUEUE_COMMAND_RESPONSE_TEXT
+            NEW_QUEUE_COMMAND_RESPONSE_TEXT,
+            reply_markup={"force_reply": True}
         )
 
+    @command_handler("/showqueue")
+    def handle_show_queue_command(self, message):
+        self.handle_generic_queue_command(
+            message,
+            ButtonCallbackType.SHOW_QUEUE,
+            "Выберите очередь, которую хотите посмотреть."
+        )
+
+    @command_handler("/crossoutnext")
     def handle_cross_out_next_command(self, message):
-        queue_pagination_reply_markup = build_queue_pagination_reply_markup(
-            self.repository,
-            page_index=1,
-            page_size=DEFAULT_QUEUES_PAGE_SIZE,
-            main_button_type=ButtonCallbackType.CROSS_OUT_NEXT
-        )
-        if queue_pagination_reply_markup is None:
-            self.telegram_message_manager.send_message(
-                message["chat"]["id"],
-                "Пока что нету ни одной доступной очереди."
-            )
-            return
-
-        self.telegram_message_manager.send_message(
-            message["chat"]["id"],
-            "Выберите очередь, из которой необходимо вычеркнуть участника",
-            queue_pagination_reply_markup
+        self.handle_generic_queue_command(
+            message,
+            ButtonCallbackType.CROSS_OUT_NEXT,
+            "Выберите очередь, из которой необходимо вычеркнуть участника"
         )
 
+    @command_handler("/uncrossoutlast")
     def handle_uncross_out_last_command(self, message):
-        queue_pagination_reply_markup = build_queue_pagination_reply_markup(
-            self.repository,
-            page_index=1,
-            page_size=DEFAULT_QUEUES_PAGE_SIZE,
-            main_button_type=ButtonCallbackType.UNCROSS_OUT_LAST
-        )
-        if queue_pagination_reply_markup is None:
-            self.telegram_message_manager.send_message(
-                message["chat"]["id"],
-                "Пока что нету ни одной доступной очереди."
-            )
-            return
-
-        self.telegram_message_manager.send_message(
-            message["chat"]["id"],
-            "Выберите очередь, в которую необходимо вернуть участника",
-            queue_pagination_reply_markup
+        self.handle_generic_queue_command(
+            message,
+            ButtonCallbackType.UNCROSS_OUT_LAST,
+            "Выберите очередь, в которую необходимо вернуть участника"
         )
 
-    def respond_to_prompted_queue_name(self, message):
+    @command_handler("/addmetoqueue")
+    def handle_add_me_to_queue_command(self, message):
+        self.handle_generic_queue_command(
+            message,
+            ButtonCallbackType.ADD_ME_TO_QUEUE,
+            "Выберите очередь, в которую хотите добавиться."
+        )
+
+    @command_handler("/removemefromqueue")
+    def handle_remove_me_from_queue_command(self, message):
+        self.handle_generic_queue_command(
+            message,
+            ButtonCallbackType.REMOVE_ME_FROM_QUEUE,
+            "Выберите очередь, которую хотите покинуть."
+        )
+
+    @response_handler(NEW_QUEUE_COMMAND_RESPONSE_TEXT)
+    def handle_new_queue_response(self, message):
         queue_name = message["text"]
         error = self.repository.create_queue(queue_name)
         if error == "INTEGRITY_ERROR":
@@ -85,10 +91,11 @@ class Controller:
             "Создана новая очередь: " + queue_name
         )
 
+    @callback_handler(ButtonCallbackType.ADD_ME_TO_QUEUE)
     def handle_add_me_to_queue_callback(
-            self,
-            callback_query,
-            callback_query_data
+        self,
+        callback_query,
+        callback_query_data
     ):
         try:
             username = callback_query["from"]["username"]
@@ -118,10 +125,11 @@ class Controller:
                 callback_query["id"]
             )
 
+    @callback_handler(ButtonCallbackType.CROSS_OUT_NEXT)
     def handle_cross_out_next_callback(
-            self,
-            callback_query,
-            callback_query_data
+        self,
+        callback_query,
+        callback_query_data
     ):
         try:
             queue_id = callback_query_data["queue_id"]
@@ -146,10 +154,11 @@ class Controller:
                 callback_query["id"]
             )
 
+    @callback_handler(ButtonCallbackType.UNCROSS_OUT_LAST)
     def handle_uncross_out_last_callback(
-            self,
-            callback_query,
-            callback_query_data
+        self,
+        callback_query,
+        callback_query_data
     ):
         try:
             queue_id = callback_query_data["queue_id"]
@@ -175,10 +184,11 @@ class Controller:
                 callback_query["id"]
             )
 
+    @callback_handler(ButtonCallbackType.REMOVE_ME_FROM_QUEUE)
     def handle_remove_me_from_queue_callback(
-            self,
-            callback_query,
-            callback_query_data
+        self,
+        callback_query,
+        callback_query_data
     ):
         try:
             username = callback_query["from"]["username"]
@@ -202,37 +212,13 @@ class Controller:
                 callback_query["id"]
             )
 
-    def echo_message(self, message):
-        self.telegram_message_manager.send_message(
-            message["chat"]["id"],
-            message["text"]
-        )
-
-    def prompt_queue_name_to_show(self, message):
-        queue_pagination_reply_markup = build_queue_pagination_reply_markup(
-            self.repository,
-            page_index=1,
-            page_size=DEFAULT_QUEUES_PAGE_SIZE,
-            main_button_type=ButtonCallbackType.SHOW_QUEUE
-        )
-        if queue_pagination_reply_markup is None:
-            self.telegram_message_manager.send_message(
-                message["chat"]["id"],
-                "Пока что нету ни одной доступной очереди."
-            )
-            return
-
-        self.telegram_message_manager.send_message(
-            message["chat"]["id"],
-            "Выберите очередь, которую хотите посмотреть.",
-            queue_pagination_reply_markup
-        )
-
+    @callback_handler(ButtonCallbackType.NOOP)
     def handle_noop_callback(self, callback_query):
         self.telegram_message_manager.answer_callback_query(
             callback_query["id"]
         )
 
+    @callback_handler(ButtonCallbackType.SHOW_NEXT_QUEUE_PAGE)
     def handle_show_next_queue_page_callback(
         self,
         callback_query,
@@ -264,6 +250,7 @@ class Controller:
                 callback_query["id"]
             )
 
+    @callback_handler(ButtonCallbackType.SHOW_PREVIOUS_QUEUE_PAGE)
     def handle_show_previous_queue_page_callback(
         self,
         callback_query,
@@ -295,11 +282,8 @@ class Controller:
                 callback_query["id"]
             )
 
-    def handle_show_queue_callback(
-        self,
-        callback_query,
-        callback_query_data
-    ):
+    @callback_handler(ButtonCallbackType.SHOW_QUEUE)
+    def handle_show_queue_callback(self, callback_query, callback_query_data):
         try:
             queue_id = callback_query_data["queue_id"]
             queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
@@ -314,8 +298,9 @@ class Controller:
 
             if len(queue_members) != 0:
                 queue_description = f"{queue_name}:\n" + "".join(map(
-                    lambda member_index: member_index[1]
-                    .format_queue_string(member_index[0] + 1),
+                    lambda member_index: member_index[1].format_queue_string(
+                        member_index[0] + 1
+                    ),
                     enumerate(queue_members)
                 ))
             else:
@@ -331,44 +316,24 @@ class Controller:
                 callback_query["id"]
             )
 
-    def handle_add_me_to_queue_command(self, message):
-        queue_pagination_reply_markup = build_queue_pagination_reply_markup(
-            self.repository,
-            page_index=1,
-            page_size=DEFAULT_QUEUES_PAGE_SIZE,
-            main_button_type=ButtonCallbackType.ADD_ME_TO_QUEUE
+    @default_callback_handler
+    def handle_unknown_callback(self, callback_query, callback_query_data):
+        callback_type = callback_query_data["type"]
+        print(f"Received an unknown callback query type: {callback_type}")
+        self.telegram_message_manager.send_message(
+            callback_query["message"]["chat"]["id"],
+            "???"
         )
-        if queue_pagination_reply_markup is None:
-            self.telegram_message_manager.send_message(
-                message["chat"]["id"],
-                "Пока что нету ни одной доступной очереди."
-            )
-            return
+        self.telegram_message_manager.answer_callback_query(
+            callback_query["id"]
+        )
 
+    @default_command_handler
+    @default_response_handler
+    def handle_unknown_response(self, message):
         self.telegram_message_manager.send_message(
             message["chat"]["id"],
-            "Выберите очередь, в которую хотите добавиться.",
-            queue_pagination_reply_markup
-        )
-
-    def handle_remove_me_from_queue_command(self, message):
-        queue_pagination_reply_markup = build_queue_pagination_reply_markup(
-            self.repository,
-            page_index=1,
-            page_size=DEFAULT_QUEUES_PAGE_SIZE,
-            main_button_type=ButtonCallbackType.REMOVE_ME_FROM_QUEUE
-        )
-        if queue_pagination_reply_markup is None:
-            self.telegram_message_manager.send_message(
-                message["chat"]["id"],
-                "Пока что нету ни одной доступной очереди."
-            )
-            return
-
-        self.telegram_message_manager.send_message(
-            message["chat"]["id"],
-            "Выберите очередь, которую хотите покинуть.",
-            queue_pagination_reply_markup
+            "???"
         )
 
     def handle_error_while_processing_update(self, update):
@@ -378,9 +343,31 @@ class Controller:
             chat_id = update["callback_query"]["message"]["chat"]["id"]
         else:
             return
+        self.telegram_message_manager.send_message(chat_id, "Ошибка")
+
+    def handle_generic_queue_command(
+        self,
+        message,
+        main_button_type,
+        success_message
+    ):
+        queue_pagination_reply_markup = build_queue_pagination_reply_markup(
+            self.repository,
+            page_index=1,
+            page_size=DEFAULT_QUEUES_PAGE_SIZE,
+            main_button_type=main_button_type
+        )
+        if queue_pagination_reply_markup is None:
+            self.telegram_message_manager.send_message(
+                message["chat"]["id"],
+                "Пока что нету ни одной доступной очереди."
+            )
+            return
+
         self.telegram_message_manager.send_message(
-            chat_id,
-            "???"
+            message["chat"]["id"],
+            success_message,
+            queue_pagination_reply_markup
         )
 
 

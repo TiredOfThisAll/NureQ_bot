@@ -8,13 +8,11 @@ from urllib.error import HTTPError
 from repository import Repository
 from telegram_message_manager import TelegramMessageManager
 from controller import Controller, ButtonCallbackType
+from router import route
 
 # constants
 TOKEN_FILE_NAME = "token"
 DATABASE_NAME = "nureq.db"
-
-NEW_QUEUE_COMMAND_RESPONSE_TEXT \
-    = "Введите имя новой очереди в ответ на это сообщение"
 
 # load the token if available
 if not path.exists(TOKEN_FILE_NAME):
@@ -49,92 +47,21 @@ while True:
 
         # iterate over the latest messages for update in updates:
         for update in updates:
+            (target_handler, handler_arguments) = route(update)
+            if target_handler is None:
+                continue
             try:
-                if "message" in update:
-                    message = update["message"]
-                    text = message["text"]
-
-                    if text == "/newqueue":
-                        controller.prompt_queue_name(message)
-                    elif "reply_to_message" in message \
-                        and message["reply_to_message"]["text"] \
-                            == NEW_QUEUE_COMMAND_RESPONSE_TEXT:
-                        controller.respond_to_prompted_queue_name(message)
-                    elif text == "/addmetoqueue":
-                        controller.handle_add_me_to_queue_command(message)
-                    elif text == "/showqueue":
-                        controller.prompt_queue_name_to_show(message)
-                    elif text == "/crossoutnext":
-                        controller.handle_cross_out_next_command(message)
-                    elif text == "/uncrossoutlast":
-                        controller.handle_uncross_out_last_command(message)
-                    elif text == "/removemefromqueue":
-                        controller.handle_remove_me_from_queue_command(message)
-                    else:
-                        controller.echo_message(message)
-                elif "callback_query" in update:
-                    callback_query = update["callback_query"]
-                    callback_query_data = json.loads(callback_query["data"])
-                    callback_query_type = callback_query_data["type"]
-
-                    if callback_query_type == ButtonCallbackType.NOOP:
-                        controller.handle_noop_callback(callback_query)
-                    elif callback_query_type == \
-                            ButtonCallbackType.SHOW_NEXT_QUEUE_PAGE:
-                        controller.handle_show_next_queue_page_callback(
-                            callback_query,
-                            callback_query_data
-                        )
-                    elif callback_query_type == \
-                            ButtonCallbackType.SHOW_PREVIOUS_QUEUE_PAGE:
-                        controller.handle_show_previous_queue_page_callback(
-                            callback_query,
-                            callback_query_data
-                        )
-                    elif callback_query_type == ButtonCallbackType.SHOW_QUEUE:
-                        controller.handle_show_queue_callback(
-                            callback_query,
-                            callback_query_data
-                        )
-                    elif callback_query_type == \
-                            ButtonCallbackType.ADD_ME_TO_QUEUE:
-                        controller.handle_add_me_to_queue_callback(
-                            callback_query,
-                            callback_query_data
-                        )
-                    elif callback_query_type == \
-                            ButtonCallbackType.CROSS_OUT_NEXT:
-                        controller.handle_cross_out_next_callback(
-                            callback_query,
-                            callback_query_data
-                        )
-                    elif callback_query_type == \
-                            ButtonCallbackType.UNCROSS_OUT_LAST:
-                        controller.handle_uncross_out_last_callback(
-                            callback_query,
-                            callback_query_data
-                        )
-                    elif callback_query_type == \
-                            ButtonCallbackType.REMOVE_ME_FROM_QUEUE:
-                        controller.handle_remove_me_from_queue_callback(
-                            callback_query,
-                            callback_query_data
-                        )
-                    else:
-                        print(
-                            "Received an unknown callback query type: "
-                            + callback_query_type
-                        )
-                        controller.handle_noop_callback(callback_query)
+                target_handler(controller, *handler_arguments)
             except KeyboardInterrupt:
                 exit()
             except HTTPError as http_error:
-                print("Encountered an HTTP error")
-                print("Stack trace:")
-                print(traceback.format_exc())
-                print("URL: " + http_error.url)
-                print("Response: " + http_error.file.read().decode("UTF-8") +
-                      "\n")
+                print(
+                    "Encountered an HTTP error\n"
+                    + "Stack trace:\n"
+                    + f"{traceback.format_exc()}\n"
+                    + f"URL: {http_error.url}\n"
+                    + f"Response: {http_error.file.read().decode('UTF-8')}\n\n"
+                )
                 controller.handle_error_while_processing_update(update)
             except Exception as error:
                 print(traceback.format_exc())

@@ -4,6 +4,7 @@ Infrastructure:
 - [x] Controller
 - [x] Error handling
 - [x] Models
+- [x] Routing
 
 Features:
 - [x] /newqueue
