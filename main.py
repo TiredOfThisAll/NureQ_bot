@@ -2,12 +2,11 @@ import time
 from os import path
 import sqlite3
 import traceback
-import json
 from urllib.error import HTTPError
 
 from repository import Repository
 from telegram_message_manager import TelegramMessageManager
-from controller import Controller, ButtonCallbackType
+from controller import Controller
 from router import route
 
 # constants
@@ -32,7 +31,7 @@ with sqlite3.connect(DATABASE_NAME) as connection:
 
 telegram_message_manager = TelegramMessageManager(token)
 
-with open("bot_commands.json") as bot_commands_file:
+with open("bot_commands.json", encoding="UTF-8") as bot_commands_file:
     telegram_message_manager.set_bot_commands(bot_commands_file.read())
 
 # the 'game' loop that listens for new messages and responds to them
