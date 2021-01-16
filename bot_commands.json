@@ -1,9 +1,5 @@
 [
     {
-        "command": "/help",
-        "description": "Показать список команд"
-    },
-    {
         "command": "/newqueue",
         "description": "Создать очередь"
     },
