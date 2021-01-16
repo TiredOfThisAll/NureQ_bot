@@ -26,6 +26,13 @@ class Controller:
         self.telegram_message_manager = telegram_message_manager
         self.repository = repository
 
+    @command_handler("/start")
+    def handle_start_command(self, message):
+        self.telegram_message_manager.send_message(
+            message["chat"]["id"],
+            "Йоу"
+        )
+
     @command_handler("/newqueue")
     def handle_new_queue_command(self, message):
         self.telegram_message_manager.send_message(
