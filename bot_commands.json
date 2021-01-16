@@ -1,30 +1,30 @@
 [
     {
         "command": "/help",
-        "description": "get help"
+        "description": "Показать список команд"
     },
     {
         "command": "/newqueue",
-        "description": "create new queue"
+        "description": "Создать очередь"
     },
     {
         "command": "/addmetoqueue",
-        "description": "Add yourself into the queue"
+        "description": "Записаться в очередь"
     },
     {
         "command": "/showqueue",
-        "description": "Show list of students in a queue"
+        "description": "Показать очередь"
     },
     {
         "command": "/crossoutnext",
-        "description": "Cross out the first active queue member"
+        "description": "Вычеркнуть следующего"
     },
     {
         "command": "/uncrossoutlast",
-        "description": "Uncross out the last crossed queue member"
+        "description": "Отменить вычеркивание"
     },
     {
         "command": "/removemefromqueue",
-        "description": "Removes u from a chosen queue"
+        "description": "Убрать себя из очереди"
     }
 ]
