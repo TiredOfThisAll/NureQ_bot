@@ -15,10 +15,10 @@ class ButtonCallbackType:
     SHOW_NEXT_QUEUE_PAGE = 2
     SHOW_PREVIOUS_QUEUE_PAGE = 3
     SHOW_QUEUE = 4
-    ADD_ME_TO_QUEUE = 5
-    CROSS_OUT_NEXT = 6
-    UNCROSS_OUT_LAST = 7
-    REMOVE_ME_FROM_QUEUE = 8
+    ADD_ME = 5
+    CROSS_OUT = 6
+    UNCROSS_OUT = 7
+    REMOVE_ME = 8
 
 
 class Controller:
@@ -42,35 +42,35 @@ class Controller:
             "Выберите очередь, которую хотите посмотреть."
         )
 
-    @command_handler("/crossoutnext")
-    def handle_cross_out_next_command(self, message):
+    @command_handler("/crossout")
+    def handle_cross_out_command(self, message):
         self.handle_generic_queue_command(
             message,
-            ButtonCallbackType.CROSS_OUT_NEXT,
+            ButtonCallbackType.CROSS_OUT,
             "Выберите очередь, из которой необходимо вычеркнуть участника"
         )
 
-    @command_handler("/uncrossoutlast")
-    def handle_uncross_out_last_command(self, message):
+    @command_handler("/uncrossout")
+    def handle_uncross_out_command(self, message):
         self.handle_generic_queue_command(
             message,
-            ButtonCallbackType.UNCROSS_OUT_LAST,
+            ButtonCallbackType.UNCROSS_OUT,
             "Выберите очередь, в которую необходимо вернуть участника"
         )
 
-    @command_handler("/addmetoqueue")
-    def handle_add_me_to_queue_command(self, message):
+    @command_handler("/addme")
+    def handle_add_me_command(self, message):
         self.handle_generic_queue_command(
             message,
-            ButtonCallbackType.ADD_ME_TO_QUEUE,
+            ButtonCallbackType.ADD_ME,
             "Выберите очередь, в которую хотите добавиться."
         )
 
-    @command_handler("/removemefromqueue")
-    def handle_remove_me_from_queue_command(self, message):
+    @command_handler("/removeme")
+    def handle_remove_me_command(self, message):
         self.handle_generic_queue_command(
             message,
-            ButtonCallbackType.REMOVE_ME_FROM_QUEUE,
+            ButtonCallbackType.REMOVE_ME,
             "Выберите очередь, которую хотите покинуть."
         )
 
@@ -91,8 +91,8 @@ class Controller:
             "Создана новая очередь: " + queue_name
         )
 
-    @callback_handler(ButtonCallbackType.ADD_ME_TO_QUEUE)
-    def handle_add_me_to_queue_callback(
+    @callback_handler(ButtonCallbackType.ADD_ME)
+    def handle_add_me_callback(
         self,
         callback_query,
         callback_query_data
@@ -125,8 +125,8 @@ class Controller:
                 callback_query["id"]
             )
 
-    @callback_handler(ButtonCallbackType.CROSS_OUT_NEXT)
-    def handle_cross_out_next_callback(
+    @callback_handler(ButtonCallbackType.CROSS_OUT)
+    def handle_cross_out_callback(
         self,
         callback_query,
         callback_query_data
@@ -154,8 +154,8 @@ class Controller:
                 callback_query["id"]
             )
 
-    @callback_handler(ButtonCallbackType.UNCROSS_OUT_LAST)
-    def handle_uncross_out_last_callback(
+    @callback_handler(ButtonCallbackType.UNCROSS_OUT)
+    def handle_uncross_out_callback(
         self,
         callback_query,
         callback_query_data
@@ -184,8 +184,8 @@ class Controller:
                 callback_query["id"]
             )
 
-    @callback_handler(ButtonCallbackType.REMOVE_ME_FROM_QUEUE)
-    def handle_remove_me_from_queue_callback(
+    @callback_handler(ButtonCallbackType.REMOVE_ME)
+    def handle_remove_me_callback(
         self,
         callback_query,
         callback_query_data

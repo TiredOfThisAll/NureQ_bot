@@ -8,7 +8,7 @@
         "description": "Создать очередь"
     },
     {
-        "command": "/addmetoqueue",
+        "command": "/addme",
         "description": "Записаться в очередь"
     },
     {
@@ -16,15 +16,15 @@
         "description": "Показать очередь"
     },
     {
-        "command": "/crossoutnext",
+        "command": "/crossout",
         "description": "Вычеркнуть следующего"
     },
     {
-        "command": "/uncrossoutlast",
+        "command": "/uncrossout",
         "description": "Отменить вычеркивание"
     },
     {
-        "command": "/removemefromqueue",
+        "command": "/removeme",
         "description": "Убрать себя из очереди"
     }
 ]
