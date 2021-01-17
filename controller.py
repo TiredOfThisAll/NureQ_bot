@@ -27,6 +27,7 @@ class Controller:
         self.repository = repository
 
     @command_handler("/start")
+    @command_handler("/start@NureQ_bot")
     def handle_start_command(self, message):
         self.telegram_message_manager.send_message(
             message["chat"]["id"],
@@ -34,6 +35,7 @@ class Controller:
         )
 
     @command_handler("/newqueue")
+    @command_handler("/newqueue@NureQ_bot")
     def handle_new_queue_command(self, message):
         self.telegram_message_manager.send_message(
             message["chat"]["id"],
@@ -42,6 +44,7 @@ class Controller:
         )
 
     @command_handler("/showqueue")
+    @command_handler("/showqueue@NureQ_bot")
     def handle_show_queue_command(self, message):
         self.handle_generic_queue_command(
             message,
@@ -50,6 +53,7 @@ class Controller:
         )
 
     @command_handler("/crossout")
+    @command_handler("/crossout@NureQ_bot")
     def handle_cross_out_command(self, message):
         self.handle_generic_queue_command(
             message,
@@ -58,6 +62,7 @@ class Controller:
         )
 
     @command_handler("/uncrossout")
+    @command_handler("/uncrossout@NureQ_bot")
     def handle_uncross_out_command(self, message):
         self.handle_generic_queue_command(
             message,
@@ -66,6 +71,7 @@ class Controller:
         )
 
     @command_handler("/addme")
+    @command_handler("/addme@NureQ_bot")
     def handle_add_me_command(self, message):
         self.handle_generic_queue_command(
             message,
@@ -74,6 +80,7 @@ class Controller:
         )
 
     @command_handler("/removeme")
+    @command_handler("/removeme@NureQ_bot")
     def handle_remove_me_command(self, message):
         self.handle_generic_queue_command(
             message,

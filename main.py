@@ -36,7 +36,7 @@ with open("bot_commands.json", encoding="UTF-8") as bot_commands_file:
 
 # the 'game' loop that listens for new messages and responds to them
 while True:
-    time.sleep(1)
+    time.sleep(0.1)
 
     updates = telegram_message_manager.get_latest_messages()
 
