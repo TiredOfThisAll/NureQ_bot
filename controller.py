@@ -227,7 +227,7 @@ class Controller:
             )
 
     @callback_handler(ButtonCallbackType.NOOP)
-    def handle_noop_callback(self, callback_query):
+    def handle_noop_callback(self, callback_query, callback_query_data):
         self.telegram_message_manager.answer_callback_query(
             callback_query["id"]
         )
