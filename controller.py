@@ -121,7 +121,7 @@ class Controller:
             if error == "DUPLICATE_MEMBERS":
                 self.telegram_message_manager.send_message(
                     callback_query["message"]["chat"]["id"],
-                    "Вы уже состоите в данной очереди: " + queue_name
+                    f"@{username} уже состоит в данной очереди: {queue_name}"
                 )
                 return
             if error == "NO_QUEUE":
@@ -132,7 +132,7 @@ class Controller:
                 return
             self.telegram_message_manager.send_message(
                 callback_query["message"]["chat"]["id"],
-                "Вы добавлены в очередь: " + queue_name
+                f"@{username} добавлен(а) в очередь: {queue_name}"
             )
         finally:
             self.telegram_message_manager.answer_callback_query(
@@ -161,7 +161,7 @@ class Controller:
             self.repository.commit()
             self.telegram_message_manager.send_message(
                 callback_query["message"]["chat"]["id"],
-                "Участник " + username + " вычеркнут из очереди: " + queue_name
+                f"Участник @{username} вычеркнут из очереди: {queue_name}"
             )
         finally:
             self.telegram_message_manager.answer_callback_query(
@@ -191,7 +191,7 @@ class Controller:
             self.repository.commit()
             self.telegram_message_manager.send_message(
                 callback_query["message"]["chat"]["id"],
-                "Участник " + username + " снова в очереди: " + queue_name
+                f"Участник @{username} снова в очереди: {queue_name}"
             )
         finally:
             self.telegram_message_manager.answer_callback_query(
@@ -213,13 +213,13 @@ class Controller:
             if not success:
                 self.telegram_message_manager.send_message(
                     callback_query["message"]["chat"]["id"],
-                    "Вы не состоите в данной очереди: " + queue_name
+                    f"@{username} не состоит в данной очереди: {queue_name}"
                 )
                 return
             self.repository.commit()
             self.telegram_message_manager.send_message(
                 callback_query["message"]["chat"]["id"],
-                "Участник " + username + " удален из очереди: " + queue_name
+                f"Участник @{username} удален из очереди: {queue_name}"
             )
         finally:
             self.telegram_message_manager.answer_callback_query(
