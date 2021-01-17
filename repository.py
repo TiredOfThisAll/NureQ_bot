@@ -62,7 +62,7 @@ class Repository:
             SELECT name
             FROM queue_members
             WHERE crossed = 1 AND queue_id = ?
-            ORDER BY 1 DESC
+            ORDER BY id DESC
             LIMIT 1
         """, (queue_id,)).fetchone()
         if name_tuple is None:
