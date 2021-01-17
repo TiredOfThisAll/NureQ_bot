@@ -13,5 +13,7 @@ Features:
 - [x] /crossoutnext
 - [x] /uncrossout
 - [x] /removemefromqueue
+- [ ] using user IDs
 - [ ] responsive button interface
-
+- [ ] notifications
+- [ ] admin website
