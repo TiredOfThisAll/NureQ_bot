@@ -18,14 +18,17 @@ class Repository:
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS queue_members (
                 id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL,
+                user_id INTEGER NOT NULL,
+                user_first_name TEXT NOT NULL,
+                user_last_name TEXT NULL,
+                user_username TEXT NULL,
                 queue_id INTEGER NOT NULL,
                 crossed INTEGER DEFAULT 0 NOT NULL,
                 FOREIGN KEY (queue_id)
                     REFERENCES queues (id)
                         ON DELETE CASCADE
                         ON UPDATE NO ACTION,
-                UNIQUE(name, queue_id)
+                UNIQUE(user_id, queue_id)
             )
         """)
 
