@@ -41,12 +41,37 @@ class Repository:
         except sqlite3.IntegrityError:
             return "INTEGRITY_ERROR"
 
-    def add_me_to_queue(self, name, queue_id):
+    def add_me_to_queue(
+        self,
+        user_id,
+        user_first_name,
+        user_last_name,
+        user_username,
+        queue_id
+    ):
         try:
             self.cursor.execute("""
-                INSERT INTO queue_members (name, queue_id)
-                VALUES (?, ?)
-            """, (name, queue_id))
+                INSERT INTO queue_members (
+                    user_id,
+                    user_first_name,
+                    user_last_name,
+                    user_username,
+                    queue_id
+                )
+                VALUES (
+                    :user_id,
+                    :user_first_name,
+                    :user_last_name,
+                    :user_username,
+                    :queue_id
+                )
+            """, {
+                "user_id": user_id,
+                "user_first_name": user_first_name,
+                "user_last_name": user_last_name,
+                "user_username": user_username,
+                "queue_id": queue_id,
+            })
         except sqlite3.IntegrityError:
             return "DUPLICATE_MEMBERS"
 
