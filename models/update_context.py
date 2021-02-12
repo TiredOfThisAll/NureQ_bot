@@ -22,15 +22,22 @@ class UpdateContext:
             update_context.response_text = update_context.message \
                 .get("reply_to_message", {}) \
                 .get("text")
+            update_context.chat_id = update_context.message["chat"]["id"]
         elif "callback_query" in update_context.update:
             update_context.type = Type.CALLBACK_QUERY
+            update_context.callback_query = update["callback_query"]
             update_context.callback_query_data = json.loads(
-                update_context.update["callback_query"]["data"]
+                update["callback_query"]["data"]
             )
             update_context.callback_query_type \
-                = update_context.update["callback_query_data"]["type"]
+                = update["callback_query"]["data"]["type"]
             update_context.sender_user_info = UserInfo.from_telegram_user_dict(
                 update_context.callback_query["from"]
             )
+            update_context.chat_id \
+                = update["callback_query"]["message"]["chat"]["id"]
+            update_context.callback_query_id = update["callback_query"]["id"]
+            update_context.message_id \
+                = update["callback_query"]["message"]["message_id"]
         else:
             update_context.type = None
