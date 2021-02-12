@@ -46,11 +46,13 @@ while True:
 
         # iterate over the latest messages for update in updates:
         for update in updates:
-            (target_handler, handler_arguments) = route(update)
+            update_context = UpdateContext.from_update(update)
+            target_handler = route(update_context)
             if target_handler is None:
+                print(f"Could not route update: {update}")
                 continue
             try:
-                target_handler(controller, *handler_arguments)
+                target_handler(controller, update_context)
             except KeyboardInterrupt:
                 exit()
             except HTTPError as http_error:
