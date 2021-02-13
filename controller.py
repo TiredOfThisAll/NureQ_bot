@@ -145,21 +145,27 @@ class Controller:
     def handle_cross_out_callback(self, update_context):
         try:
             queue_id = update_context.callback_query_data["queue_id"]
-            username = self.repository.find_uncrossed_queue_member(queue_id)
+            queue_member \
+                = self.repository.find_uncrossed_queue_member(queue_id)
             queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
 
-            if username is None:
+            if queue_member is None:
                 self.telegram_message_manager.send_message(
                     update_context.chat_id,
-                    "В данной очереди не осталось участников: " + queue_name
+                    f"В данной очереди не осталось участников: {queue_name}"
                 )
                 return
 
-            self.repository.cross_out_the_queue_member(username, queue_id)
+            self.repository.cross_out_queue_member(
+                queue_member.user_id,
+                queue_id
+            )
             self.repository.commit()
+
+            name = queue_member.user_info.get_formatted_name()
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
-                f"Участник {username} вычеркнут из очереди: {queue_name}"
+                f"Участник {name} вычеркнут из очереди: {queue_name}"
             )
         finally:
             self.telegram_message_manager.answer_callback_query(
@@ -299,9 +305,7 @@ class Controller:
             if len(queue_members) != 0:
                 queue_description = f"{queue_name}:\n" + "".join(map(
                     lambda member_index: member_index[1]
-                    .get_formatted_queue_string(
-                        member_index[0] + 1
-                    ),
+                    .get_formatted_queue_string(member_index[0] + 1),
                     enumerate(queue_members)
                 ))
             else:

@@ -76,14 +76,14 @@ class Repository:
             return "DUPLICATE_MEMBERS"
 
     def find_uncrossed_queue_member(self, queue_id):
-        name = self.cursor.execute("""
-            SELECT name
+        queue_member_tuple = self.cursor.execute("""
+            SELECT *
             FROM queue_members
             WHERE crossed = 0 AND queue_id = ?
         """, (queue_id,)).fetchone()
-        if name is None:
+        if queue_member_tuple is None:
             return None
-        return name[0]
+        return QueueMember.from_tuple(queue_member_tuple)
 
     def find_last_crossed_queue_member(self, queue_id):
         name_tuple = self.cursor.execute("""
@@ -97,12 +97,12 @@ class Repository:
             return None
         return name_tuple[0]
 
-    def cross_out_the_queue_member(self, name, queue_id):
+    def cross_out_queue_member(self, user_id, queue_id):
         self.cursor.execute("""
             UPDATE queue_members
             SET crossed = 1
-            WHERE name = ? AND queue_id = ?
-        """, (name, queue_id))
+            WHERE user_id = ? AND queue_id = ?
+        """, (user_id, queue_id))
 
     def uncross_out_the_queue_member(self, name, queue_id):
         self.cursor.execute("""
