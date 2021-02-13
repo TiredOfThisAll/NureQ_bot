@@ -13,7 +13,7 @@ Features:
 - [x] /crossoutnext
 - [x] /uncrossout
 - [x] /removemefromqueue
-- [ ] using user IDs
+- [x] using user IDs
 - [ ] sort queue buttons by the most recently updated
 - [ ] responsive button interface
 - [ ] notifications
