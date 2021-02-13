@@ -1,4 +1,6 @@
-from user_info import UserInfo
+import json
+
+from models.user_info import UserInfo
 
 
 class UpdateContext:
@@ -7,11 +9,11 @@ class UpdateContext:
         CALLBACK_QUERY = 2
 
     def from_update(update):
-        update_context = UpateContext()
+        update_context = UpdateContext()
         update_context.update = update
 
         if "message" in update_context.update:
-            update_context.type = Type.MESSAGE
+            update_context.type = UpdateContext.Type.MESSAGE
             update_context.message = update_context.update["message"]
             update_context.sender_user_info = UserInfo.from_telegram_user_dict(
                 update_context.message["from"]
@@ -24,13 +26,13 @@ class UpdateContext:
                 .get("text")
             update_context.chat_id = update_context.message["chat"]["id"]
         elif "callback_query" in update_context.update:
-            update_context.type = Type.CALLBACK_QUERY
+            update_context.type = UpdateContext.Type.CALLBACK_QUERY
             update_context.callback_query = update["callback_query"]
             update_context.callback_query_data = json.loads(
                 update["callback_query"]["data"]
             )
             update_context.callback_query_type \
-                = update["callback_query"]["data"]["type"]
+                = update_context.callback_query_data["type"]
             update_context.sender_user_info = UserInfo.from_telegram_user_dict(
                 update_context.callback_query["from"]
             )
@@ -41,3 +43,5 @@ class UpdateContext:
                 = update["callback_query"]["message"]["message_id"]
         else:
             update_context.type = None
+
+        return update_context

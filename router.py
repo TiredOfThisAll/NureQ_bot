@@ -1,4 +1,5 @@
-import json
+from models.update_context import UpdateContext
+
 
 registered_command_handlers = {}
 registered_response_handlers = {}

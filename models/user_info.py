@@ -9,7 +9,7 @@ class UserInfo:
         formatted_name = self.first_name
         if self.last_name is not None:
             formatted_name += " " + self.last_name
-        return f"<a href='tg://user?id={self.user_id}'>{formatted_name}</a>"
+        return f"<a href='tg://user?id={self.id}'>{formatted_name}</a>"
 
     def from_telegram_user_dict(user_dict):
         return UserInfo(

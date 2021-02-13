@@ -8,6 +8,7 @@ from repository import Repository
 from telegram_message_manager import TelegramMessageManager
 from controller import Controller
 from router import route
+from models.update_context import UpdateContext
 
 # constants
 TOKEN_FILE_NAME = "token"
@@ -63,7 +64,7 @@ while True:
                     + f"URL: {http_error.url}\n"
                     + f"Response: {http_error.file.read().decode('UTF-8')}\n\n"
                 )
-                controller.handle_error_while_processing_update(update)
+                controller.handle_error_while_processing_update(update_context)
             except Exception as error:
                 print(traceback.format_exc())
-                controller.handle_error_while_processing_update(update)
+                controller.handle_error_while_processing_update(update_context)

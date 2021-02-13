@@ -36,7 +36,7 @@ class Controller:
 
     @command_handler("/newqueue")
     @command_handler("/newqueue@NureQ_bot")
-    def handle_new_queue_command(self, update_contest):
+    def handle_new_queue_command(self, update_context):
         self.telegram_message_manager.send_message(
             update_context.chat_id,
             NEW_QUEUE_COMMAND_RESPONSE_TEXT,
@@ -108,16 +108,22 @@ class Controller:
     @callback_handler(ButtonCallbackType.ADD_ME)
     def handle_add_me_callback(self, update_context):
         try:
-            username = update_context.sender_user_info.username
             queue_id = update_context.callback_query_data["queue_id"]
-            error = self.repository.add_me_to_queue(username, queue_id)
+            error = self.repository.add_me_to_queue(
+                update_context.sender_user_info.id,
+                update_context.sender_user_info.first_name,
+                update_context.sender_user_info.last_name,
+                update_context.sender_user_info.username,
+                queue_id
+            )
             self.repository.commit()
             queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
 
+            name = update_context.sender_user_info.get_formatted_name()
             if error == "DUPLICATE_MEMBERS":
                 self.telegram_message_manager.send_message(
                     update_context.chat_id,
-                    f"@{username} уже состоит в данной очереди: {queue_name}"
+                    f"{name} уже состоит в данной очереди: {queue_name}"
                 )
                 return
             if error == "NO_QUEUE":
@@ -128,7 +134,7 @@ class Controller:
                 return
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
-                f"@{username} добавлен(а) в очередь: {queue_name}"
+                f"{name} добавлен(а) в очередь: {queue_name}"
             )
         finally:
             self.telegram_message_manager.answer_callback_query(
@@ -153,7 +159,7 @@ class Controller:
             self.repository.commit()
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
-                f"Участник @{username} вычеркнут из очереди: {queue_name}"
+                f"Участник {username} вычеркнут из очереди: {queue_name}"
             )
         finally:
             self.telegram_message_manager.answer_callback_query(
@@ -179,7 +185,7 @@ class Controller:
             self.repository.commit()
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
-                f"Участник @{username} снова в очереди: {queue_name}"
+                f"Участник {username} снова в очереди: {queue_name}"
             )
         finally:
             self.telegram_message_manager.answer_callback_query(
@@ -197,13 +203,13 @@ class Controller:
             if not success:
                 self.telegram_message_manager.send_message(
                     update_context.chat_id,
-                    f"@{username} не состоит в данной очереди: {queue_name}"
+                    f"{username} не состоит в данной очереди: {queue_name}"
                 )
                 return
             self.repository.commit()
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
-                f"Участник @{username} удален из очереди: {queue_name}"
+                f"Участник {username} удален из очереди: {queue_name}"
             )
         finally:
             self.telegram_message_manager.answer_callback_query(
@@ -303,8 +309,7 @@ class Controller:
 
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
-                queue_description,
-                parse_mode="HTML"
+                queue_description
             )
         finally:
             self.telegram_message_manager.answer_callback_query(
