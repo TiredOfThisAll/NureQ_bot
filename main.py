@@ -8,6 +8,7 @@ from repository import Repository
 from telegram_message_manager import TelegramMessageManager
 from controller import Controller
 from router import route
+from models.update_context import UpdateContext
 
 # constants
 TOKEN_FILE_NAME = "token"
@@ -46,11 +47,13 @@ while True:
 
         # iterate over the latest messages for update in updates:
         for update in updates:
-            (target_handler, handler_arguments) = route(update)
+            update_context = UpdateContext.from_update(update)
+            target_handler = route(update_context)
             if target_handler is None:
+                print(f"Could not route update: {update}")
                 continue
             try:
-                target_handler(controller, *handler_arguments)
+                target_handler(controller, update_context)
             except KeyboardInterrupt:
                 exit()
             except HTTPError as http_error:
@@ -61,7 +64,7 @@ while True:
                     + f"URL: {http_error.url}\n"
                     + f"Response: {http_error.file.read().decode('UTF-8')}\n\n"
                 )
-                controller.handle_error_while_processing_update(update)
+                controller.handle_error_while_processing_update(update_context)
             except Exception as error:
                 print(traceback.format_exc())
-                controller.handle_error_while_processing_update(update)
+                controller.handle_error_while_processing_update(update_context)

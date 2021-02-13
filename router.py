@@ -1,4 +1,5 @@
-import json
+from models.update_context import UpdateContext
+
 
 registered_command_handlers = {}
 registered_response_handlers = {}
@@ -48,47 +49,21 @@ def default_callback_handler(function):
     return function
 
 
-def route(update):
-    if "message" in update:
-        message = update["message"]
-        if "text" not in message:
-            # unsupported message type
-            message_text = ""
-        else:
-            message_text = message["text"]
-
-        arguments = [message]
-
+def route(update_context):
+    if update_context.type == UpdateContext.Type.MESSAGE:
         # either it is a response to a bot's message
-        if "reply_to_message" in message:
-            response_text = message["reply_to_message"]["text"]
-            if response_text not in registered_response_handlers:
-                if registered_default_callback_handler is None:
-                    return (None, None)
-                return (registered_default_response_handler, arguments)
-            return (registered_response_handlers[response_text], arguments)
-
+        if update_context.is_reply:
+            return registered_response_handlers.get(
+                update_context.response_text,
+                registered_default_response_handler
+            )
         # or it is a normal text message with a command
-
-        if message_text not in registered_command_handlers:
-            if registered_default_command_handler is None:
-                return (None, None)
-            return (registered_default_command_handler, arguments)
-
-        return (registered_command_handlers[message_text], arguments)
-
-    if "callback_query" in update:
-        callback_query = update["callback_query"]
-        callback_query_data = json.loads(callback_query["data"])
-        callback_query_type = callback_query_data["type"]
-
-        arguments = [callback_query, callback_query_data]
-
-        if callback_query_type not in registered_callback_handlers:
-            if registered_default_callback_handler is None:
-                return (None, None)
-            return (registered_default_callback_handler, arguments)
-
-        return (registered_callback_handlers[callback_query_type], arguments)
-
-    return (None, None)
+        return registered_command_handlers.get(
+            update_context.message_text,
+            registered_default_command_handler
+        )
+    if update_context.type == UpdateContext.Type.CALLBACK_QUERY:
+        return registered_callback_handlers.get(
+            update_context.callback_query_type,
+            registered_default_callback_handler
+        )

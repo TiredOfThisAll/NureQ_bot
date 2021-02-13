@@ -33,7 +33,7 @@ class TelegramMessageManager:
         chat_id,
         response_text,
         reply_markup=None,
-        parse_mode=None
+        parse_mode="HTML"
     ):
         query_parameters = {
             "chat_id": chat_id,
