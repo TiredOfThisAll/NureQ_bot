@@ -208,21 +208,24 @@ class Controller:
     @callback_handler(ButtonCallbackType.REMOVE_ME)
     def handle_remove_me_callback(self, update_context):
         try:
-            username = update_context.sender_user_info.username
+            user_info = update_context.sender_user_info
             queue_id = update_context.callback_query_data["queue_id"]
             queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
-            success \
-                = self.repository.remove_user_from_queue(username, queue_id)
+            success = self.repository.remove_user_from_queue(
+                user_info.id,
+                queue_id
+            )
+            name = user_info.get_formatted_name()
             if not success:
                 self.telegram_message_manager.send_message(
                     update_context.chat_id,
-                    f"{username} не состоит в данной очереди: {queue_name}"
+                    f"{name} не состоит в данной очереди: {queue_name}"
                 )
                 return
             self.repository.commit()
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
-                f"Участник {username} удален из очереди: {queue_name}"
+                f"Участник {name} удален из очереди: {queue_name}"
             )
         finally:
             self.telegram_message_manager.answer_callback_query(

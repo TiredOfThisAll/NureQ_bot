@@ -111,11 +111,11 @@ class Repository:
             WHERE user_id = ? AND queue_id = ?
         """, (user_id, queue_id))
 
-    def remove_user_from_queue(self, name, queue_id):
+    def remove_user_from_queue(self, user_id, queue_id):
         self.cursor.execute("""
             DELETE FROM queue_members
-            WHERE queue_id = ? AND name = ?
-        """, (queue_id, name))
+            WHERE queue_id = ? AND user_id = ?
+        """, (queue_id, user_id))
         return self.cursor.rowcount == 1
 
     def get_total_queue_count(self):
