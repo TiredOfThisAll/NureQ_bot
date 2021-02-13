@@ -1,3 +1,6 @@
+from models.user_info import UserInfo
+
+
 class QueueMember:
     def __init__(
         self,
@@ -16,6 +19,12 @@ class QueueMember:
         self.user_username = user_username
         self.queue_id = queue_id
         self.crossed = crossed
+        self.user_info = UserInfo(
+            user_id,
+            user_first_name,
+            user_last_name,
+            user_username
+        )
 
     def from_tuple(queue_member_tuple):
         return QueueMember(
@@ -28,16 +37,12 @@ class QueueMember:
             queue_member_tuple[6],
         )
 
-    def format_queue_string(self, queue_pos):
-        formatted_name = self.user_first_name
-        if self.user_last_name is not None:
-            formatted_name += " " + self.user_last_name
-        formatted_name \
-            = f"<a href='tg://user?id={self.user_id}'>{formatted_name}</a>"
-        result = f"{queue_pos}. {formatted_name}\n"
+    def get_formatted_queue_string(self, queue_pos):
+        formatted_queue_string \
+            = f"{queue_pos}. {self.user_info.get_formatted_name()}"
         if self.crossed == 1:
-            return f"<s>{result}</s>"
-        return result
+            formatted_queue_string = f"<s>{formatted_queue_string}</s>"
+        return formatted_queue_string
 
     def __str__(self):
         return "QueueMember: " \
