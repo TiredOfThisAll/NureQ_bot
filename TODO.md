@@ -5,6 +5,7 @@ Infrastructure:
 - [x] Error handling
 - [x] Models
 - [x] Routing
+- [x] Deploy
 
 Features:
 - [x] /newqueue
