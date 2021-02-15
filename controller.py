@@ -92,7 +92,7 @@ class Controller:
     def handle_new_queue_response(self, update_context):
         queue_name = update_context.message_text
         error = self.repository.create_queue(queue_name)
-        if error == "INTEGRITY_ERROR":
+        if error == "QUEUE_NAME_DUPLICATE":
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
                 f"Очередь с именем {queue_name} уже существует"

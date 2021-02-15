@@ -38,8 +38,10 @@ class Repository:
                 INSERT INTO queues (name)
                 VALUES (?)
             """, (queue_name,))
-        except sqlite3.IntegrityError:
-            return "INTEGRITY_ERROR"
+        except sqlite3.IntegrityError as integrity_error:
+            if str(integrity_error) == "UNIQUE constraint failed: queues.name":
+                return "QUEUE_NAME_DUPLICATE"
+            raise integrity_error
 
     def add_me_to_queue(
         self,
