@@ -116,9 +116,7 @@ class Controller:
                 update_context.sender_user_info.username,
                 queue_id
             )
-            self.repository.commit()
             queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
-
             name = update_context.sender_user_info.get_formatted_name()
             if error == "DUPLICATE_MEMBERS":
                 self.telegram_message_manager.send_message(
@@ -132,11 +130,12 @@ class Controller:
                     "Данной очереди не существует: " + queue_name
                 )
                 return
+            self.repository.refresh_queues_last_time_updated_on(queue_id)
+            self.repository.commit()
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
                 f"{name} добавлен(а) в очередь: {queue_name}"
             )
-            self.repository.refresh_queues_last_time_updated_on(queue_id)
         finally:
             self.telegram_message_manager.answer_callback_query(
                 update_context.callback_query_id

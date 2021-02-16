@@ -133,7 +133,7 @@ class Repository:
         queue_tuples = self.cursor.execute("""
             SELECT *
             FROM queues
-            ORDER BY datetime(last_updated_on) DESC 
+            ORDER BY datetime(last_updated_on) DESC
             LIMIT ?, ?
         """, (skip_amount, page_size)).fetchall()
         return list(map(Queue.from_tuple, queue_tuples))
