@@ -92,7 +92,7 @@ class Controller:
     def handle_new_queue_response(self, update_context):
         queue_name = update_context.message_text
         error = self.repository.create_queue(queue_name)
-        if error == "INTEGRITY_ERROR":
+        if error == "QUEUE_NAME_DUPLICATE":
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
                 f"Очередь с именем {queue_name} уже существует"
@@ -116,9 +116,7 @@ class Controller:
                 update_context.sender_user_info.username,
                 queue_id
             )
-            self.repository.commit()
             queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
-
             name = update_context.sender_user_info.get_formatted_name()
             if error == "DUPLICATE_MEMBERS":
                 self.telegram_message_manager.send_message(
@@ -132,6 +130,8 @@ class Controller:
                     "Данной очереди не существует: " + queue_name
                 )
                 return
+            self.repository.refresh_queues_last_time_updated_on(queue_id)
+            self.repository.commit()
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
                 f"{name} добавлен(а) в очередь: {queue_name}"
@@ -160,6 +160,7 @@ class Controller:
                 queue_member.user_id,
                 queue_id
             )
+            self.repository.refresh_queues_last_time_updated_on(queue_id)
             self.repository.commit()
 
             name = queue_member.user_info.get_formatted_name()
@@ -193,6 +194,7 @@ class Controller:
                 queue_member.user_id,
                 queue_id
             )
+            self.repository.refresh_queues_last_time_updated_on(queue_id)
             self.repository.commit()
 
             name = queue_member.user_info.get_formatted_name()
@@ -222,6 +224,7 @@ class Controller:
                     f"{name} не состоит в данной очереди: {queue_name}"
                 )
                 return
+            self.repository.refresh_queues_last_time_updated_on(queue_id)
             self.repository.commit()
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
@@ -277,7 +280,7 @@ class Controller:
             queue_pagination_reply_markup \
                 = build_queue_pagination_reply_markup(
                     self.repository,
-                    page_index=page_index+1,
+                    page_index=page_index-1,
                     page_size=DEFAULT_QUEUES_PAGE_SIZE,
                     main_button_type=main_button_type
                 )

@@ -15,7 +15,7 @@ Features:
 - [x] /uncrossout
 - [x] /removemefromqueue
 - [x] using user IDs
-- [ ] sort queue buttons by the most recently updated
+- [x] sort queue buttons by the most recently updated
 - [ ] responsive button interface
 - [ ] notifications
 - [ ] admin website
