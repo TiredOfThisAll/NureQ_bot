@@ -136,6 +136,7 @@ class Controller:
                 update_context.chat_id,
                 f"{name} добавлен(а) в очередь: {queue_name}"
             )
+            self.repository.refresh_queues_last_time_updated_on(queue_id)
         finally:
             self.telegram_message_manager.answer_callback_query(
                 update_context.callback_query_id
@@ -160,6 +161,7 @@ class Controller:
                 queue_member.user_id,
                 queue_id
             )
+            self.repository.refresh_queues_last_time_updated_on(queue_id)
             self.repository.commit()
 
             name = queue_member.user_info.get_formatted_name()
@@ -193,6 +195,7 @@ class Controller:
                 queue_member.user_id,
                 queue_id
             )
+            self.repository.refresh_queues_last_time_updated_on(queue_id)
             self.repository.commit()
 
             name = queue_member.user_info.get_formatted_name()
@@ -222,6 +225,7 @@ class Controller:
                     f"{name} не состоит в данной очереди: {queue_name}"
                 )
                 return
+            self.repository.refresh_queues_last_time_updated_on(queue_id)
             self.repository.commit()
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
@@ -277,7 +281,7 @@ class Controller:
             queue_pagination_reply_markup \
                 = build_queue_pagination_reply_markup(
                     self.repository,
-                    page_index=page_index+1,
+                    page_index=page_index-1,
                     page_size=DEFAULT_QUEUES_PAGE_SIZE,
                     main_button_type=main_button_type
                 )

@@ -1,6 +1,7 @@
 import sqlite3
 from models.queue import Queue
 from models.queue_member import QueueMember
+from datetime import datetime
 
 
 class Repository:
@@ -12,7 +13,8 @@ class Repository:
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS queues (
                 id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL UNIQUE
+                name TEXT NOT NULL UNIQUE,
+                last_updated_on TEXT NOT NULL
             )
         """)
         self.cursor.execute("""
@@ -35,9 +37,9 @@ class Repository:
     def create_queue(self, queue_name):
         try:
             self.cursor.execute("""
-                INSERT INTO queues (name)
-                VALUES (?)
-            """, (queue_name,))
+                INSERT INTO queues (name, last_updated_on)
+                VALUES (?, ?)
+            """, (queue_name, datetime.utcnow()))
         except sqlite3.IntegrityError as integrity_error:
             if str(integrity_error) == "UNIQUE constraint failed: queues.name":
                 return "QUEUE_NAME_DUPLICATE"
@@ -131,6 +133,7 @@ class Repository:
         queue_tuples = self.cursor.execute("""
             SELECT *
             FROM queues
+            ORDER BY datetime(last_updated_on) DESC 
             LIMIT ?, ?
         """, (skip_amount, page_size)).fetchall()
         return list(map(Queue.from_tuple, queue_tuples))
@@ -152,6 +155,13 @@ class Repository:
         if queue_name_tuple is None:
             return None
         return queue_name_tuple[0]
+
+    def refresh_queues_last_time_updated_on(self, queue_id):
+        self.cursor.execute("""
+            UPDATE queues
+            SET last_updated_on = ?
+            WHERE id = ?
+        """, (datetime.utcnow(), queue_id))
 
     def commit(self):
         self.connection.commit()
