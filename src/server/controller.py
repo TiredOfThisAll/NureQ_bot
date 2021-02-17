@@ -379,7 +379,7 @@ class Controller:
                 update_context.chat_id,
                 "Ошибка"
             )
-        except:
+        except Exception:
             pass
 
     def handle_generic_queue_command(
