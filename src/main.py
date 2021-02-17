@@ -96,5 +96,11 @@ try:
                     controller.handle_error_while_processing_update(
                         update_context
                     )
+except Exception as error:
+    logger.log(
+        LoggingLevel.ERROR,
+        f"An unhandled exception occured: {error}"
+    )
+    raise error
 finally:
     logger.log(LoggingLevel.INFO, "Bot stopped")
