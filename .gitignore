@@ -1,5 +1,5 @@
-token
 .idea
+token
 *.db
 __pycache__
 *.swp

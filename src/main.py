@@ -1,39 +1,46 @@
-import time
+import json
 from os import path
 import sqlite3
+import time
 import traceback
 from urllib.error import HTTPError
 
 from data_access.repository import Repository
-from services.telegram_message_manager import TelegramMessageManager
 from server.controller import Controller
-from server.router import route
 from server.models.update_context import UpdateContext
+from server.router import route
+from services.telegram_message_manager import TelegramMessageManager
 
-# constants
-TOKEN_FILE_NAME = "../config/token"
-DATABASE_NAME = "../nureq.db"
+# configuration
+PROJECT_PATH = path.abspath(path.join(__file__, "..", ".."))
 
+config_file_path = path.join(PROJECT_PATH, "config", "configuration.json")
+with open(config_file_path) as configuration_file:
+    configuration = json.loads(configuration_file.read())
+
+TOKEN_PATH = path.join(PROJECT_PATH, configuration["token"])
 # load the token if available
-if not path.exists(TOKEN_FILE_NAME):
-    print("You need the token file")
+if not path.exists(TOKEN_PATH):
+    print(f"You need the token file at {TOKEN_PATH}")
     exit(1)
 
-with open(TOKEN_FILE_NAME) as token_file:
-    token = token_file.readline()
-    if token[-1] == "\n":
-        token = token[:-1]
+with open(TOKEN_PATH) as token_file:
+    TOKEN = token_file.readline()
+    if TOKEN[-1] == "\n":
+        TOKEN = TOKEN[:-1]
+
+DATABASE_PATH = path.join(PROJECT_PATH, configuration["database"])
 
 # create DB schema if it doesn't exist yet
-with sqlite3.connect(DATABASE_NAME) as connection:
+with sqlite3.connect(DATABASE_PATH) as connection:
     repository = Repository(connection)
     repository.create_schema()
     repository.commit()
 
-telegram_message_manager = TelegramMessageManager(token)
+telegram_message_manager = TelegramMessageManager(TOKEN)
 
-with open("../config/bot_commands.json", encoding="UTF-8") \
-        as bot_commands_file:
+bot_commands_file_path = path.join(PROJECT_PATH, "config", "bot_commands.json")
+with open(bot_commands_file_path, encoding="UTF-8") as bot_commands_file:
     telegram_message_manager.set_bot_commands(bot_commands_file.read())
 
 # the 'game' loop that listens for new messages and responds to them
@@ -42,7 +49,7 @@ while True:
 
     updates = telegram_message_manager.get_latest_messages()
 
-    with sqlite3.connect(DATABASE_NAME) as connection:
+    with sqlite3.connect(DATABASE_PATH) as connection:
         repository = Repository(connection)
         controller = Controller(telegram_message_manager, repository)
 
