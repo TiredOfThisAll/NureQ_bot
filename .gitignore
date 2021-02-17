@@ -3,3 +3,4 @@ token
 *.db
 __pycache__
 *.swp
+logs.txt

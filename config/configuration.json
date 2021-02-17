@@ -1,4 +1,5 @@
 {
     "token": "config/token",
-    "database": "nureq.db"
+    "database": "nureq.db",
+    "logs": "logs.txt"
 }

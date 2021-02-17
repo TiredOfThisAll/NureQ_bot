@@ -10,6 +10,7 @@ from server.controller import Controller
 from server.models.update_context import UpdateContext
 from server.router import route
 from services.telegram_message_manager import TelegramMessageManager
+from services.logging import CompositeLogger, ConsoleLogger, FileLogger
 
 # configuration
 PROJECT_PATH = path.abspath(path.join(__file__, "..", ".."))
@@ -30,6 +31,7 @@ with open(TOKEN_PATH) as token_file:
         TOKEN = TOKEN[:-1]
 
 DATABASE_PATH = path.join(PROJECT_PATH, configuration["database"])
+LOGS_PATH = path.join(PROJECT_PATH, configuration["logs"])
 
 # create DB schema if it doesn't exist yet
 with sqlite3.connect(DATABASE_PATH) as connection:
@@ -43,6 +45,11 @@ bot_commands_file_path = path.join(PROJECT_PATH, "config", "bot_commands.json")
 with open(bot_commands_file_path, encoding="UTF-8") as bot_commands_file:
     telegram_message_manager.set_bot_commands(bot_commands_file.read())
 
+logger = CompositeLogger([
+    ConsoleLogger(),
+    FileLogger(LOGS_PATH),
+])
+
 # the 'game' loop that listens for new messages and responds to them
 while True:
     time.sleep(0.1)
@@ -51,7 +58,7 @@ while True:
 
     with sqlite3.connect(DATABASE_PATH) as connection:
         repository = Repository(connection)
-        controller = Controller(telegram_message_manager, repository)
+        controller = Controller(telegram_message_manager, repository, logger)
 
         # iterate over the latest messages for update in updates:
         for update in updates:

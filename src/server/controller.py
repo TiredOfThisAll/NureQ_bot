@@ -5,6 +5,7 @@ import random
 from server.router import command_handler, response_handler, \
     callback_handler, default_callback_handler, default_command_handler, \
     default_response_handler
+from services.logging import LoggingLevel
 
 NEW_QUEUE_COMMAND_RESPONSE_TEXT \
     = "Введите имя новой очереди в ответ на это сообщение"
@@ -23,9 +24,10 @@ class ButtonCallbackType:
 
 
 class Controller:
-    def __init__(self, telegram_message_manager, repository):
+    def __init__(self, telegram_message_manager, repository, logger):
         self.telegram_message_manager = telegram_message_manager
         self.repository = repository
+        self.logger = logger
 
     @command_handler("/start")
     @command_handler("/start@NureQ_bot")
@@ -126,6 +128,11 @@ class Controller:
                 )
                 return
             if error == "NO_QUEUE":
+                self.logger.log(
+                    LoggingLevel.WARN,
+                    f"Received an /addme request for a non-existent queue "
+                    + "with ID {queue_id}"
+                )
                 self.telegram_message_manager.send_message(
                     update_context.chat_id,
                     "Данной очереди не существует: " + queue_name
@@ -308,6 +315,11 @@ class Controller:
             queue_id = update_context.callback_query_data["queue_id"]
             queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
             if queue_name is None:
+                self.logger.log(
+                    LoggingLevel.WARN,
+                    f"Received a /showqueue request for a non-existent queue "
+                    + "with ID {queue_id}"
+                )
                 self.telegram_message_manager.send_message(
                     update_context.chat_id,
                     f"Очереди с ID: {queue_id} не существует"
@@ -337,7 +349,10 @@ class Controller:
     @default_callback_handler
     def handle_unknown_callback(self, update_context):
         callback_type = update_context.callback_query_type
-        print(f"Received an unknown callback query type: {callback_type}")
+        self.logger.log(
+            LoggingLevel.ERROR,
+            f"Received an unknown callback query type: {callback_type}"
+        )
         self.telegram_message_manager.send_message(
             update_context.chat_id,
             "???"
@@ -349,6 +364,10 @@ class Controller:
     @default_command_handler
     @default_response_handler
     def handle_unknown_response(self, update_context):
+        self.logger.log(
+            LoggingLevel.WARN,
+            f"Received an invalid command/response: {update_context.update}"
+        )
         self.telegram_message_manager.send_message(
             update_context.chat_id,
             "???"
