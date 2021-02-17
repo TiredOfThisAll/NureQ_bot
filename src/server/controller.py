@@ -2,8 +2,9 @@ import math
 import json
 import random
 
-from router import command_handler, response_handler, callback_handler, \
-    default_callback_handler, default_command_handler, default_response_handler
+from server.router import command_handler, response_handler, \
+    callback_handler, default_callback_handler, default_command_handler, \
+    default_response_handler
 
 NEW_QUEUE_COMMAND_RESPONSE_TEXT \
     = "Введите имя новой очереди в ответ на это сообщение"

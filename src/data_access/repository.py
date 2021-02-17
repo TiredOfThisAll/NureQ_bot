@@ -1,7 +1,8 @@
 import sqlite3
-from models.queue import Queue
-from models.queue_member import QueueMember
 from datetime import datetime
+
+from data_access.models.queue import Queue
+from data_access.models.queue_member import QueueMember
 
 
 class Repository:

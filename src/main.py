@@ -4,15 +4,15 @@ import sqlite3
 import traceback
 from urllib.error import HTTPError
 
-from repository import Repository
-from telegram_message_manager import TelegramMessageManager
-from controller import Controller
-from router import route
-from models.update_context import UpdateContext
+from data_access.repository import Repository
+from services.telegram_message_manager import TelegramMessageManager
+from server.controller import Controller
+from server.router import route
+from server.models.update_context import UpdateContext
 
 # constants
-TOKEN_FILE_NAME = "token"
-DATABASE_NAME = "nureq.db"
+TOKEN_FILE_NAME = "../config/token"
+DATABASE_NAME = "../nureq.db"
 
 # load the token if available
 if not path.exists(TOKEN_FILE_NAME):
@@ -32,7 +32,8 @@ with sqlite3.connect(DATABASE_NAME) as connection:
 
 telegram_message_manager = TelegramMessageManager(token)
 
-with open("bot_commands.json", encoding="UTF-8") as bot_commands_file:
+with open("../config/bot_commands.json", encoding="UTF-8") \
+        as bot_commands_file:
     telegram_message_manager.set_bot_commands(bot_commands_file.read())
 
 # the 'game' loop that listens for new messages and responds to them
