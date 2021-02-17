@@ -374,10 +374,13 @@ class Controller:
         )
 
     def handle_error_while_processing_update(self, update_context):
-        self.telegram_message_manager.send_message(
-            update_context.chat_id,
-            "Ошибка"
-        )
+        try:
+            self.telegram_message_manager.send_message(
+                update_context.chat_id,
+                "Ошибка"
+            )
+        except:
+            pass
 
     def handle_generic_queue_command(
         self,
