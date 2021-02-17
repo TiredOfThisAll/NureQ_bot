@@ -10,7 +10,8 @@ from server.controller import Controller
 from server.models.update_context import UpdateContext
 from server.router import route
 from services.telegram_message_manager import TelegramMessageManager
-from services.logging import CompositeLogger, ConsoleLogger, FileLogger
+from services.logging import CompositeLogger, ConsoleLogger, FileLogger, \
+    LoggingLevel
 
 # configuration
 PROJECT_PATH = path.abspath(path.join(__file__, "..", ".."))
@@ -51,35 +52,48 @@ logger = CompositeLogger([
 ])
 
 # the 'game' loop that listens for new messages and responds to them
-while True:
-    time.sleep(0.1)
+try:
+    logger.log(LoggingLevel.INFO, "Bot started")
+    while True:
+        time.sleep(0.1)
 
-    updates = telegram_message_manager.get_latest_messages()
+        updates = telegram_message_manager.get_latest_messages()
 
-    with sqlite3.connect(DATABASE_PATH) as connection:
-        repository = Repository(connection)
-        controller = Controller(telegram_message_manager, repository, logger)
+        with sqlite3.connect(DATABASE_PATH) as connection:
+            repository = Repository(connection)
+            controller = Controller(telegram_message_manager, repository, logger)
 
-        # iterate over the latest messages for update in updates:
-        for update in updates:
-            update_context = UpdateContext.from_update(update)
-            target_handler = route(update_context)
-            if target_handler is None:
-                print(f"Could not route update: {update}")
-                continue
-            try:
-                target_handler(controller, update_context)
-            except KeyboardInterrupt:
-                exit()
-            except HTTPError as http_error:
-                print(
-                    "Encountered an HTTP error\n"
-                    + "Stack trace:\n"
-                    + f"{traceback.format_exc()}\n"
-                    + f"URL: {http_error.url}\n"
-                    + f"Response: {http_error.file.read().decode('UTF-8')}\n\n"
-                )
-                controller.handle_error_while_processing_update(update_context)
-            except Exception as error:
-                print(traceback.format_exc())
-                controller.handle_error_while_processing_update(update_context)
+            # iterate over the latest messages for update in updates:
+            for update in updates:
+                update_context = UpdateContext.from_update(update)
+                target_handler = route(update_context)
+                if target_handler is None:
+                    logger(
+                        LoggingLevel.ERROR,
+                        f"Could not route update: {update}"
+                    )
+                    continue
+                try:
+                    target_handler(controller, update_context)
+                except KeyboardInterrupt:
+                    exit()
+                except HTTPError as http_error:
+                    logger.log(
+                        LoggingLevel.ERROR,
+                        "Encountered an HTTP error\n"
+                        + "Stack trace:\n"
+                        + f"{traceback.format_exc()}\n"
+                        + f"URL: {http_error.url}\n"
+                        + "Response: "
+                        + f"{http_error.file.read().decode('UTF-8')}\n\n"
+                    )
+                    controller.handle_error_while_processing_update(
+                        update_context
+                    )
+                except Exception as error:
+                    logger.log(LoggingLevel.ERROR, traceback.format_exc())
+                    controller.handle_error_while_processing_update(
+                        update_context
+                    )
+finally:
+    logger.log(LoggingLevel.INFO, "Bot stopped")
