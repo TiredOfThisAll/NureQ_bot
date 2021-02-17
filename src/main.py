@@ -62,7 +62,11 @@ try:
 
         with sqlite3.connect(DATABASE_PATH) as connection:
             repository = Repository(connection)
-            controller = Controller(telegram_message_manager, repository, logger)
+            controller = Controller(
+                telegram_message_manager,
+                repository,
+                logger
+            )
 
             # iterate over the latest messages for update in updates:
             for update in updates:
