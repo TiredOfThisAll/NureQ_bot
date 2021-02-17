@@ -33,6 +33,7 @@ with open(TOKEN_PATH) as token_file:
 
 DATABASE_PATH = path.join(PROJECT_PATH, configuration["database"])
 LOGS_PATH = path.join(PROJECT_PATH, configuration["logs"])
+PAUSE_DURATION = configuration["pause"]
 
 # create DB schema if it doesn't exist yet
 with sqlite3.connect(DATABASE_PATH) as connection:
@@ -55,7 +56,7 @@ logger = CompositeLogger([
 try:
     logger.log(LoggingLevel.INFO, "Bot started")
     while True:
-        time.sleep(0.1)
+        time.sleep(PAUSE_DURATION)
 
         updates = telegram_message_manager.get_latest_messages()
 

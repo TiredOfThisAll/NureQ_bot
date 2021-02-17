@@ -1,5 +1,6 @@
 {
     "token": "config/token",
     "database": "nureq.db",
-    "logs": "logs.txt"
+    "logs": "logs.txt",
+    "pause": 0.1
 }
