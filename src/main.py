@@ -73,7 +73,7 @@ try:
                 update_context = UpdateContext.from_update(update)
                 target_handler = route(update_context)
                 if target_handler is None:
-                    logger(
+                    logger.log(
                         LoggingLevel.ERROR,
                         f"Could not route update: {update}"
                     )
