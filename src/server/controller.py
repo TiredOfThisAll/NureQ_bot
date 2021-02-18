@@ -2,8 +2,10 @@ import math
 import json
 import random
 
-from router import command_handler, response_handler, callback_handler, \
-    default_callback_handler, default_command_handler, default_response_handler
+from server.router import command_handler, response_handler, \
+    callback_handler, default_callback_handler, default_command_handler, \
+    default_response_handler
+from services.logging import LoggingLevel
 
 NEW_QUEUE_COMMAND_RESPONSE_TEXT \
     = "Введите имя новой очереди в ответ на это сообщение"
@@ -22,9 +24,10 @@ class ButtonCallbackType:
 
 
 class Controller:
-    def __init__(self, telegram_message_manager, repository):
+    def __init__(self, telegram_message_manager, repository, logger):
         self.telegram_message_manager = telegram_message_manager
         self.repository = repository
+        self.logger = logger
 
     @command_handler("/start")
     @command_handler("/start@NureQ_bot")
@@ -92,7 +95,7 @@ class Controller:
     def handle_new_queue_response(self, update_context):
         queue_name = update_context.message_text
         error = self.repository.create_queue(queue_name)
-        if error == "INTEGRITY_ERROR":
+        if error == "QUEUE_NAME_DUPLICATE":
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
                 f"Очередь с именем {queue_name} уже существует"
@@ -116,9 +119,7 @@ class Controller:
                 update_context.sender_user_info.username,
                 queue_id
             )
-            self.repository.commit()
             queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
-
             name = update_context.sender_user_info.get_formatted_name()
             if error == "DUPLICATE_MEMBERS":
                 self.telegram_message_manager.send_message(
@@ -127,11 +128,18 @@ class Controller:
                 )
                 return
             if error == "NO_QUEUE":
+                self.logger.log(
+                    LoggingLevel.WARN,
+                    f"Received an /addme request for a non-existent queue "
+                    + "with ID {queue_id}"
+                )
                 self.telegram_message_manager.send_message(
                     update_context.chat_id,
                     "Данной очереди не существует: " + queue_name
                 )
                 return
+            self.repository.refresh_queues_last_time_updated_on(queue_id)
+            self.repository.commit()
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
                 f"{name} добавлен(а) в очередь: {queue_name}"
@@ -160,6 +168,7 @@ class Controller:
                 queue_member.user_id,
                 queue_id
             )
+            self.repository.refresh_queues_last_time_updated_on(queue_id)
             self.repository.commit()
 
             name = queue_member.user_info.get_formatted_name()
@@ -193,6 +202,7 @@ class Controller:
                 queue_member.user_id,
                 queue_id
             )
+            self.repository.refresh_queues_last_time_updated_on(queue_id)
             self.repository.commit()
 
             name = queue_member.user_info.get_formatted_name()
@@ -222,6 +232,7 @@ class Controller:
                     f"{name} не состоит в данной очереди: {queue_name}"
                 )
                 return
+            self.repository.refresh_queues_last_time_updated_on(queue_id)
             self.repository.commit()
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
@@ -277,7 +288,7 @@ class Controller:
             queue_pagination_reply_markup \
                 = build_queue_pagination_reply_markup(
                     self.repository,
-                    page_index=page_index+1,
+                    page_index=page_index-1,
                     page_size=DEFAULT_QUEUES_PAGE_SIZE,
                     main_button_type=main_button_type
                 )
@@ -304,6 +315,11 @@ class Controller:
             queue_id = update_context.callback_query_data["queue_id"]
             queue_name = self.repository.get_queue_name_by_queue_id(queue_id)
             if queue_name is None:
+                self.logger.log(
+                    LoggingLevel.WARN,
+                    f"Received a /showqueue request for a non-existent queue "
+                    + "with ID {queue_id}"
+                )
                 self.telegram_message_manager.send_message(
                     update_context.chat_id,
                     f"Очереди с ID: {queue_id} не существует"
@@ -313,7 +329,7 @@ class Controller:
                 = self.repository.get_queue_members_by_queue_id(queue_id)
 
             if len(queue_members) != 0:
-                queue_description = f"{queue_name}:\n" + "".join(map(
+                queue_description = f"{queue_name}:\n" + "\n".join(map(
                     lambda member_index: member_index[1]
                     .get_formatted_queue_string(member_index[0] + 1),
                     enumerate(queue_members)
@@ -333,7 +349,10 @@ class Controller:
     @default_callback_handler
     def handle_unknown_callback(self, update_context):
         callback_type = update_context.callback_query_type
-        print(f"Received an unknown callback query type: {callback_type}")
+        self.logger.log(
+            LoggingLevel.ERROR,
+            f"Received an unknown callback query type: {callback_type}"
+        )
         self.telegram_message_manager.send_message(
             update_context.chat_id,
             "???"
@@ -345,16 +364,23 @@ class Controller:
     @default_command_handler
     @default_response_handler
     def handle_unknown_response(self, update_context):
+        self.logger.log(
+            LoggingLevel.WARN,
+            f"Received an invalid command/response: {update_context.update}"
+        )
         self.telegram_message_manager.send_message(
             update_context.chat_id,
             "???"
         )
 
     def handle_error_while_processing_update(self, update_context):
-        self.telegram_message_manager.send_message(
-            update_context.chat_id,
-            "Ошибка"
-        )
+        try:
+            self.telegram_message_manager.send_message(
+                update_context.chat_id,
+                "Ошибка"
+            )
+        except Exception:
+            pass
 
     def handle_generic_queue_command(
         self,

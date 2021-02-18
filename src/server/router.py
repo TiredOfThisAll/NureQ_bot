@@ -1,4 +1,4 @@
-from models.update_context import UpdateContext
+from server.models.update_context import UpdateContext
 
 
 registered_command_handlers = {}
