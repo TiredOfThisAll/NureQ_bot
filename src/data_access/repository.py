@@ -44,6 +44,8 @@ class Repository:
         except sqlite3.IntegrityError as integrity_error:
             if str(integrity_error) == "UNIQUE constraint failed: queues.name":
                 return "QUEUE_NAME_DUPLICATE"
+            if str(integrity_error) == "NOT NULL constraint failed: queues.name":
+                return "NOT_NULL_CONSTRAINT_FAILED"
             raise integrity_error
 
     def add_me_to_queue(

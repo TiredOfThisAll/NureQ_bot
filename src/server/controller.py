@@ -101,6 +101,12 @@ class Controller:
                 f"Очередь с именем {queue_name} уже существует"
             )
             return
+        if error == "NOT_NULL_CONSTRAINT_FAILED":
+            self.telegram_message_manager.send_message(
+                update_context.chat_id,
+                f"Имя очереди должно быть введено в текстовом формате"
+            )
+            return
         self.repository.commit()
 
         self.telegram_message_manager.send_message(
