@@ -98,6 +98,11 @@ class Controller:
     def handle_new_queue_response(self, update_context):
         queue_name = update_context.message_text
         if queue_name is None:
+            self.logger.log(
+                LoggingLevel.WARN,
+                "Received a non-text response to /newqueue command: "
+                + update_context.update
+            )
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
                 QUEUE_NAME_ONLY_TEXT_RESPONSE_TEXT,
@@ -140,8 +145,8 @@ class Controller:
             if error == "NO_QUEUE":
                 self.logger.log(
                     LoggingLevel.WARN,
-                    f"Received an /addme request for a non-existent queue "
-                    + "with ID {queue_id}"
+                    "Received an /addme request for a non-existent queue "
+                    + f"with ID {queue_id}"
                 )
                 self.telegram_message_manager.send_message(
                     update_context.chat_id,
