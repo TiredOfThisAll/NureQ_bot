@@ -21,7 +21,7 @@ class FileLogger:
         self.log_file_path = log_file_path
 
     def log(self, level, message):
-        with open(self.log_file_path, "a") as log_file:
+        with open(self.log_file_path, "a", encoding="UTF-8") as log_file:
             log_file.write(get_formatted_log(level, message))
 
 

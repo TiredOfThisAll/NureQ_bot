@@ -9,6 +9,8 @@ from services.logging import LoggingLevel
 
 NEW_QUEUE_COMMAND_RESPONSE_TEXT \
     = "Введите имя новой очереди в ответ на это сообщение"
+QUEUE_NAME_ONLY_TEXT_RESPONSE_TEXT \
+    = "Имя очереди должно быть введено в текстовом формате"
 DEFAULT_QUEUES_PAGE_SIZE = 3
 
 
@@ -92,8 +94,21 @@ class Controller:
         )
 
     @response_handler(NEW_QUEUE_COMMAND_RESPONSE_TEXT)
+    @response_handler(QUEUE_NAME_ONLY_TEXT_RESPONSE_TEXT)
     def handle_new_queue_response(self, update_context):
         queue_name = update_context.message_text
+        if queue_name is None:
+            self.logger.log(
+                LoggingLevel.WARN,
+                "Received a non-text response to /newqueue command: "
+                + update_context.update
+            )
+            self.telegram_message_manager.send_message(
+                update_context.chat_id,
+                QUEUE_NAME_ONLY_TEXT_RESPONSE_TEXT,
+                reply_markup={"force_reply": True}
+            )
+            return
         error = self.repository.create_queue(queue_name)
         if error == "QUEUE_NAME_DUPLICATE":
             self.telegram_message_manager.send_message(
@@ -130,8 +145,8 @@ class Controller:
             if error == "NO_QUEUE":
                 self.logger.log(
                     LoggingLevel.WARN,
-                    f"Received an /addme request for a non-existent queue "
-                    + "with ID {queue_id}"
+                    "Received an /addme request for a non-existent queue "
+                    + f"with ID {queue_id}"
                 )
                 self.telegram_message_manager.send_message(
                     update_context.chat_id,
