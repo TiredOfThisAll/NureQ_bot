@@ -332,8 +332,8 @@ class Controller:
             if queue_name is None:
                 self.logger.log(
                     LoggingLevel.WARN,
-                    f"Received a /showqueue request for a non-existent queue "
-                    + "with ID {queue_id}"
+                    "Received a /showqueue request for a non-existent queue "
+                    + f"with ID {queue_id}"
                 )
                 self.telegram_message_manager.send_message(
                     update_context.chat_id,
