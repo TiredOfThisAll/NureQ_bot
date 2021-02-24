@@ -9,7 +9,7 @@ from data_access.repository import Repository
 from server.controller import Controller
 from server.models.update_context import UpdateContext
 from server.router import route
-from services.telegram_message_manager import TelegramMessageManager
+from services.telegram.message_manager import TelegramMessageManager
 from services.logging import CompositeLogger, ConsoleLogger, FileLogger, \
     LoggingLevel
 

@@ -6,6 +6,7 @@ from server.router import command_handler, response_handler, \
     callback_handler, default_callback_handler, default_command_handler, \
     default_response_handler
 from services.logging import LoggingLevel
+from services.telegram.message_entities_builder import MessageEntitiesBuilder
 
 NEW_QUEUE_COMMAND_RESPONSE_TEXT \
     = "Введите имя новой очереди в ответ на это сообщение"
@@ -332,8 +333,8 @@ class Controller:
             if queue_name is None:
                 self.logger.log(
                     LoggingLevel.WARN,
-                    f"Received a /showqueue request for a non-existent queue "
-                    + "with ID {queue_id}"
+                    "Received a /showqueue request for a non-existent queue "
+                    + f"with ID {queue_id}"
                 )
                 self.telegram_message_manager.send_message(
                     update_context.chat_id,
@@ -343,18 +344,24 @@ class Controller:
             queue_members \
                 = self.repository.get_queue_members_by_queue_id(queue_id)
 
+            message_builder = MessageEntitiesBuilder(f"{queue_name}:\n")
             if len(queue_members) != 0:
-                queue_description = f"{queue_name}:\n" + "\n".join(map(
-                    lambda member_index: member_index[1]
-                    .get_formatted_queue_string(member_index[0] + 1),
-                    enumerate(queue_members)
-                ))
+                for index, queue_member in enumerate(queue_members):
+                    name = queue_member.user_info.get_formatted_name()
+                    type = "strikethrough" if queue_member.crossed else None
+                    message_builder = message_builder.add_text(
+                        f"{index + 1}. {name}\n",
+                        type=type
+                    )
             else:
-                queue_description = f"{queue_name}:\nОчередь пуста"
+                message_builder = message_builder.add_text("Очередь пуста")
+
+            queue_description, entities = message_builder.build()
 
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
-                queue_description
+                queue_description,
+                entities=entities
             )
         finally:
             self.telegram_message_manager.answer_callback_query(
