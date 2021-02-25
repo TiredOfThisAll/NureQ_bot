@@ -71,6 +71,7 @@ def route(update_context):
             registered_default_callback_handler
         )
 
+
 def get_or_match(dictionary, target, fallback_value):
     for k, v in dictionary.items():
         if target == k or re.match(k.replace("{}", ".*"), target):

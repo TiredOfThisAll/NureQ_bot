@@ -565,10 +565,12 @@ def make_queue_choice_buttons(
         },
     ]]
 
+
 def truncate(source, length, placeholder="..."):
     if len(source) > length:
         return source[:length - len(placeholder)] + placeholder
     return source
+
 
 def truncate_entities(entities, length):
     return list(filter(
