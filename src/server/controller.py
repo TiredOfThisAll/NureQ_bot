@@ -13,7 +13,8 @@ NEW_QUEUE_COMMAND_RESPONSE_TEXT \
     = "Введите имя новой очереди в ответ на это сообщение"
 QUEUE_NAME_ONLY_TEXT_RESPONSE_TEXT \
     = "Имя очереди должно быть введено в текстовом формате"
-QUEUE_NAME_TOO_LONG_RESPONSE_TEXT = "Имя очереди не должно длинее {} символов"
+QUEUE_NAME_TOO_LONG_RESPONSE_TEXT \
+    = "Имя очереди не должно быть длиннее {} символов"
 DEFAULT_QUEUES_PAGE_SIZE = 3
 DEFAULT_TRUNCATED_MESSAGE_PLACEHOLDER = "...\n[Обрезано]"
 
