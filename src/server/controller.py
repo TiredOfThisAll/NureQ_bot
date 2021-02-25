@@ -7,6 +7,7 @@ from server.router import command_handler, response_handler, \
     default_response_handler
 from services.logging import LoggingLevel
 from services.telegram.message_entities_builder import MessageEntitiesBuilder
+from services.telegram.message_manager import MAX_MESSAGE_LENGTH
 
 NEW_QUEUE_COMMAND_RESPONSE_TEXT \
     = "Введите имя новой очереди в ответ на это сообщение"
@@ -14,6 +15,7 @@ QUEUE_NAME_ONLY_TEXT_RESPONSE_TEXT \
     = "Имя очереди должно быть введено в текстовом формате"
 QUEUE_NAME_TOO_LONG_RESPONSE_TEXT = "Имя очереди не должно длинее {} символов"
 DEFAULT_QUEUES_PAGE_SIZE = 3
+DEFAULT_TRUNCATED_MESSAGE_PLACEHOLDER = "...\n[Обрезано]"
 
 
 class ButtonCallbackType:
@@ -386,11 +388,28 @@ class Controller:
                 message_builder = message_builder.add_text("Очередь пуста")
 
             queue_description, entities = message_builder.build()
+            truncated_queue_description = truncate(
+                queue_description,
+                MAX_MESSAGE_LENGTH,
+                DEFAULT_TRUNCATED_MESSAGE_PLACEHOLDER
+            )
+            truncated_entities = truncate_entities(
+                entities,
+                MAX_MESSAGE_LENGTH
+            )
+            if truncated_queue_description != queue_description:
+                self.logger.log(
+                    LoggingLevel.WARN,
+                    "Forced to truncate message to fit the message limit of "
+                    + f"{MAX_MESSAGE_LENGTH} UTF-8 characters. Original "
+                    + f"message: {queue_description}\nOriginal entities: "
+                    + f"{entities}"
+                )
 
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
-                queue_description,
-                entities=entities
+                truncated_queue_description,
+                entities=truncated_entities
             )
         finally:
             self.telegram_message_manager.answer_callback_query(
@@ -544,3 +563,14 @@ def make_queue_choice_buttons(
                 }),
         },
     ]]
+
+def truncate(source, length, placeholder="..."):
+    if len(source) > length:
+        return source[:length - len(placeholder)] + placeholder
+    return source
+
+def truncate_entities(entities, length):
+    return list(filter(
+        lambda entity: entity["offset"] + entity["length"] <= length,
+        entities
+    ))

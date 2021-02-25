@@ -3,6 +3,7 @@ from urllib.parse import urlencode
 import json
 
 TELEGRAM_BOT_API_URL = "https://api.telegram.org/bot"
+MAX_MESSAGE_LENGTH = 4096
 
 
 class TelegramMessageManager:
