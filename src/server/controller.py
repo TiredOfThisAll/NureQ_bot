@@ -12,6 +12,7 @@ NEW_QUEUE_COMMAND_RESPONSE_TEXT \
     = "Введите имя новой очереди в ответ на это сообщение"
 QUEUE_NAME_ONLY_TEXT_RESPONSE_TEXT \
     = "Имя очереди должно быть введено в текстовом формате"
+QUEUE_NAME_TOO_LONG_RESPONSE_TEXT = "Имя очереди не должно длинее {} символов"
 DEFAULT_QUEUES_PAGE_SIZE = 3
 
 
@@ -26,11 +27,23 @@ class ButtonCallbackType:
     REMOVE_ME = 8
 
 
+class ControllerConfiguration:
+    def __init__(self, queue_name_limit):
+        self.queue_name_limit = queue_name_limit
+
+
 class Controller:
-    def __init__(self, telegram_message_manager, repository, logger):
+    def __init__(
+        self,
+        telegram_message_manager,
+        repository,
+        logger,
+        configuration
+    ):
         self.telegram_message_manager = telegram_message_manager
         self.repository = repository
         self.logger = logger
+        self.configuration = configuration
 
     @command_handler("/start")
     @command_handler("/start@NureQ_bot")
@@ -96,6 +109,7 @@ class Controller:
 
     @response_handler(NEW_QUEUE_COMMAND_RESPONSE_TEXT)
     @response_handler(QUEUE_NAME_ONLY_TEXT_RESPONSE_TEXT)
+    @response_handler(QUEUE_NAME_TOO_LONG_RESPONSE_TEXT)
     def handle_new_queue_response(self, update_context):
         queue_name = update_context.message_text
         if queue_name is None:
@@ -107,6 +121,21 @@ class Controller:
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
                 QUEUE_NAME_ONLY_TEXT_RESPONSE_TEXT,
+                reply_markup={"force_reply": True}
+            )
+            return
+        if len(queue_name) > self.configuration.queue_name_limit:
+            self.logger.log(
+                LoggingLevel.WARN,
+                "Received a response to /newqueue command that exceeds the "
+                + f"configured limit of {self.configuration.queue_name_limit} "
+                + f"UTF-8 characters: {queue_name}"
+            )
+            self.telegram_message_manager.send_message(
+                update_context.chat_id,
+                QUEUE_NAME_TOO_LONG_RESPONSE_TEXT.format(
+                    self.configuration.queue_name_limit
+                ),
                 reply_markup={"force_reply": True}
             )
             return
