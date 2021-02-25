@@ -6,7 +6,7 @@ import traceback
 from urllib.error import HTTPError
 
 from data_access.repository import Repository
-from server.controller import Controller
+from server.controller import Controller, ControllerConfiguration
 from server.models.update_context import UpdateContext
 from server.router import route
 from services.telegram.message_manager import TelegramMessageManager
@@ -34,6 +34,7 @@ with open(TOKEN_PATH) as token_file:
 DATABASE_PATH = path.join(PROJECT_PATH, configuration["database"])
 LOGS_PATH = path.join(PROJECT_PATH, configuration["logs"])
 PAUSE_DURATION = configuration["pause"]
+QUEUE_NAME_LIMIT = configuration["queue_name_limit"]
 
 # create DB schema if it doesn't exist yet
 with sqlite3.connect(DATABASE_PATH) as connection:
@@ -65,7 +66,8 @@ try:
             controller = Controller(
                 telegram_message_manager,
                 repository,
-                logger
+                logger,
+                ControllerConfiguration(queue_name_limit=QUEUE_NAME_LIMIT)
             )
 
             # iterate over the latest messages for update in updates:

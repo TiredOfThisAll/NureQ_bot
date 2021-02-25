@@ -1,3 +1,5 @@
+import re
+
 from server.models.update_context import UpdateContext
 
 
@@ -53,7 +55,8 @@ def route(update_context):
     if update_context.type == UpdateContext.Type.MESSAGE:
         # either it is a response to a bot's message
         if update_context.is_reply:
-            return registered_response_handlers.get(
+            return get_or_match(
+                registered_response_handlers,
                 update_context.response_text,
                 registered_default_response_handler
             )
@@ -67,3 +70,10 @@ def route(update_context):
             update_context.callback_query_type,
             registered_default_callback_handler
         )
+
+
+def get_or_match(dictionary, target, fallback_value):
+    for k, v in dictionary.items():
+        if target == k or re.match(k.replace("{}", ".*"), target):
+            return v
+    return None
