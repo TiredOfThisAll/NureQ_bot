@@ -55,6 +55,9 @@ def route(update_context):
     if update_context.type == UpdateContext.Type.MESSAGE:
         # either it is a response to a bot's message
         if update_context.is_reply:
+            if update_context.responding_to_username != "some_one_new_test_bot":
+                # ignore replies to messages other than the bot's
+                return noop_handler
             return get_or_match(
                 registered_response_handlers,
                 update_context.response_text,
@@ -77,3 +80,7 @@ def get_or_match(dictionary, target, fallback_value):
         if target == k or re.match(k.replace("{}", ".*"), target):
             return v
     return None
+
+
+def noop_handler(self, update_context):
+    pass

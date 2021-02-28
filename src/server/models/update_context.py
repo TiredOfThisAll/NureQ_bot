@@ -24,6 +24,10 @@ class UpdateContext:
             update_context.response_text = update_context.message \
                 .get("reply_to_message", {}) \
                 .get("text")
+            update_context.responding_to_username = update_context.message \
+                .get("reply_to_message", {}) \
+                .get("from", {}) \
+                .get("username")
             update_context.chat_id = update_context.message["chat"]["id"]
         elif "callback_query" in update_context.update:
             update_context.type = UpdateContext.Type.CALLBACK_QUERY
