@@ -51,6 +51,7 @@ def default_callback_handler(function):
     registered_default_callback_handler = function
     return function
 
+
 def default_other_handler(function):
     global registered_default_other_handler
     registered_default_other_handler = function
