@@ -55,7 +55,7 @@ def route(update_context):
     if update_context.type == UpdateContext.Type.MESSAGE:
         # either it is a response to a bot's message
         if update_context.is_reply:
-            if update_context.responding_to_username != "some_one_new_test_bot":
+            if update_context.responding_to_username != "NureQ_bot":
                 # ignore replies to messages other than the bot's
                 return noop_handler
             return get_or_match(
