@@ -75,11 +75,11 @@ def route(update_context):
         )
 
 
-def get_or_match(dictionary, target, fallback_value):
+def get_or_match(dictionary, target, fallback_value=None):
     for k, v in dictionary.items():
         if target == k or re.match(k.replace("{}", ".*"), target):
             return v
-    return None
+    return fallback_value
 
 
 def noop_handler(self, update_context):
