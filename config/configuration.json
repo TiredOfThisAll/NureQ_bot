@@ -2,5 +2,6 @@
     "token": "config/token",
     "database": "nureq.db",
     "logs": "logs.txt",
-    "pause": 0.1
+    "pause": 0.1,
+    "queue_name_limit": 100
 }

@@ -4,12 +4,20 @@ import random
 
 from server.router import command_handler, response_handler, \
     callback_handler, default_callback_handler, default_command_handler, \
-    default_response_handler
+    default_response_handler, default_other_handler
+from server.models.update_context import UpdateContext
 from services.logging import LoggingLevel
+from services.telegram.message_entities_builder import MessageEntitiesBuilder
+from services.telegram.message_manager import MAX_MESSAGE_LENGTH
 
 NEW_QUEUE_COMMAND_RESPONSE_TEXT \
     = "Введите имя новой очереди в ответ на это сообщение"
+QUEUE_NAME_ONLY_TEXT_RESPONSE_TEXT \
+    = "Имя очереди должно быть введено в текстовом формате"
+QUEUE_NAME_TOO_LONG_RESPONSE_TEXT \
+    = "Имя очереди не должно быть длиннее {} символов"
 DEFAULT_QUEUES_PAGE_SIZE = 3
+DEFAULT_TRUNCATED_MESSAGE_PLACEHOLDER = "...\n[Обрезано]"
 
 
 class ButtonCallbackType:
@@ -23,11 +31,23 @@ class ButtonCallbackType:
     REMOVE_ME = 8
 
 
+class ControllerConfiguration:
+    def __init__(self, queue_name_limit):
+        self.queue_name_limit = queue_name_limit
+
+
 class Controller:
-    def __init__(self, telegram_message_manager, repository, logger):
+    def __init__(
+        self,
+        telegram_message_manager,
+        repository,
+        logger,
+        configuration
+    ):
         self.telegram_message_manager = telegram_message_manager
         self.repository = repository
         self.logger = logger
+        self.configuration = configuration
 
     @command_handler("/start")
     @command_handler("/start@NureQ_bot")
@@ -43,7 +63,8 @@ class Controller:
         self.telegram_message_manager.send_message(
             update_context.chat_id,
             NEW_QUEUE_COMMAND_RESPONSE_TEXT,
-            reply_markup={"force_reply": True}
+            reply_markup={"force_reply": True, "selective": True},
+            reply_to_message_id=update_context.message_id
         )
 
     @command_handler("/showqueue")
@@ -92,8 +113,39 @@ class Controller:
         )
 
     @response_handler(NEW_QUEUE_COMMAND_RESPONSE_TEXT)
+    @response_handler(QUEUE_NAME_ONLY_TEXT_RESPONSE_TEXT)
+    @response_handler(QUEUE_NAME_TOO_LONG_RESPONSE_TEXT)
     def handle_new_queue_response(self, update_context):
+        if update_context.response_type != UpdateContext.Type.TEXT_MESSAGE:
+            self.logger.log(
+                LoggingLevel.WARN,
+                "Received a non-text response to /newqueue command: "
+                + str(update_context.update)
+            )
+            self.telegram_message_manager.send_message(
+                update_context.chat_id,
+                QUEUE_NAME_ONLY_TEXT_RESPONSE_TEXT,
+                reply_markup={"force_reply": True, "selective": True},
+                reply_to_message_id=update_context.message_id
+            )
+            return
         queue_name = update_context.message_text
+        if len(queue_name) > self.configuration.queue_name_limit:
+            self.logger.log(
+                LoggingLevel.WARN,
+                "Received a response to /newqueue command that exceeds the "
+                + f"configured limit of {self.configuration.queue_name_limit} "
+                + f"UTF-8 characters: {queue_name}"
+            )
+            self.telegram_message_manager.send_message(
+                update_context.chat_id,
+                QUEUE_NAME_TOO_LONG_RESPONSE_TEXT.format(
+                    self.configuration.queue_name_limit
+                ),
+                reply_markup={"force_reply": True, "selective": True},
+                reply_to_message_id=update_context.message_id
+            )
+            return
         error = self.repository.create_queue(queue_name)
         if error == "QUEUE_NAME_DUPLICATE":
             self.telegram_message_manager.send_message(
@@ -130,8 +182,8 @@ class Controller:
             if error == "NO_QUEUE":
                 self.logger.log(
                     LoggingLevel.WARN,
-                    f"Received an /addme request for a non-existent queue "
-                    + "with ID {queue_id}"
+                    "Received an /addme request for a non-existent queue "
+                    + f"with ID {queue_id}"
                 )
                 self.telegram_message_manager.send_message(
                     update_context.chat_id,
@@ -317,8 +369,8 @@ class Controller:
             if queue_name is None:
                 self.logger.log(
                     LoggingLevel.WARN,
-                    f"Received a /showqueue request for a non-existent queue "
-                    + "with ID {queue_id}"
+                    "Received a /showqueue request for a non-existent queue "
+                    + f"with ID {queue_id}"
                 )
                 self.telegram_message_manager.send_message(
                     update_context.chat_id,
@@ -328,18 +380,41 @@ class Controller:
             queue_members \
                 = self.repository.get_queue_members_by_queue_id(queue_id)
 
+            message_builder = MessageEntitiesBuilder(f"{queue_name}:\n")
             if len(queue_members) != 0:
-                queue_description = f"{queue_name}:\n" + "\n".join(map(
-                    lambda member_index: member_index[1]
-                    .get_formatted_queue_string(member_index[0] + 1),
-                    enumerate(queue_members)
-                ))
+                for index, queue_member in enumerate(queue_members):
+                    name = queue_member.user_info.get_formatted_name()
+                    type = "strikethrough" if queue_member.crossed else None
+                    message_builder = message_builder.add_text(
+                        f"{index + 1}. {name}\n",
+                        type=type
+                    )
             else:
-                queue_description = f"{queue_name}:\nОчередь пуста"
+                message_builder = message_builder.add_text("Очередь пуста")
+
+            queue_description, entities = message_builder.build()
+            truncated_queue_description = truncate(
+                queue_description,
+                MAX_MESSAGE_LENGTH,
+                DEFAULT_TRUNCATED_MESSAGE_PLACEHOLDER
+            )
+            truncated_entities = truncate_entities(
+                entities,
+                MAX_MESSAGE_LENGTH
+            )
+            if truncated_queue_description != queue_description:
+                self.logger.log(
+                    LoggingLevel.WARN,
+                    "Forced to truncate message to fit the message limit of "
+                    + f"{MAX_MESSAGE_LENGTH} UTF-8 characters. Original "
+                    + f"message: {queue_description}\nOriginal entities: "
+                    + f"{entities}"
+                )
 
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
-                queue_description
+                truncated_queue_description,
+                entities=truncated_entities
             )
         finally:
             self.telegram_message_manager.answer_callback_query(
@@ -371,6 +446,13 @@ class Controller:
         self.telegram_message_manager.send_message(
             update_context.chat_id,
             "???"
+        )
+
+    @default_other_handler
+    def handle_other_updates(self, update_context):
+        self.logger.log(
+            LoggingLevel.WARN,
+            f"Received an update of type 'other': {update_context.update}"
         )
 
     def handle_error_while_processing_update(self, update_context):
@@ -493,3 +575,16 @@ def make_queue_choice_buttons(
                 }),
         },
     ]]
+
+
+def truncate(source, length, placeholder="..."):
+    if len(source) > length:
+        return source[:length - len(placeholder)] + placeholder
+    return source
+
+
+def truncate_entities(entities, length):
+    return list(filter(
+        lambda entity: entity["offset"] + entity["length"] <= length,
+        entities
+    ))

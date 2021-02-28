@@ -3,6 +3,7 @@ from urllib.parse import urlencode
 import json
 
 TELEGRAM_BOT_API_URL = "https://api.telegram.org/bot"
+MAX_MESSAGE_LENGTH = 4096
 
 
 class TelegramMessageManager:
@@ -33,7 +34,9 @@ class TelegramMessageManager:
         chat_id,
         response_text,
         reply_markup=None,
-        parse_mode="HTML"
+        parse_mode=None,
+        entities=None,
+        reply_to_message_id=None
     ):
         query_parameters = {
             "chat_id": chat_id,
@@ -43,6 +46,10 @@ class TelegramMessageManager:
             query_parameters["parse_mode"] = parse_mode
         if reply_markup is not None:
             query_parameters["reply_markup"] = json.dumps(reply_markup)
+        if entities is not None:
+            query_parameters["entities"] = json.dumps(entities)
+        if reply_to_message_id is not None:
+            query_parameters["reply_to_message_id"] = reply_to_message_id
         send_message_url = TELEGRAM_BOT_API_URL + self.token \
             + "/sendMessage?" + urlencode(query_parameters)
         with urlopen(send_message_url):
