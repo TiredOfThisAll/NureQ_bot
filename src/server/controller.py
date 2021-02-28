@@ -5,6 +5,7 @@ import random
 from server.router import command_handler, response_handler, \
     callback_handler, default_callback_handler, default_command_handler, \
     default_response_handler, default_other_handler
+from server.models.update_context import UpdateContext
 from services.logging import LoggingLevel
 from services.telegram.message_entities_builder import MessageEntitiesBuilder
 from services.telegram.message_manager import MAX_MESSAGE_LENGTH
@@ -62,7 +63,8 @@ class Controller:
         self.telegram_message_manager.send_message(
             update_context.chat_id,
             NEW_QUEUE_COMMAND_RESPONSE_TEXT,
-            reply_markup={"force_reply": True}
+            reply_markup={"force_reply": True, "selective": True},
+            reply_to_message_id=update_context.message_id
         )
 
     @command_handler("/showqueue")
@@ -114,19 +116,20 @@ class Controller:
     @response_handler(QUEUE_NAME_ONLY_TEXT_RESPONSE_TEXT)
     @response_handler(QUEUE_NAME_TOO_LONG_RESPONSE_TEXT)
     def handle_new_queue_response(self, update_context):
-        queue_name = update_context.message_text
-        if queue_name is None:
+        if update_context.response_type != UpdateContext.Type.TEXT_MESSAGE:
             self.logger.log(
                 LoggingLevel.WARN,
                 "Received a non-text response to /newqueue command: "
-                + update_context.update
+                + str(update_context.update)
             )
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
                 QUEUE_NAME_ONLY_TEXT_RESPONSE_TEXT,
-                reply_markup={"force_reply": True}
+                reply_markup={"force_reply": True, "selective": True},
+                reply_to_message_id=update_context.message_id
             )
             return
+        queue_name = update_context.message_text
         if len(queue_name) > self.configuration.queue_name_limit:
             self.logger.log(
                 LoggingLevel.WARN,
@@ -139,7 +142,8 @@ class Controller:
                 QUEUE_NAME_TOO_LONG_RESPONSE_TEXT.format(
                     self.configuration.queue_name_limit
                 ),
-                reply_markup={"force_reply": True}
+                reply_markup={"force_reply": True, "selective": True},
+                reply_to_message_id=update_context.message_id
             )
             return
         error = self.repository.create_queue(queue_name)
