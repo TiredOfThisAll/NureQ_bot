@@ -4,7 +4,7 @@ import random
 
 from server.router import command_handler, response_handler, \
     callback_handler, default_callback_handler, default_command_handler, \
-    default_response_handler
+    default_response_handler, default_other_handler
 from services.logging import LoggingLevel
 from services.telegram.message_entities_builder import MessageEntitiesBuilder
 from services.telegram.message_manager import MAX_MESSAGE_LENGTH
@@ -442,6 +442,13 @@ class Controller:
         self.telegram_message_manager.send_message(
             update_context.chat_id,
             "???"
+        )
+
+    @default_other_handler
+    def handle_other_updates(self, update_context):
+        self.logger.log(
+            LoggingLevel.WARN,
+            f"Received an update of type 'other': {update_context.update}"
         )
 
     def handle_error_while_processing_update(self, update_context):
