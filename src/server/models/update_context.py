@@ -24,18 +24,20 @@ class UpdateContext:
             )
             update_context.message_text = update_context.message.get("text")
             update_context.chat_id = update_context.message["chat"]["id"]
+            update_context.message_id = update["message"]["message_id"]
         # if is a reply
         elif update.get("message", {}).get("reply_to_message") is not None:
             update_context.type = UpdateContext.Type.RESPONSE
             update_context.message = update["message"]
             update_context.chat_id = update["message"]["chat"]["id"]
-            update_context.responding_to_username = update["message"] \
-                ["reply_to_message"] \
-                ["from"] \
+            update_context.responding_to_username = update.get("message") \
+                .get("reply_to_message") \
+                .get("from") \
                 .get("username")
-            update_context.response_text = update["message"] \
-                ["reply_to_message"] \
+            update_context.response_text = update.get("message") \
+                .get("reply_to_message") \
                 .get("text")
+            update_context.message_id = update["message"]["message_id"]
             if update["message"].get("text") is not None:
                 update_context.response_type = UpdateContext.Type.TEXT_MESSAGE
                 update_context.message_text = update["message"]["text"]
