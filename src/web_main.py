@@ -23,6 +23,7 @@ app = Flask(
     template_folder=path.join(PROJECT_PATH, "src", "web", "templates")
 )
 
+
 class Context:
     def __init__(self):
         self.connection = sqlite3.connect(DATABASE_PATH)
@@ -34,10 +35,12 @@ class Context:
     def __exit__(self):
         self.connection.close()
 
+
 def inject_context():
     if "context" not in g:
         g.context = Context()
     return g.context
+
 
 @app.teardown_appcontext
 def teardown_context(exception):
@@ -45,10 +48,13 @@ def teardown_context(exception):
     if context is not None:
         context.__exit__()
 
+
 context = LocalProxy(inject_context)
+
 
 @app.route("/")
 def queues():
     return render_template("queues.html")
+
 
 app.run()
