@@ -1,6 +1,6 @@
 import re
 
-from server.models.update_context import UpdateContext
+from bot.server.models.update_context import UpdateContext
 
 
 registered_command_handlers = {}

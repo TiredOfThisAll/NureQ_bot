@@ -2,10 +2,10 @@ import math
 import json
 import random
 
-from server.router import command_handler, response_handler, \
+from bot.server.router import command_handler, response_handler, \
     callback_handler, default_callback_handler, default_command_handler, \
     default_response_handler, default_other_handler
-from server.models.update_context import UpdateContext
+from bot.server.models.update_context import UpdateContext
 from services.logging import LoggingLevel
 from services.telegram.message_entities_builder import MessageEntitiesBuilder
 from services.telegram.message_manager import MAX_MESSAGE_LENGTH

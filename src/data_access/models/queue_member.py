@@ -1,4 +1,4 @@
-from server.models.user_info import UserInfo
+from bot.server.models.user_info import UserInfo
 
 
 class QueueMember:

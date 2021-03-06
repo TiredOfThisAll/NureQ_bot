@@ -6,9 +6,9 @@ import traceback
 from urllib.error import HTTPError
 
 from data_access.repository import Repository
-from server.controller import Controller, ControllerConfiguration
-from server.models.update_context import UpdateContext
-from server.router import route
+from bot.server.controller import Controller, ControllerConfiguration
+from bot.server.models.update_context import UpdateContext
+from bot.server.router import route
 from services.telegram.message_manager import TelegramMessageManager
 from services.logging import CompositeLogger, ConsoleLogger, FileLogger, \
     LoggingLevel
