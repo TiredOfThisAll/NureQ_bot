@@ -54,7 +54,8 @@ context = LocalProxy(inject_context)
 
 @app.route("/")
 def queues():
-    return render_template("queues.html")
+    return render_template("queues.html", queues=context.repository
+                           .get_queue_page_view(1, 10))
 
 
 app.run()
