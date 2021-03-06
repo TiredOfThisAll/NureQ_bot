@@ -1,4 +1,32 @@
 {% extends "layout.html" %}
 {% block content %}
     <h1>Queues</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>
+                    ID
+                </th>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Last Modified
+                </th>
+                <th>
+                    Number of Members
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for queue in queues %}
+                <tr>
+                    <td>{{ queue.id }}</td>
+                    <td>{{ queue.name }}</td>
+                    <td>{{ queue.get_formatted_last_updated_on() }}</td>
+                    <td>{{ queue.number_of_members }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 {% endblock content %}
