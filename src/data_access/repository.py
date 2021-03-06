@@ -3,6 +3,7 @@ from datetime import datetime
 
 from data_access.models.queue import Queue
 from data_access.models.queue_member import QueueMember
+from web.models.queue_view import QueueView
 
 
 class Repository:
@@ -163,6 +164,19 @@ class Repository:
             SET last_updated_on = ?
             WHERE id = ?
         """, (datetime.utcnow(), queue_id))
+
+    def get_queue_page_view(self, page_index, page_size):
+        skip_amount = (page_index - 1) * page_size
+        queue_tuples = self.cursor.execute("""
+            SELECT queues.id, queues.name, queues.last_updated_on,
+                COUNT(queue_members.id)
+            FROM queues
+            LEFT JOIN queue_members ON queues.id == queue_members.queue_id
+            GROUP BY queues.id, queues.name, queues.last_updated_on
+            ORDER BY queues.id
+            LIMIT ?, ?
+        """, (skip_amount, page_size)).fetchall()
+        return list(map(QueueView.from_tuple, queue_tuples))
 
     def commit(self):
         self.connection.commit()
