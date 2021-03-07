@@ -10,10 +10,10 @@
 
     <body>
         <header class="row bg-primary bg-gradient text-light px-3">
-            <div class="col-3 row align-items-center py-2">
+            <a class="link-light text-decoration-none col-3 row align-items-center py-2" href="{{ url_for('root') }}">
                 <img class="rounded-circle img-fluid col-3" src="{{ url_for('static', filename='logo.jpg') }}">
                 <div class="col-9 fs-3">NureQ Admin</div>
-            </div>
+            </a>
             <nav class="col-9 align-items-stretch row">
                 <div class="d-flex col-auto align-items-center {{
                     'current-page-link'
