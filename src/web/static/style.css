@@ -1,9 +1,13 @@
-nav > div:hover {
+nav > div:hover,
+nav > div.current-page-link {
     background-color: white;
 }
-nav > div:hover > a {
+
+nav > div:hover > a,
+nav > div.current-page-link > a {
     color: black;
 }
+
 nav > div > a {
     color: white;
 }

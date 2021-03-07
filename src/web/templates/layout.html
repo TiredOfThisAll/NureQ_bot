@@ -15,14 +15,12 @@
                 <div class="col-9 fs-3">NureQ Admin</div>
             </div>
             <nav class="col-9 align-items-stretch row">
-                <div class="d-flex col-auto align-items-center">
-                    <a class="text-decoration-none fs-5" href="#">Queues</a>
-                </div>
-                <div class="d-flex col-auto align-items-center">
-                    <a class="text-decoration-none fs-5" href="#">Queue Members</a>
-                </div>
-                <div class="d-flex col-auto align-items-center">
-                    <a class="text-decoration-none fs-5" href="#">Log in</a>
+                <div class="d-flex col-auto align-items-center {{
+                    'current-page-link'
+                    if url_for(request.endpoint) in [url_for('root'), url_for('queues')]
+                    else ''
+                }}">
+                    <a class="text-decoration-none fs-5" href="{{ url_for('queues') }}">Queues</a>
                 </div>
             </nav>
         </header>

@@ -53,7 +53,8 @@ def teardown_context(exception):
 context = LocalProxy(inject_context)
 
 
-@app.route("/")
+@app.route("/", endpoint="root")
+@app.route("/queues", endpoint="queues")
 def queues():
     return render_template(
         "queues.html",
