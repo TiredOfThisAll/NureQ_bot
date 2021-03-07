@@ -8,15 +8,15 @@
     </head>
 
     <body>
-        <header>
-            <div class="logo">
-                <img src="{{ url_for('static', filename='logo.jpg') }}">
-                <p>NureQ Admin</p>
+        <header class="row bg-primary bg-gradient text-light px-3 py-2">
+            <div class="col-3 row align-items-center">
+                <img class="rounded-circle img-fluid col-3" src="{{ url_for('static', filename='logo.jpg') }}">
+                <div class="col-9 fs-3">NureQ Admin</div>
             </div>
-            <nav>
-                <a href="#">Queues</a>
-                <a href="#">Queue Members</a>
-                <a href="#">Log in</a>
+            <nav class="col-9 align-items-center row">
+                <div class="col-auto"><a class="link-light text-decoration-none" href="#">Queues</a></div>
+                <div class="col-auto"><a class="link-light text-decoration-none" href="#">Queue Members</a></div>
+                <div class="col-auto"><a class="link-light text-decoration-none" href="#">Log in</a></div>
             </nav>
         </header>
         <main class="container">
