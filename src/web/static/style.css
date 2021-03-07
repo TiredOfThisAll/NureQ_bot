@@ -1,0 +1,9 @@
+nav > div:hover {
+    background-color: white;
+}
+nav > div:hover > a {
+    color: black;
+}
+nav > div > a {
+    color: white;
+}

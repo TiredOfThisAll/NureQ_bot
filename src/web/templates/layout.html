@@ -4,19 +4,26 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+        <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
         <title>NureQ Admin - Queues</title>
     </head>
 
     <body>
-        <header class="row bg-primary bg-gradient text-light px-3 py-2">
-            <div class="col-3 row align-items-center">
+        <header class="row bg-primary bg-gradient text-light px-3">
+            <div class="col-3 row align-items-center py-2">
                 <img class="rounded-circle img-fluid col-3" src="{{ url_for('static', filename='logo.jpg') }}">
                 <div class="col-9 fs-3">NureQ Admin</div>
             </div>
-            <nav class="col-9 align-items-center row">
-                <div class="col-auto"><a class="link-light text-decoration-none" href="#">Queues</a></div>
-                <div class="col-auto"><a class="link-light text-decoration-none" href="#">Queue Members</a></div>
-                <div class="col-auto"><a class="link-light text-decoration-none" href="#">Log in</a></div>
+            <nav class="col-9 align-items-stretch row">
+                <div class="d-flex col-auto align-items-center">
+                    <a class="text-decoration-none fs-5" href="#">Queues</a>
+                </div>
+                <div class="d-flex col-auto align-items-center">
+                    <a class="text-decoration-none fs-5" href="#">Queue Members</a>
+                </div>
+                <div class="d-flex col-auto align-items-center">
+                    <a class="text-decoration-none fs-5" href="#">Log in</a>
+                </div>
             </nav>
         </header>
         <main class="container">
