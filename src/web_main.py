@@ -20,7 +20,8 @@ DATABASE_PATH = path.join(PROJECT_PATH, configuration["database"])
 # flask set-up
 app = Flask(
     __name__,
-    template_folder=path.join(PROJECT_PATH, "src", "web", "templates")
+    template_folder=path.join(PROJECT_PATH, "src", "web", "templates"),
+    static_folder=path.join(PROJECT_PATH, "src", "web", "static")
 )
 
 
