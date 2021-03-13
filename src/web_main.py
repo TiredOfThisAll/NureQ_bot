@@ -62,4 +62,11 @@ def queues():
     )
 
 
+@app.route("/queues/<int:id>", methods=["DELETE"])
+def delete_queue(id):
+    context.repository.delete_queue(id)
+    context.repository.commit()
+    return "", 201
+
+
 app.run()
