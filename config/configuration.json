@@ -3,5 +3,6 @@
     "database": "nureq.db",
     "logs": "logs.txt",
     "pause": 0.1,
-    "queue_name_limit": 100
+    "queue_name_limit": 100,
+    "bot_username": "NureQ_bot"
 }
