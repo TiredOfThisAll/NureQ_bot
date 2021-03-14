@@ -11,3 +11,10 @@ nav > div.current-page-link > a {
 nav > div > a {
     color: white;
 }
+
+.spinner {
+    position: absolute;
+    height: 100vw;
+    width: 100vw;
+    background-color: rgba(0, 0, 0, 0.3);
+}
