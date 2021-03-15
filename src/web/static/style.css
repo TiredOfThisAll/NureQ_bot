@@ -12,10 +12,12 @@ nav > div > a {
     color: white;
 }
 
-.spinner {
+#spinner {
+    /* display spinner covering the whole viewport */
     position: fixed;
     height: 100vh;
     width: 100vw;
-    background-color: rgba(0, 0, 0, 0.3);
     left: 0;
+
+    background-color: rgba(0, 0, 0, 0.3); /* partially transparent black */
 }
