@@ -1,4 +1,3 @@
-import sqlite3
 import json
 
 from flask import Flask, render_template, g
@@ -6,6 +5,8 @@ from os import path
 from werkzeug.local import LocalProxy
 
 from data_access.repository import Repository
+from data_access.sqlite_connection import create_sqlite_connection
+
 
 # constants
 PROJECT_PATH = path.abspath(path.join(__file__, "..", ".."))
@@ -27,7 +28,7 @@ app = Flask(
 
 class Context:
     def __init__(self):
-        self.connection = sqlite3.connect(DATABASE_PATH)
+        self.connection = create_sqlite_connection(DATABASE_PATH)
         self.repository = Repository(self.connection)
 
     def __enter__(self):
