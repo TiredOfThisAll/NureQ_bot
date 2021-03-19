@@ -10,7 +10,9 @@
     </head>
 
     <body class="container-fluid">
-        <div id="spinner"></div>
+        <div id="spinner">
+            <div class="spinner-border text-primary center-block"></div>
+        </div>
         <header class="row bg-primary bg-gradient text-light px-3">
             <a class="link-light text-decoration-none col-3 row align-items-center py-2" href="{{ url_for('root') }}">
                 <img class="rounded-circle img-fluid col-3" src="{{ url_for('static', filename='logo.jpg') }}">

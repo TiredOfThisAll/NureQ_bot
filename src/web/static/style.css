@@ -18,6 +18,11 @@ nav > div > a {
     height: 100vh;
     width: 100vw;
     left: 0;
-
+    /* hide the spinner initially */
+    visibility: hidden;
     background-color: rgba(0, 0, 0, 0.3); /* partially transparent black */
+    /* centering spinner */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

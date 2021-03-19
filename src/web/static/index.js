@@ -3,6 +3,7 @@ const deleteQueue = (queueId) => {
     if (!isDelete) {
         return;
     }
+    document.getElementById("spinner").style.visibility = "visible";
     fetch(`/queues/${queueId}`, {method: "DELETE"})
         .then(response => {
             if (response.status !== 201) {
