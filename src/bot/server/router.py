@@ -58,14 +58,18 @@ def default_other_handler(function):
     return function
 
 
-def route(update_context):
+def route(update_context, bot_username):
     if update_context.type == UpdateContext.Type.TEXT_MESSAGE:
+        full_bot_username = "@" + bot_username
+        command = update_context.message_text
+        if command.endswith(full_bot_username):
+            command = command[:-len(full_bot_username)]
         return registered_command_handlers.get(
-            update_context.message_text,
+            command,
             registered_default_command_handler
         )
     if update_context.type == UpdateContext.Type.RESPONSE:
-        if update_context.responding_to_username != "NureQ_bot":
+        if update_context.responding_to_username != bot_username:
             # ignore replies to messages other than the bot's
             return noop_handler
         return get_or_match(

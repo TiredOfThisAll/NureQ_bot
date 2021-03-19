@@ -1,5 +1,6 @@
 from datetime import datetime
 
+
 class Queue:
     def __init__(self, id, name, last_updated_on):
         self.id = id

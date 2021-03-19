@@ -35,6 +35,7 @@ DATABASE_PATH = path.join(PROJECT_PATH, configuration["database"])
 LOGS_PATH = path.join(PROJECT_PATH, configuration["logs"])
 PAUSE_DURATION = configuration["pause"]
 QUEUE_NAME_LIMIT = configuration["queue_name_limit"]
+BOT_USERNAME = configuration["bot_username"]
 
 # create DB schema if it doesn't exist yet
 with sqlite3.connect(DATABASE_PATH) as connection:
@@ -73,7 +74,7 @@ try:
             # iterate over the latest messages for update in updates:
             for update in updates:
                 update_context = UpdateContext.from_update(update)
-                target_handler = route(update_context)
+                target_handler = route(update_context, BOT_USERNAME)
                 if target_handler is None:
                     logger.log(
                         LoggingLevel.ERROR,
