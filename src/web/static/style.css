@@ -11,3 +11,18 @@ nav > div.current-page-link > a {
 nav > div > a {
     color: white;
 }
+
+#spinner {
+    /* display spinner covering the whole viewport */
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
+    left: 0;
+    /* hide the spinner initially */
+    visibility: hidden;
+    background-color: rgba(0, 0, 0, 0.3); /* partially transparent black */
+    /* centering spinner */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

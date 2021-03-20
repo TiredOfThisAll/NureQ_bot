@@ -178,5 +178,11 @@ class Repository:
         """, (skip_amount, page_size)).fetchall()
         return list(map(QueueView.from_tuple, queue_tuples))
 
+    def delete_queue(self, queue_id):
+        self.cursor.execute("""
+            DELETE FROM queues
+            WHERE id = ?
+        """, (queue_id,))
+
     def commit(self):
         self.connection.commit()

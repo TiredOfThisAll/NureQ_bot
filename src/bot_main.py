@@ -1,6 +1,5 @@
 import json
 from os import path
-import sqlite3
 import time
 import traceback
 from urllib.error import HTTPError
@@ -12,6 +11,7 @@ from bot.server.router import route
 from services.telegram.message_manager import TelegramMessageManager
 from services.logging import CompositeLogger, ConsoleLogger, FileLogger, \
     LoggingLevel
+from data_access.sqlite_connection import create_sqlite_connection
 
 # configuration
 PROJECT_PATH = path.abspath(path.join(__file__, "..", ".."))
@@ -38,7 +38,7 @@ QUEUE_NAME_LIMIT = configuration["queue_name_limit"]
 BOT_USERNAME = configuration["bot_username"]
 
 # create DB schema if it doesn't exist yet
-with sqlite3.connect(DATABASE_PATH) as connection:
+with create_sqlite_connection(DATABASE_PATH) as connection:
     repository = Repository(connection)
     repository.create_schema()
     repository.commit()
@@ -62,7 +62,7 @@ try:
 
         updates = telegram_message_manager.get_latest_messages()
 
-        with sqlite3.connect(DATABASE_PATH) as connection:
+        with create_sqlite_connection(DATABASE_PATH) as connection:
             repository = Repository(connection)
             controller = Controller(
                 telegram_message_manager,
