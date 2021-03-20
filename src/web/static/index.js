@@ -1,9 +1,9 @@
-const deleteQueue = (queueId) => {
-    let isDelete = confirm(`Чел, а ты уверен вообще? Ты вообще-то хочешь удалить очередь с идишником ${queueId}`);
-    if (!isDelete) {
+const deleteQueue = queueId => {
+    const isConfirmed = confirm(`Вы уверены, что хотите удалить очередь с ID: ${queueId}`);
+    if (!isConfirmed) {
         return;
     }
-    document.getElementById("spinner").style.visibility = "visible";
+    setSpinnerVisibility(true);
     fetch(`/api/queues/${queueId}`, {method: "DELETE"})
         .then(response => {
             if (response.status !== 204) {
@@ -11,4 +11,8 @@ const deleteQueue = (queueId) => {
             }
             location.reload();
         });
+};
+
+const setSpinnerVisibility = isVisible => {
+    document.getElementById("spinner").style.visibility = isVisible ? "visible" : "hidden";
 };
