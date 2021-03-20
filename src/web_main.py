@@ -67,7 +67,7 @@ def queues():
 def delete_queue(id):
     context.repository.delete_queue(id)
     context.repository.commit()
-    return "", 201
+    return "", 204
 
 
 app.run()

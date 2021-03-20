@@ -6,7 +6,7 @@ const deleteQueue = (queueId) => {
     document.getElementById("spinner").style.visibility = "visible";
     fetch(`/api/queues/${queueId}`, {method: "DELETE"})
         .then(response => {
-            if (response.status !== 201) {
+            if (response.status !== 204) {
                 return Promise.reject();
             }
             location.reload();
