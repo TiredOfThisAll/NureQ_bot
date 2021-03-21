@@ -21,7 +21,7 @@
             <nav class="col-9 align-items-stretch row">
                 <div class="d-flex col-auto align-items-center {{
                     'current-page-link'
-                    if url_for(request.endpoint) in [url_for('root'), url_for('queues')]
+                    if request.path.startswith('/queues') or request.path == '/'
                     else ''
                 }}">
                     <a class="text-decoration-none fs-5" href="{{ url_for('queues') }}">Queues</a>
