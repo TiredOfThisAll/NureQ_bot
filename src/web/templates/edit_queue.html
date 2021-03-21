@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div>{{ queue.name }} (ID {{ queue.id }})</div>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th class="col-2">
+                    User ID
+                </th>
+                <th class="col-3">
+                    Name
+                </th>
+                <th class="col-4">
+                    Crossed Out
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for queue_member in queue_members %}
+                <tr>
+                    <td >{{ queue_member.id }}</td>
+                    <td >{{ queue_member.name }}</td>
+                    <td><i class="bi bi-trash-fill btn btn-danger" onclick="deleteMember({{ queue_member.id }})"></i></td>
+                    <td><i class="bi bi-pencil-square btn btn-info"></i></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock content %}
