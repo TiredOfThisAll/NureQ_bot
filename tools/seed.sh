@@ -1,13 +1,21 @@
-echo "INSERT INTO queues (name, last_updated_on) VALUES ('first',date('now'))" | sqlite3 ../nureq.db
-echo "INSERT INTO queues (name, last_updated_on) VALUES ('second',date('now'))" | sqlite3 ../nureq.db
-echo "INSERT INTO queues (name, last_updated_on) VALUES ('third',date('now'))" | sqlite3 ../nureq.db
-echo "INSERT INTO queues (name, last_updated_on) VALUES ('fourth',date('now'))" | sqlite3 ../nureq.db
-echo "INSERT INTO queues (name, last_updated_on) VALUES ('fifth',date('now'))" | sqlite3 ../nureq.db
-echo "INSERT INTO queues (name, last_updated_on) VALUES ('sixth',date('now'))" | sqlite3 ../nureq.db
-echo "INSERT INTO queues (name, last_updated_on) VALUES ('seventh',date('now'))" | sqlite3 ../nureq.db
-echo "INSERT INTO queues (name, last_updated_on) VALUES ('eighth',date('now'))" | sqlite3 ../nureq.db
-echo "INSERT INTO queues (name, last_updated_on) VALUES ('ninth',date('now'))" | sqlite3 ../nureq.db
-echo "INSERT INTO queues (name, last_updated_on) VALUES ('tenth',date('now'))" | sqlite3 ../nureq.db
-echo "INSERT INTO queues (name, last_updated_on) VALUES ('eleven',date('now'))" | sqlite3 ../nureq.db
-echo "INSERT INTO queues (name, last_updated_on) VALUES ('twelfth',date('now'))" | sqlite3 ../nureq.db
-echo "INSERT INTO queues (name, last_updated_on) VALUES ('thirteenth',date('now'))" | sqlite3 ../nureq.db
+echo "
+  PRAGMA foreign_keys = ON;
+
+  DELETE
+  FROM queues;
+
+  INSERT INTO queues (name, last_updated_on)
+  VALUES
+    ('first', date('now')),
+    ('second', date('now')),
+    ('third', date('now')),
+    ('fourth', date('now')),
+    ('fifth', date('now'));
+
+  INSERT INTO queue_members (user_id, user_first_name, user_last_name, user_username, queue_id, crossed)
+  VALUES
+    (1, 'Anton', 'Bodiak', 'levant47', 1, 0),
+    (1, 'Sanya', 'Zlobin', 'Zhaba', 2, 1),
+    (1, 'Anton', 'Bodiak', 'levant47', 3, 1);
+" | sqlite3 ../nureq.db
+
