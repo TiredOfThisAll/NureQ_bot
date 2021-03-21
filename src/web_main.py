@@ -63,6 +63,15 @@ def queues():
     )
 
 
+@app.route("/queues/<int:id>")
+def edit_queue(id):
+    return render_template(
+        "edit_queue.html",
+        queue_members=context.repository.get_queue_members_by_queue_id(id),
+        queue=context.repository.get_queue_by_id(id)
+    )
+
+
 @app.route("/api/queues/<int:id>", methods=["DELETE"])
 def delete_queue(id):
     context.repository.delete_queue(id)
