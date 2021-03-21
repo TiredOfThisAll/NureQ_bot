@@ -178,6 +178,16 @@ class Repository:
         """, (skip_amount, page_size)).fetchall()
         return list(map(QueueView.from_tuple, queue_tuples))
 
+    def get_queue_by_id(self, id):
+        queue_tuple = self.cursor.execute("""
+            SELECT *
+            FROM queues
+            WHERE id = ?
+        """, (id,)).fetchone()
+        if not queue_tuple:
+            return None
+        return Queue.from_tuple(queue_tuple)
+
     def delete_queue(self, queue_id):
         self.cursor.execute("""
             DELETE FROM queues
