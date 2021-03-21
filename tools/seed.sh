@@ -1,0 +1,13 @@
+echo "INSERT INTO queues (name, last_updated_on) VALUES ('first',date('now'))" | sqlite3 ../nureq.db
+echo "INSERT INTO queues (name, last_updated_on) VALUES ('second',date('now'))" | sqlite3 ../nureq.db
+echo "INSERT INTO queues (name, last_updated_on) VALUES ('third',date('now'))" | sqlite3 ../nureq.db
+echo "INSERT INTO queues (name, last_updated_on) VALUES ('fourth',date('now'))" | sqlite3 ../nureq.db
+echo "INSERT INTO queues (name, last_updated_on) VALUES ('fifth',date('now'))" | sqlite3 ../nureq.db
+echo "INSERT INTO queues (name, last_updated_on) VALUES ('sixth',date('now'))" | sqlite3 ../nureq.db
+echo "INSERT INTO queues (name, last_updated_on) VALUES ('seventh',date('now'))" | sqlite3 ../nureq.db
+echo "INSERT INTO queues (name, last_updated_on) VALUES ('eighth',date('now'))" | sqlite3 ../nureq.db
+echo "INSERT INTO queues (name, last_updated_on) VALUES ('ninth',date('now'))" | sqlite3 ../nureq.db
+echo "INSERT INTO queues (name, last_updated_on) VALUES ('tenth',date('now'))" | sqlite3 ../nureq.db
+echo "INSERT INTO queues (name, last_updated_on) VALUES ('eleven',date('now'))" | sqlite3 ../nureq.db
+echo "INSERT INTO queues (name, last_updated_on) VALUES ('twelfth',date('now'))" | sqlite3 ../nureq.db
+echo "INSERT INTO queues (name, last_updated_on) VALUES ('thirteenth',date('now'))" | sqlite3 ../nureq.db
