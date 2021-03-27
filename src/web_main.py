@@ -79,4 +79,11 @@ def delete_queue(id):
     return "", 204
 
 
+@app.route("/api/queues/<int:id>/members/<int:user_id>", methods=["DELETE"])
+def delete_queue_member(id, user_id):
+    context.repository.remove_user_from_queue(user_id, id)
+    context.repository.commit()
+    return "", 204
+
+
 app.run()
