@@ -88,9 +88,8 @@ def delete_queue_member(queue_id, user_id):
 
 @app.route("/api/queues/<int:queue_id>/members/<int:user_id>/crossed", methods=["PUT"])
 def set_queue_member_crossed_out(queue_id, user_id):
-    print(request.data)
-    # context.repository.(user_id, queue_id)
-    # context.repository.commit()
+    context.repository.set_queue_member_crossed_out(user_id, queue_id, int(request.data))
+    context.repository.commit()
     return "", 204
 
 
