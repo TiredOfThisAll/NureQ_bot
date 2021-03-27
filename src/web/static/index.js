@@ -34,6 +34,20 @@ const deleteMember = (queueId, queueName, queueMemberName, queueMemberUserId) =>
         });
 };
 
+const setMemberCrossedOut = (queueId, queueMemberUserId, newValue) => {
+    setSpinnerVisibility(true);
+    fetch(`/api/queues/${queueId}/members/${queueMemberUserId}/crossed`, {method: "PUT", body: newValue})
+        .then(response => {
+            if (response.status !== 204) {
+                return Promise.reject();
+            }
+            location.reload();
+        })
+        .finally(() => {
+            setSpinnerVisibility(false)
+        });
+};
+
 const setSpinnerVisibility = isVisible => {
     document.getElementById("spinner").style.visibility = isVisible ? "visible" : "hidden";
 };

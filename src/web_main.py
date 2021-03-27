@@ -1,6 +1,6 @@
 import json
 
-from flask import Flask, render_template, g
+from flask import Flask, render_template, g, request
 from os import path
 from werkzeug.local import LocalProxy
 
@@ -79,10 +79,18 @@ def delete_queue(id):
     return "", 204
 
 
-@app.route("/api/queues/<int:id>/members/<int:user_id>", methods=["DELETE"])
-def delete_queue_member(id, user_id):
-    context.repository.remove_user_from_queue(user_id, id)
+@app.route("/api/queues/<int:queue_id>/members/<int:user_id>", methods=["DELETE"])
+def delete_queue_member(queue_id, user_id):
+    context.repository.remove_user_from_queue(user_id, queue_id)
     context.repository.commit()
+    return "", 204
+
+
+@app.route("/api/queues/<int:queue_id>/members/<int:user_id>/crossed", methods=["PUT"])
+def set_queue_member_crossed_out(queue_id, user_id):
+    print(request.data)
+    # context.repository.(user_id, queue_id)
+    # context.repository.commit()
     return "", 204
 
 

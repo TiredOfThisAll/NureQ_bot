@@ -20,7 +20,7 @@
                 <tr>
                     <td>{{ queue_member.id }}</td>
                     <td>{{ queue_member.user_info.get_formatted_name()|e }}</td>
-                    <td><input class="form-check-input ms-2" type="checkbox" disabled {{ queue_member.crossed and "checked" }}></td>
+                    <td><input class="form-check-input ms-2" type="checkbox" {{ queue_member.crossed and "checked" }} onclick="setMemberCrossedOut({{ queue.id }}, {{ queue_member.user_id }}, {{ queue_member.crossed }})"></td>
                     <td>
                         <i class="bi bi-trash-fill btn btn-danger" onclick='deleteMember({{ queue.id }}, {{ queue.name|tojson }}, {{ queue_member.user_info.get_formatted_name()|tojson }}, {{ queue_member.user_id }})'></i>
                     </td>
