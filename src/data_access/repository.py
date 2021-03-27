@@ -104,18 +104,17 @@ class Repository:
         return QueueMember.from_tuple(queue_member_tuple)
 
     def cross_out_queue_member(self, user_id, queue_id):
-        self.cursor.execute("""
-            UPDATE queue_members
-            SET crossed = 1
-            WHERE user_id = ? AND queue_id = ?
-        """, (user_id, queue_id))
+        self.set_queue_member_crossed_out(user_id, queue_id, 1)
 
     def uncross_out_the_queue_member(self, user_id, queue_id):
+        self.set_queue_member_crossed_out(user_id, queue_id, 0)
+
+    def set_queue_member_crossed_out(self, user_id, queue_id, crossed_out):
         self.cursor.execute("""
             UPDATE queue_members
-            SET crossed = 0
+            SET crossed = ?
             WHERE user_id = ? AND queue_id = ?
-        """, (user_id, queue_id))
+        """, (crossed_out, user_id, queue_id))
 
     def remove_user_from_queue(self, user_id, queue_id):
         self.cursor.execute("""
