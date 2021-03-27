@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
-    <div>{{ queue.name }} (ID {{ queue.id }})</div>
+<div><h2>{{ queue.name|e }} (ID {{ queue.id }})</h2></div>
     <table class="table table-striped">
         <thead>
             <tr>
@@ -18,8 +18,9 @@
         <tbody>
             {% for queue_member in queue_members %}
                 <tr>
-                    <td >{{ queue_member.id }}</td>
-                    <td >{{ queue_member.user_username }}</td>
+                    <td>{{ queue_member.id }}</td>
+                    <td>{{ queue_member.user_info.get_formatted_name()|e }}</td>
+                    <td>{{ queue_member.crossed }}</td>
                     <td>
                         <i class="bi bi-trash-fill btn btn-danger" onclick='deleteMember({{ queue.id }}, {{ queue.name|tojson }}, {{ queue_member.user_info.get_formatted_name()|tojson }}, {{ queue_member.user_id }})'></i>
                     </td>

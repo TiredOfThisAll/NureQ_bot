@@ -21,7 +21,7 @@
             {% for queue in queues %}
                 <tr>
                     <td>{{ queue.id }}</td>
-                    <td>{{ queue.name }}</td>
+                    <td>{{ queue.name|e }}</td>
                     <td>{{ queue.get_formatted_last_updated_on() }}</td>
                     <td>{{ queue.number_of_members }}</td>
                     <td><i class="bi bi-trash-fill btn btn-danger" onclick="deleteQueue({{ queue.id }})"></i></td>
