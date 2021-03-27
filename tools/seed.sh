@@ -15,7 +15,7 @@ echo "
   INSERT INTO queue_members (user_id, user_first_name, user_last_name, user_username, queue_id, crossed)
   VALUES
     (1, 'Anton', 'Bodiak', 'levant47', 1, 0),
-    (1, 'Sanya', 'Zlobin', 'Zhaba', 2, 1),
-    (1, 'Anton', 'Bodiak', 'levant47', 3, 1);
+    (2, 'Sanya', 'Zlobin', 'Zhaba', 2, 1),
+    (3, 'Anton', 'Bodiak', 'levant47', 3, 1);
 " | sqlite3 ../nureq.db
 
