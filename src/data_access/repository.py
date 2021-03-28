@@ -28,11 +28,13 @@ class Repository:
                 user_username TEXT NULL,
                 queue_id INTEGER NOT NULL,
                 crossed INTEGER DEFAULT 0 NOT NULL,
+                position INTEGER NOT NULL,
                 FOREIGN KEY (queue_id)
                     REFERENCES queues (id)
                         ON DELETE CASCADE
                         ON UPDATE NO ACTION,
-                UNIQUE(user_id, queue_id)
+                UNIQUE(user_id, queue_id),
+                UNIQUE (position, queue_id)
             )
         """)
 
