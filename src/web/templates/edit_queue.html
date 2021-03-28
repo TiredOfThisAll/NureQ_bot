@@ -8,24 +8,22 @@
                 <th class="col-2">
                     User ID
                 </th>
-                <th class="col-3">
+                <th class="col-8">
                     Name
                 </th>
-                <th class="col-4">
+                <th class="col-2">
                     Crossed Out
                 </th>
+                <th class="col-1"></th>
             </tr>
         </thead>
         <tbody>
             {% for queue_member in queue_members %}
-                <tr>
-                    <td class="d-flex flex-column">
-                        {% if queue_member.position != 0 %}
-                            <i class="bi bi-arrow-up btn btn-primary" onclick="pullUpQueueMember()"></i>
-                        {% endif %}
-                        {% if queue_member.position != queue_members|length - 1 %}
-                            <i class="bi bi-arrow-down btn btn-primary" onclick="pullUpQueueMember()"></i>
-                        {% endif %}
+                <tr class="align-middle">
+                    <td class="queue-reorder-controls">
+                        <i class="bi bi-arrow-up {{ queue_member.position == 0 and 'disabled' }}" onclick="pullUpQueueMember()" disabled></i>
+                        <br>
+                        <i class="bi bi-arrow-down {{ queue_member.position == queue_members|length - 1 and 'disabled' }}" onclick="pullUpQueueMember()"></i>
                     </td>
                     <td>{{ queue_member.id }}</td>
                     <td class="col-4">{{ queue_member.user_info.get_formatted_name()|e }}</td>

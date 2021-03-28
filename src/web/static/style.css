@@ -26,3 +26,23 @@ nav > div > a {
     justify-content: center;
     align-items: center;
 }
+
+/* TODO: commments */
+/* TODO: review */
+.queue-reorder-controls {
+    padding-top: 0.125em !important;
+    padding-bottom: 0 !important;
+}
+
+.queue-reorder-controls > i {
+    border: 1px solid #0d6efd; /* Bootstrap primary color */
+    border-radius: 2px;
+    background-color: #0d6efd; /* Bootstrap primary color */
+    color: white;
+}
+
+.queue-reorder-controls > i.disabled {
+    color: lightgray;
+    border: 1px solid lightgray;
+    background-color: white;
+}
