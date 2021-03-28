@@ -64,14 +64,20 @@ class Repository:
                     user_first_name,
                     user_last_name,
                     user_username,
-                    queue_id
+                    queue_id,
+                    position
                 )
                 VALUES (
                     :user_id,
                     :user_first_name,
                     :user_last_name,
                     :user_username,
-                    :queue_id
+                    :queue_id,
+                    (
+                        SELECT IFNULL(MAX(position) + 1, 0)
+                        FROM queue_members
+                        WHERE queue_id = :queue_id
+                    )
                 )
             """, {
                 "user_id": user_id,
@@ -88,6 +94,8 @@ class Repository:
             SELECT *
             FROM queue_members
             WHERE crossed = 0 AND queue_id = ?
+            ORDER BY position
+            LIMIT 1
         """, (queue_id,)).fetchone()
         if queue_member_tuple is None:
             return None
@@ -98,7 +106,7 @@ class Repository:
             SELECT *
             FROM queue_members
             WHERE crossed = 1 AND queue_id = ?
-            ORDER BY id DESC
+            ORDER BY position DESC
             LIMIT 1
         """, (queue_id,)).fetchone()
         if queue_member_tuple is None:
@@ -146,6 +154,7 @@ class Repository:
             SELECT *
             FROM queue_members
             WHERE queue_id = ?
+            ORDER BY position
         """, (queue_id,)).fetchall()
         return list(map(QueueMember.from_tuple, queue_member_tuples))
 
