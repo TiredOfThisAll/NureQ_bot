@@ -33,7 +33,7 @@ class Repository:
                     REFERENCES queues (id)
                         ON DELETE CASCADE
                         ON UPDATE NO ACTION,
-                UNIQUE(user_id, queue_id),
+                UNIQUE (user_id, queue_id),
                 UNIQUE (position, queue_id)
             )
         """)
@@ -197,6 +197,48 @@ class Repository:
         if not queue_tuple:
             return None
         return Queue.from_tuple(queue_tuple)
+
+    def move_up_queue_member(self, id,position):
+        return self.swap_positions(id, position, position - 1)
+
+    def move_down_queue_member(self, id, position):
+        return self.swap_positions(id, position, position + 1)
+
+    def swap_positions(self, id, pos_1, pos_2):
+        # Validate positions
+        if pos_1 < 0 or pos_2 < 0 or pos_1 == pos_2:
+            return "INVALID_POSITION"
+        queue_size = self.cursor.execute("""
+            SELECT COUNT(*)
+            FROM queue_members
+            WHERE queue_id = ?
+        """, (id,)).fetchone()[0]
+        if pos_1 >= queue_size or pos_2 >= queue_size:
+            return "INVALID_POSITION"
+
+        self.cursor.execute("""
+            UPDATE queue_members
+            SET position = CASE position
+                WHEN :pos_1 THEN -1
+                WHEN :pos_2 THEN -2
+            END
+            WHERE queue_id = :id AND position IN (:pos_1, :pos_2)
+        """, {
+            "id": id,
+            "pos_1": pos_1,
+            "pos_2": pos_2
+        })
+        self.cursor.execute("""
+            UPDATE queue_members
+            SET position = CASE position
+                WHEN -1 THEN :pos_2
+                WHEN -2 THEN :pos_1
+            END
+            WHERE position < 0
+        """, {
+            "pos_1": pos_1,
+            "pos_2": pos_2
+        })
 
     def delete_queue(self, queue_id):
         self.cursor.execute("""
