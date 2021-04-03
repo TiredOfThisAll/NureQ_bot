@@ -48,6 +48,34 @@ const setMemberCrossedOut = (queueId, queueMemberUserId, newValue) => {
         });
 };
 
+const moveUpQueueMember = (queueId, queueMemberPosition) => {
+    setSpinnerVisibility(true);
+    fetch(`/api/queues/${queueId}/move-up`, {method: "PUT", body: queueMemberPosition})
+        .then(response => {
+            if (response.status !== 204) {
+                return Promise.reject();
+            }
+            location.reload();
+        })
+        .finally(() => {
+            setSpinnerVisibility(false)
+        });
+};
+
+const moveDownQueueMember = (queueId, queueMemberPosition) => {
+    setSpinnerVisibility(true);
+    fetch(`/api/queues/${queueId}/move-down`, {method: "PUT", body: queueMemberPosition})
+        .then(response => {
+            if (response.status !== 204) {
+                return Promise.reject();
+            }
+            location.reload();
+        })
+        .finally(() => {
+            setSpinnerVisibility(false)
+        });
+};
+
 const setSpinnerVisibility = isVisible => {
     document.getElementById("spinner").style.visibility = isVisible ? "visible" : "hidden";
 };

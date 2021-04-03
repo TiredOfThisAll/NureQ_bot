@@ -21,9 +21,17 @@
             {% for queue_member in queue_members %}
                 <tr class="align-middle">
                     <td class="queue-reorder-controls">
-                        <i class="bi bi-arrow-up {{ queue_member.position == 0 and 'disabled' }}" onclick="pullUpQueueMember()" disabled></i>
+                        {% if queue_member.position != 0 %}
+                            <i class="bi bi-arrow-up" onclick="moveUpQueueMember({{ queue.id }}, {{ queue_member.position }})"></i>
+                        {% else %}
+                            <i class="bi bi-arrow-up disabled"></i>
+                        {% endif %}
                         <br>
-                        <i class="bi bi-arrow-down {{ queue_member.position == queue_members|length - 1 and 'disabled' }}" onclick="pullUpQueueMember()"></i>
+                        {% if queue_member.position != queue_members|length - 1 %}
+                            <i class="bi bi-arrow-down" onclick="moveDownQueueMember({{ queue.id }}, {{ queue_member.position }})"></i>
+                        {% else %}
+                            <i class="bi bi-arrow-down disabled"></i>
+                        {% endif %}
                     </td>
                     <td>{{ queue_member.id }}</td>
                     <td class="col-4">{{ queue_member.user_info.get_formatted_name()|e }}</td>

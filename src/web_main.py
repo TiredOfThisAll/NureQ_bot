@@ -93,4 +93,20 @@ def set_queue_member_crossed_out(queue_id, user_id):
     return "", 204
 
 
+@app.route("/api/queues/<int:queue_id>/<action>", methods=["PUT"])
+def pull_down_queue_member(queue_id, action):
+    if action == "move-up":
+        error = context.repository.move_up_queue_member(queue_id, int(request.data))
+    elif action == "move-down":
+        error = context.repository.move_down_queue_member(queue_id, int(request.data))
+    else:
+        return "", 404
+    if error == "INVALID_POSITION":
+        return "", 400
+    if error is not None:
+        return "", 500
+    context.repository.commit()
+    return "", 204
+
+
 app.run()
