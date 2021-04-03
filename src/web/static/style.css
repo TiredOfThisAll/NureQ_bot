@@ -32,13 +32,14 @@ nav > div > a {
 .queue-reorder-controls {
     padding-top: 0.125em !important;
     padding-bottom: 0 !important;
+
+    /* gap between the arrows */
+    display: grid;
+    gap: 1px;
 }
 
 .queue-reorder-controls > i {
-    border: 1px solid #0d6efd; /* Bootstrap primary color */
-    border-radius: 2px;
-    background-color: #0d6efd; /* Bootstrap primary color */
-    color: white;
+    padding: 0; /* clear default Bootstrap button size */
 }
 
 .queue-reorder-controls > i.disabled {
