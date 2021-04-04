@@ -47,3 +47,11 @@ nav > div > a {
     border: 1px solid lightgray;
     background-color: white;
 }
+
+#login-widget-container {
+    /* center the widget horizontally and vertically somewhere around the top */
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    height: 40vh;
+}

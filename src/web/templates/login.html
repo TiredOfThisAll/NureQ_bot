@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div id="login-widget-container">
+        <script
+            async
+            src="https://telegram.org/js/telegram-widget.js?14"
+            data-telegram-login="nureq_bot"
+            data-size="large"
+            data-auth-url="/telegram-login-successful"
+            data-request-access="write"
+        ></script>
+    </div>
+{% endblock content %}

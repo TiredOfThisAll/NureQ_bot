@@ -26,6 +26,11 @@
                 }}">
                     <a class="text-decoration-none fs-5" href="{{ url_for('queues') }}">Queues</a>
                 </div>
+                <div class="d-flex col-auto align-items-center {{
+                    request.path == url_for('login') and 'current-page-link'
+                }}">
+                    <a class="text-decoration-none fs-5" href="{{ url_for('login') }}">Log In</a>
+                </div>
             </nav>
         </header>
         <main class="container">
