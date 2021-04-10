@@ -26,3 +26,32 @@ nav > div > a {
     justify-content: center;
     align-items: center;
 }
+
+/* TODO: commments */
+/* TODO: review */
+.queue-reorder-controls {
+    padding-top: 0.125em !important;
+    padding-bottom: 0 !important;
+
+    /* gap between the arrows */
+    display: grid;
+    gap: 1px;
+}
+
+.queue-reorder-controls > i {
+    padding: 0; /* clear default Bootstrap button size */
+}
+
+.queue-reorder-controls > i.disabled {
+    color: lightgray;
+    border: 1px solid lightgray;
+    background-color: white;
+}
+
+#login-widget-container {
+    /* center the widget horizontally and vertically somewhere around the top */
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    height: 40vh;
+}

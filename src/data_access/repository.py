@@ -28,11 +28,13 @@ class Repository:
                 user_username TEXT NULL,
                 queue_id INTEGER NOT NULL,
                 crossed INTEGER DEFAULT 0 NOT NULL,
+                position INTEGER NOT NULL,
                 FOREIGN KEY (queue_id)
                     REFERENCES queues (id)
                         ON DELETE CASCADE
                         ON UPDATE NO ACTION,
-                UNIQUE(user_id, queue_id)
+                UNIQUE (user_id, queue_id),
+                UNIQUE (position, queue_id)
             )
         """)
 
@@ -62,14 +64,20 @@ class Repository:
                     user_first_name,
                     user_last_name,
                     user_username,
-                    queue_id
+                    queue_id,
+                    position
                 )
                 VALUES (
                     :user_id,
                     :user_first_name,
                     :user_last_name,
                     :user_username,
-                    :queue_id
+                    :queue_id,
+                    (
+                        SELECT IFNULL(MAX(position) + 1, 0)
+                        FROM queue_members
+                        WHERE queue_id = :queue_id
+                    )
                 )
             """, {
                 "user_id": user_id,
@@ -86,6 +94,8 @@ class Repository:
             SELECT *
             FROM queue_members
             WHERE crossed = 0 AND queue_id = ?
+            ORDER BY position
+            LIMIT 1
         """, (queue_id,)).fetchone()
         if queue_member_tuple is None:
             return None
@@ -96,7 +106,7 @@ class Repository:
             SELECT *
             FROM queue_members
             WHERE crossed = 1 AND queue_id = ?
-            ORDER BY id DESC
+            ORDER BY position DESC
             LIMIT 1
         """, (queue_id,)).fetchone()
         if queue_member_tuple is None:
@@ -104,18 +114,17 @@ class Repository:
         return QueueMember.from_tuple(queue_member_tuple)
 
     def cross_out_queue_member(self, user_id, queue_id):
-        self.cursor.execute("""
-            UPDATE queue_members
-            SET crossed = 1
-            WHERE user_id = ? AND queue_id = ?
-        """, (user_id, queue_id))
+        self.set_queue_member_crossed_out(user_id, queue_id, 1)
 
     def uncross_out_the_queue_member(self, user_id, queue_id):
+        self.set_queue_member_crossed_out(user_id, queue_id, 0)
+
+    def set_queue_member_crossed_out(self, user_id, queue_id, crossed_out):
         self.cursor.execute("""
             UPDATE queue_members
-            SET crossed = 0
+            SET crossed = ?
             WHERE user_id = ? AND queue_id = ?
-        """, (user_id, queue_id))
+        """, (crossed_out, user_id, queue_id))
 
     def remove_user_from_queue(self, user_id, queue_id):
         self.cursor.execute("""
@@ -145,6 +154,7 @@ class Repository:
             SELECT *
             FROM queue_members
             WHERE queue_id = ?
+            ORDER BY position
         """, (queue_id,)).fetchall()
         return list(map(QueueMember.from_tuple, queue_member_tuples))
 
@@ -177,6 +187,58 @@ class Repository:
             LIMIT ?, ?
         """, (skip_amount, page_size)).fetchall()
         return list(map(QueueView.from_tuple, queue_tuples))
+
+    def get_queue_by_id(self, id):
+        queue_tuple = self.cursor.execute("""
+            SELECT *
+            FROM queues
+            WHERE id = ?
+        """, (id,)).fetchone()
+        if not queue_tuple:
+            return None
+        return Queue.from_tuple(queue_tuple)
+
+    def move_up_queue_member(self, queue_id, position):
+        return self.swap_positions(queue_id, position, position - 1)
+
+    def move_down_queue_member(self, queue_id, position):
+        return self.swap_positions(queue_id, position, position + 1)
+
+    def swap_positions(self, queue_id, pos_1, pos_2):
+        # Validate positions
+        if pos_1 < 0 or pos_2 < 0 or pos_1 == pos_2:
+            return "INVALID_POSITION"
+        queue_size = self.cursor.execute("""
+            SELECT COUNT(*)
+            FROM queue_members
+            WHERE queue_id = ?
+        """, (queue_id,)).fetchone()[0]
+        if pos_1 >= queue_size or pos_2 >= queue_size:
+            return "INVALID_POSITION"
+
+        self.cursor.execute("""
+            UPDATE queue_members
+            SET position = CASE position
+                WHEN :pos_1 THEN -1
+                WHEN :pos_2 THEN -2
+            END
+            WHERE queue_id = :queue_id AND position IN (:pos_1, :pos_2)
+        """, {
+            "queue_id": queue_id,
+            "pos_1": pos_1,
+            "pos_2": pos_2
+        })
+        self.cursor.execute("""
+            UPDATE queue_members
+            SET position = CASE position
+                WHEN -1 THEN :pos_2
+                WHEN -2 THEN :pos_1
+            END
+            WHERE position < 0
+        """, {
+            "pos_1": pos_1,
+            "pos_2": pos_2
+        })
 
     def delete_queue(self, queue_id):
         self.cursor.execute("""

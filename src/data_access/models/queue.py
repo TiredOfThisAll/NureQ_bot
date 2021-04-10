@@ -8,7 +8,7 @@ class Queue:
         self.last_updated_on = last_updated_on
 
     def from_tuple(queue_tuple):
-        return Queue(queue_tuple[0], queue_tuple[1], queue_tuple[2])
+        return Queue(*queue_tuple)
 
     def get_formatted_last_updated_on(self):
         return datetime.fromisoformat(self.last_updated_on) \

@@ -10,6 +10,69 @@ const deleteQueue = queueId => {
                 return Promise.reject();
             }
             location.reload();
+        })
+        .finally(() => {
+            setSpinnerVisibility(false)
+        });
+};
+
+const deleteMember = (queueId, queueName, queueMemberName, queueMemberUserId) => {
+    const isConfirmed = confirm(`Вы уверены, что хотите удалить ${queueMemberName} из ${queueName} очереди`);
+    if (!isConfirmed) {
+        return;
+    }
+    setSpinnerVisibility(true);
+    fetch(`/api/queues/${queueId}/members/${queueMemberUserId}`, {method: "DELETE"})
+        .then(response => {
+            if (response.status !== 204) {
+                return Promise.reject();
+            }
+            location.reload();
+        })
+        .finally(() => {
+            setSpinnerVisibility(false)
+        });
+};
+
+const setMemberCrossedOut = (queueId, queueMemberUserId, newValue) => {
+    setSpinnerVisibility(true);
+    fetch(`/api/queues/${queueId}/members/${queueMemberUserId}/crossed`, {method: "PUT", body: newValue})
+        .then(response => {
+            if (response.status !== 204) {
+                return Promise.reject();
+            }
+            location.reload();
+        })
+        .finally(() => {
+            setSpinnerVisibility(false)
+        });
+};
+
+const moveUpQueueMember = (queueId, queueMemberPosition) => {
+    setSpinnerVisibility(true);
+    fetch(`/api/queues/${queueId}/move-up`, {method: "PUT", body: queueMemberPosition})
+        .then(response => {
+            if (response.status !== 204) {
+                return Promise.reject();
+            }
+            location.reload();
+        })
+        .finally(() => {
+            setSpinnerVisibility(false)
+        });
+};
+
+const moveDownQueueMember = (queueId, queueMemberPosition) => {
+    setSpinnerVisibility(true);
+    fetch(`/api/queues/${queueId}/move-down`, {method: "PUT", body: queueMemberPosition})
+        .then(response => {
+            if (response.status !== 204) {
+                return Promise.reject();
+            }
+            location.reload();
+        })
+        .finally(() => {
+            setSpinnerVisibility(false)
         });
 };
 
