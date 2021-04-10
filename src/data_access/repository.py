@@ -37,6 +37,11 @@ class Repository:
                 UNIQUE (position, queue_id)
             )
         """)
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS admins (
+                user_id INTEGER PRIMARY KEY
+            )
+        """)
 
     def create_queue(self, queue_name):
         try:
