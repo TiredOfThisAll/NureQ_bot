@@ -2,6 +2,7 @@ echo "
   PRAGMA foreign_keys = ON;
 
   DELETE FROM queues;
+  DELETE FROM admins;
 
   INSERT INTO queues (name, last_updated_on)
   VALUES
@@ -19,5 +20,10 @@ echo "
     (4, 'Anthony', 'Anthony', 'Anthony', 1, 0, 3),
     (5, 'Sanya', 'Zlobin', 'Zhaba', 2, 0, 0),
     (6, 'Anton', 'Bodiak', 'levant47', 3, 0, 0);
+
+  INSERT INTO admins (user_id)
+  VALUES
+    (477243002),
+    (668426468);
 " | sqlite3 ../nureq.db
 
