@@ -36,9 +36,11 @@ app.secret_key = TOKEN
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+
 @login_manager.user_loader
 def load_user(user_id):
     return User(user_id)
+
 
 @login_manager.unauthorized_handler
 def unathorized():
@@ -100,7 +102,8 @@ def login():
 
 @app.route("/telegram-login-successful")
 def telegram_login_successful():
-    # и у нас тут будет в query parameter-ах приходить объект с полями id, hash, auth_date
+    # и у нас тут будет в query parameter-ах приходить объект с полями id,
+    # hash, auth_date
     user = User(request.args["id"])
     admins = context.repository.get_admins_id()
     if int(user.user_id) not in admins:
@@ -110,10 +113,12 @@ def telegram_login_successful():
     # 1. спарсить query parameter-ы (там будет user ID, username и т.д.)
     # 2. проверить что этот пользователь есть в нашей таблице админов
     #   (в таблице админов будет только user ID)
-    # 3. если все ок, то засунуть пользователю сессию в карман (я не знаю куда именно)
+    # 3. если все ок, то засунуть пользователю сессию в карман (я не знаю куда
+    #   именно)
     #   если неок, то вернуть на логин и сказать, что чел не в списке админов
     # 4. потом перенаправить на главную страницу
-    # P.S.: нужно в каждом запросе чекать что пользователь аутентифицирован воистину
+    # P.S.: нужно в каждом запросе чекать что пользователь аутентифицирован
+    #   воистину
     # P.P.S.: нужно еще как-то валидировать хэш, который нам сюда приходит
     return redirect(url_for("root"))
 
@@ -126,7 +131,10 @@ def delete_queue(id):
     return "", 204
 
 
-@app.route("/api/queues/<int:queue_id>/members/<int:user_id>", methods=["DELETE"])
+@app.route(
+    "/api/queues/<int:queue_id>/members/<int:user_id>",
+    methods=["DELETE"]
+)
 @login_required
 def delete_queue_member(queue_id, user_id):
     context.repository.remove_user_from_queue(user_id, queue_id)
@@ -134,10 +142,18 @@ def delete_queue_member(queue_id, user_id):
     return "", 204
 
 
-@app.route("/api/queues/<int:queue_id>/members/<int:user_id>/crossed", methods=["PUT"])
+@app.route(
+    "/api/queues/<int:queue_id>/members/<int:user_id>/crossed",
+    methods=["PUT"]
+)
 @login_required
 def set_queue_member_crossed_out(queue_id, user_id):
-    context.repository.set_queue_member_crossed_out(user_id, queue_id, int(request.data))
+    new_is_crossed_out = int(request.data)
+    context.repository.set_queue_member_crossed_out(
+        user_id,
+        queue_id,
+        new_is_crossed_out
+    )
     context.repository.commit()
     return "", 204
 
@@ -145,10 +161,17 @@ def set_queue_member_crossed_out(queue_id, user_id):
 @app.route("/api/queues/<int:queue_id>/<action>", methods=["PUT"])
 @login_required
 def pull_down_queue_member(queue_id, action):
+    current_position = int(request.data)
     if action == "move-up":
-        error = context.repository.move_up_queue_member(queue_id, int(request.data))
+        error = context.repository.move_up_queue_member(
+            queue_id,
+            current_position
+        )
     elif action == "move-down":
-        error = context.repository.move_down_queue_member(queue_id, int(request.data))
+        error = context.repository.move_down_queue_member(
+            queue_id,
+            current_position
+        )
     else:
         return "", 404
     if error == "INVALID_POSITION":
