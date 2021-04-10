@@ -251,5 +251,13 @@ class Repository:
             WHERE id = ?
         """, (queue_id,))
 
+    def is_user_admin(self, user_id):
+        tuple_user_id = self.cursor.execute("""
+            SELECT user_id
+            FROM admins
+            WHERE user_id = ?
+        """, (user_id,)).fetchone()
+        return tuple_user_id is not None
+
     def commit(self):
         self.connection.commit()
