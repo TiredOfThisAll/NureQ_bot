@@ -37,6 +37,13 @@ class Repository:
                 UNIQUE (position, queue_id)
             )
         """)
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS queue_admins (
+                id INTEGER PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                UNIQUE (user_id)
+            )
+        """)
 
     def create_queue(self, queue_name):
         try:
@@ -239,6 +246,11 @@ class Repository:
             "pos_1": pos_1,
             "pos_2": pos_2
         })
+
+    def get_admins_id(self):
+        return list(map(lambda x: x[0], self.cursor.execute("""
+            SELECT user_id FROM queue_admins
+        """).fetchall()))
 
     def delete_queue(self, queue_id):
         self.cursor.execute("""

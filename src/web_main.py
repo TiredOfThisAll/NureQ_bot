@@ -102,6 +102,9 @@ def login():
 def telegram_login_successful():
     # и у нас тут будет в query parameter-ах приходить объект с полями id, hash, auth_date
     user = User(request.args["id"])
+    admins = context.repository.get_admins_id()
+    if int(user.user_id) not in admins:
+        return redirect(url_for("login"))
     login_user(user)
 
     # 1. спарсить query parameter-ы (там будет user ID, username и т.д.)
@@ -156,4 +159,4 @@ def pull_down_queue_member(queue_id, action):
     return "", 204
 
 
-app.run()
+app.run(port=80)
