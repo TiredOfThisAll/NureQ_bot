@@ -205,13 +205,13 @@ class Repository:
             return None
         return Queue.from_tuple(queue_tuple)
 
-    def move_up_queue_member(self, id,position):
-        return self.swap_positions(id, position, position - 1)
+    def move_up_queue_member(self, queue_id, position):
+        return self.swap_positions(queue_id, position, position - 1)
 
-    def move_down_queue_member(self, id, position):
-        return self.swap_positions(id, position, position + 1)
+    def move_down_queue_member(self, queue_id, position):
+        return self.swap_positions(queue_id, position, position + 1)
 
-    def swap_positions(self, id, pos_1, pos_2):
+    def swap_positions(self, queue_id, pos_1, pos_2):
         # Validate positions
         if pos_1 < 0 or pos_2 < 0 or pos_1 == pos_2:
             return "INVALID_POSITION"
@@ -219,7 +219,7 @@ class Repository:
             SELECT COUNT(*)
             FROM queue_members
             WHERE queue_id = ?
-        """, (id,)).fetchone()[0]
+        """, (queue_id,)).fetchone()[0]
         if pos_1 >= queue_size or pos_2 >= queue_size:
             return "INVALID_POSITION"
 
@@ -229,9 +229,9 @@ class Repository:
                 WHEN :pos_1 THEN -1
                 WHEN :pos_2 THEN -2
             END
-            WHERE queue_id = :id AND position IN (:pos_1, :pos_2)
+            WHERE queue_id = :queue_id AND position IN (:pos_1, :pos_2)
         """, {
-            "id": id,
+            "queue_id": queue_id,
             "pos_1": pos_1,
             "pos_2": pos_2
         })
