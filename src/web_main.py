@@ -104,7 +104,10 @@ def login():
 def telegram_login_successful():
     # и у нас тут будет в query parameter-ах приходить объект с полями id,
     # hash, auth_date
-    user = User(request.args["id"])
+    user_id_str = request.args["id"]
+    if not context.repository.is_user_admin(int(user_id_str)):
+        return redirect(url_for("login"))
+    user = User(user_id_str)
     login_user(user)
 
     # 1. спарсить query parameter-ы (там будет user ID, username и т.д.)
