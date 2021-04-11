@@ -21,10 +21,11 @@ with open(config_file_path) as configuration_file:
 DATABASE_PATH = path.join(PROJECT_PATH, configuration["database"])
 TOKEN_PATH = path.join(PROJECT_PATH, configuration["token"])
 
-with open(TOKEN_PATH, "rb") as token_file:
+with open(TOKEN_PATH) as token_file:
     TOKEN = token_file.readline()
     if TOKEN[-1] == "\n":
         TOKEN = TOKEN[:-1]
+    TOKEN = TOKEN.encode()
 
 # flask set-up
 app = Flask(
