@@ -109,7 +109,8 @@ def telegram_login_successful():
     is_login_valid = validate_login_hash(request.args, TOKEN)
     if not is_login_valid:
         return redirect(url_for("login"))
-    if time.time() - int(request.args["auth_date"]) >= TELEGRAM_LOGIN_EXPIRY_TIME:
+    if time.time() - int(request.args["auth_date"]) \
+            >= TELEGRAM_LOGIN_EXPIRY_TIME:
         return redirect(url_for("login"))
     if not context.repository.is_user_admin(int(user_id_str)):
         return redirect(url_for("login"))
