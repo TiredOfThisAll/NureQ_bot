@@ -2,7 +2,7 @@ from hashlib import sha256
 import hmac
 
 
-def validate_login(auth_data, bot_token):
+def validate_login_hash(auth_data, bot_token):
     auth_data_list = []
     for key, value in auth_data.items():
         if key != "hash":
