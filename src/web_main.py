@@ -1,8 +1,8 @@
-import json
-
 from flask import Flask, render_template, g, request, redirect, url_for
 from flask_login import LoginManager, login_user, login_required
+import json
 from os import path
+import time
 from werkzeug.local import LocalProxy
 
 from data_access.repository import Repository
@@ -13,6 +13,7 @@ from src.services.telegram.authentication import validate_login_hash
 
 # constants
 PROJECT_PATH = path.abspath(path.join(__file__, "..", ".."))
+TELEGRAM_LOGIN_EXPIRY_TIME = 24 * 60 * 60  # 24 hours in seconds
 
 # configuration
 config_file_path = path.join(PROJECT_PATH, "config", "configuration.json")
@@ -104,27 +105,17 @@ def login():
 
 @app.route("/telegram-login-successful")
 def telegram_login_successful():
-    # и у нас тут будет в query parameter-ах приходить объект с полями id,
-    # hash, auth_date
     user_id_str = request.args["id"]
     is_login_valid = validate_login_hash(request.args, TOKEN)
     if not is_login_valid:
+        return redirect(url_for("login"))
+    if time.time() - int(request.args["auth_date"]) >= TELEGRAM_LOGIN_EXPIRY_TIME:
         return redirect(url_for("login"))
     if not context.repository.is_user_admin(int(user_id_str)):
         return redirect(url_for("login"))
     user = User(user_id_str)
     login_user(user)
 
-    # 1. спарсить query parameter-ы (там будет user ID, username и т.д.)
-    # 2. проверить что этот пользователь есть в нашей таблице админов
-    #   (в таблице админов будет только user ID)
-    # 3. если все ок, то засунуть пользователю сессию в карман (я не знаю куда
-    #   именно)
-    #   если неок, то вернуть на логин и сказать, что чел не в списке админов
-    # 4. потом перенаправить на главную страницу
-    # P.S.: нужно в каждом запросе чекать что пользователь аутентифицирован
-    #   воистину
-    # P.P.S.: нужно еще как-то валидировать хэш, который нам сюда приходит
     return redirect(url_for("root"))
 
 
