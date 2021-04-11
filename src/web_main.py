@@ -8,6 +8,7 @@ from werkzeug.local import LocalProxy
 from data_access.repository import Repository
 from data_access.sqlite_connection import create_sqlite_connection
 from web.models.user import User
+from src.services.telegram.authentication import validate_login
 
 
 # constants
@@ -106,6 +107,9 @@ def telegram_login_successful():
     # и у нас тут будет в query parameter-ах приходить объект с полями id,
     # hash, auth_date
     user_id_str = request.args["id"]
+    is_login_valid = validate_login(request.args, TOKEN)
+    if not is_login_valid:
+        return redirect(url_for("login"))
     if not context.repository.is_user_admin(int(user_id_str)):
         return redirect(url_for("login"))
     user = User(user_id_str)
