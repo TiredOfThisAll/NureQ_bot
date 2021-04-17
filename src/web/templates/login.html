@@ -1,16 +1,20 @@
 {% extends "layout.html" %}
 {% block content %}
-    {% if error %}
-        <div class="login-error">{{ error }}</div>
-    {% endif %}
-    <div id="login-widget-container">
-        <script
-            async
-            src="https://telegram.org/js/telegram-widget.js?14"
-            data-telegram-login="nureq_bot"
-            data-size="large"
-            data-auth-url="/login"
-            data-request-access="write"
-        ></script>
+    <div class="d-flex flex-column align-items-center">
+        {% if error %}
+            <div class="alert alert-danger flex-grow-1" role="alert">
+                {{ error }}
+            </div>
+        {% endif %}
+        <div id="login-widget-container">
+            <script
+                async
+                src="https://telegram.org/js/telegram-widget.js?14"
+                data-telegram-login="nureq_bot"
+                data-size="large"
+                data-auth-url="/login"
+                data-request-access="write"
+            ></script>
+        </div>
     </div>
 {% endblock content %}
