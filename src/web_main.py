@@ -109,7 +109,7 @@ def login():
     if not is_login_valid:
         return render_template(
             "login.html",
-            error="Неверные данные логина, попробуйте еще раз или обратитесь к разработчикам"
+            error="Ошибка верификации данных, попробуйте еще раз или обратитесь к разработчикам"
         )
     if time.time() - int(request.args["auth_date"]) \
             >= TELEGRAM_LOGIN_EXPIRY_TIME:
