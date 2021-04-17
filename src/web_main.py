@@ -8,7 +8,7 @@ from werkzeug.local import LocalProxy
 from data_access.repository import Repository
 from data_access.sqlite_connection import create_sqlite_connection
 from web.models.user import User
-from src.services.telegram.authentication import validate_login_hash
+from services.telegram.authentication import validate_login_hash
 
 
 # constants
