@@ -1,17 +1,19 @@
-import json
-
 from flask import Flask, render_template, g, request, redirect, url_for
-from flask_login import LoginManager, login_user, login_required
+from flask_login import LoginManager, login_user, login_required, logout_user
+import json
 from os import path
+import time
 from werkzeug.local import LocalProxy
 
 from data_access.repository import Repository
 from data_access.sqlite_connection import create_sqlite_connection
+from services.telegram.authentication import validate_login_hash
 from web.models.user import User
 
 
 # constants
 PROJECT_PATH = path.abspath(path.join(__file__, "..", ".."))
+TELEGRAM_LOGIN_EXPIRY_TIME = 24 * 60 * 60  # 24 hours in seconds
 
 # configuration
 config_file_path = path.join(PROJECT_PATH, "config", "configuration.json")
@@ -21,10 +23,11 @@ with open(config_file_path) as configuration_file:
 DATABASE_PATH = path.join(PROJECT_PATH, configuration["database"])
 TOKEN_PATH = path.join(PROJECT_PATH, configuration["token"])
 
-with open(TOKEN_PATH, "rb") as token_file:
+with open(TOKEN_PATH) as token_file:
     TOKEN = token_file.readline()
     if TOKEN[-1] == "\n":
         TOKEN = TOKEN[:-1]
+    TOKEN = TOKEN.encode()
 
 # flask set-up
 app = Flask(
@@ -97,27 +100,42 @@ def edit_queue(id):
 
 @app.route("/login")
 def login():
-    return render_template("login.html")
-
-
-@app.route("/telegram-login-successful")
-def telegram_login_successful():
-    # и у нас тут будет в query parameter-ах приходить объект с полями id,
-    # hash, auth_date
-    user = User(request.args["id"])
+    # page navigation
+    if not request.args:
+        return render_template("login.html")
+    # redirect from telegram login page after login attempt
+    user_id_str = request.args["id"]
+    is_login_valid = validate_login_hash(request.args, TOKEN)
+    if not is_login_valid:
+        return render_template(
+            "login.html",
+            error="Ошибка верификации данных, попробуйте еще раз или "
+            + "обратитесь к разработчикам"
+        )
+    if time.time() - int(request.args["auth_date"]) \
+            >= TELEGRAM_LOGIN_EXPIRY_TIME:
+        return render_template(
+            "login.html",
+            error="Ваша сессия истекла, попробуйте еще раз или обратитесь к "
+            + "разработчикам"
+        )
+    if not context.repository.is_user_admin(int(user_id_str)):
+        return render_template(
+            "login.html",
+            error="Вы не входите в список администраторов, обратитесь к "
+            + "разработчикам, если считаете, что это ошибка"
+        )
+    user = User(user_id_str)
     login_user(user)
 
-    # 1. спарсить query parameter-ы (там будет user ID, username и т.д.)
-    # 2. проверить что этот пользователь есть в нашей таблице админов
-    #   (в таблице админов будет только user ID)
-    # 3. если все ок, то засунуть пользователю сессию в карман (я не знаю куда
-    #   именно)
-    #   если неок, то вернуть на логин и сказать, что чел не в списке админов
-    # 4. потом перенаправить на главную страницу
-    # P.S.: нужно в каждом запросе чекать что пользователь аутентифицирован
-    #   воистину
-    # P.P.S.: нужно еще как-то валидировать хэш, который нам сюда приходит
     return redirect(url_for("root"))
+
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("login"))
 
 
 @app.route("/api/queues/<int:id>", methods=["DELETE"])
@@ -179,4 +197,4 @@ def pull_down_queue_member(queue_id, action):
     return "", 204
 
 
-app.run()
+app.run(port=80)

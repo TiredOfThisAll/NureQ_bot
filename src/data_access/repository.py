@@ -37,6 +37,11 @@ class Repository:
                 UNIQUE (position, queue_id)
             )
         """)
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS admins (
+                user_id INTEGER PRIMARY KEY
+            )
+        """)
 
     def create_queue(self, queue_name):
         try:
@@ -245,6 +250,14 @@ class Repository:
             DELETE FROM queues
             WHERE id = ?
         """, (queue_id,))
+
+    def is_user_admin(self, user_id):
+        tuple_user_id = self.cursor.execute("""
+            SELECT user_id
+            FROM admins
+            WHERE user_id = ?
+        """, (user_id,)).fetchone()
+        return tuple_user_id is not None
 
     def commit(self):
         self.connection.commit()
