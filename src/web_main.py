@@ -7,8 +7,8 @@ from werkzeug.local import LocalProxy
 
 from data_access.repository import Repository
 from data_access.sqlite_connection import create_sqlite_connection
-from web.models.user import User
 from services.telegram.authentication import validate_login_hash
+from web.models.user import User
 
 
 # constants
@@ -109,18 +109,21 @@ def login():
     if not is_login_valid:
         return render_template(
             "login.html",
-            error="Ошибка верификации данных, попробуйте еще раз или обратитесь к разработчикам"
+            error="Ошибка верификации данных, попробуйте еще раз или "
+            + "обратитесь к разработчикам"
         )
     if time.time() - int(request.args["auth_date"]) \
             >= TELEGRAM_LOGIN_EXPIRY_TIME:
         return render_template(
             "login.html",
-            error="Ваша сессия истекла, попробуйте еще раз или обратитесь к разработчикам"
+            error="Ваша сессия истекла, попробуйте еще раз или обратитесь к "
+            + "разработчикам"
         )
     if not context.repository.is_user_admin(int(user_id_str)):
         return render_template(
             "login.html",
-            error="Вы не входите в список администраторов, обратитесь к разработчикам, если считаете, что это ошибка"
+            error="Вы не входите в список администраторов, обратитесь к "
+            + "разработчикам, если считаете, что это ошибка"
         )
     user = User(user_id_str)
     login_user(user)
