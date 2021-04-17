@@ -1,5 +1,5 @@
 from flask import Flask, render_template, g, request, redirect, url_for
-from flask_login import LoginManager, login_user, login_required
+from flask_login import LoginManager, login_user, login_required, logout_user
 import json
 from os import path
 import time
@@ -126,6 +126,13 @@ def login():
     login_user(user)
 
     return redirect(url_for("root"))
+
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("login"))
 
 
 @app.route("/api/queues/<int:id>", methods=["DELETE"])
