@@ -100,20 +100,28 @@ def edit_queue(id):
 
 @app.route("/login")
 def login():
-    return render_template("login.html")
-
-
-@app.route("/telegram-login-successful")
-def telegram_login_successful():
+    # page navigation
+    if not request.args:
+        return render_template("login.html")
+    # redirect from telegram login page after login attempt
     user_id_str = request.args["id"]
     is_login_valid = validate_login_hash(request.args, TOKEN)
     if not is_login_valid:
-        return redirect(url_for("login"))
+        return render_template(
+            "login.html",
+            error="Неверные данные логина, попробуйте еще раз или обратитесь к разработчикам"
+        )
     if time.time() - int(request.args["auth_date"]) \
             >= TELEGRAM_LOGIN_EXPIRY_TIME:
-        return redirect(url_for("login"))
+        return render_template(
+            "login.html",
+            error="Ваша сессия истекла, попробуйте еще раз или обратитесь к разработчикам"
+        )
     if not context.repository.is_user_admin(int(user_id_str)):
-        return redirect(url_for("login"))
+        return render_template(
+            "login.html",
+            error="Вы не входите в список администраторов, обратитесь к разработчикам, если считаете, что это ошибка"
+        )
     user = User(user_id_str)
     login_user(user)
 
