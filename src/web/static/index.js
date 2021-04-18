@@ -91,7 +91,7 @@ const renameQueue = (queueId, originalQueueName) => {
         alert("Имя очереди не должно превышать 100 символов");
         return;
     }
-    if (newQueueName === originalQueueName.trim()) {
+    if (newQueueName === originalQueueName) {
         alert("Новое имя очереди должно отличаться от старого");
         return;
     }
