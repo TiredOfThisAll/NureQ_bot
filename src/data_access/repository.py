@@ -259,5 +259,12 @@ class Repository:
         """, (user_id,)).fetchone()
         return tuple_user_id is not None
 
+    def rename_queue(self, id, new_name):
+        self.cursor.execute("""
+            UPDATE queues
+            SET name = ?
+            WHERE id = ?
+        """, (new_name, id))
+
     def commit(self):
         self.connection.commit()
