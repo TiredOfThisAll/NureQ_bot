@@ -7,7 +7,7 @@
             <div>
                 {% for queue_member in queue_members %}
                     <label>
-                        <input type="radio" name="left-member" />
+                        <input type="radio" name="left-member" value="{{ queue_member.position }}" />
                         {{ queue_member.user_info.get_formatted_name()|e }}
                     </label>
                 {% endfor %}
@@ -18,7 +18,7 @@
             <div>
                 {% for queue_member in queue_members %}
                     <label>
-                        <input type="radio" name="right-member" />
+                        <input type="radio" name="right-member" value="{{ queue_member.position }}" />
                         {{ queue_member.user_info.get_formatted_name()|e }}
                     </label>
                 {% endfor %}

@@ -98,7 +98,7 @@ def edit_queue(id):
     )
 
 
-@app.route("/queues/<int:queue_id>/swap-queue-members")
+@app.route("/queues/<int:queue_id>/swap-queue-members", methods=["GET"])
 @login_required
 def swap_queue_members(queue_id):
     queue = context.repository.get_queue_by_id(queue_id)
