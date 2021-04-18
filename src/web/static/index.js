@@ -76,7 +76,7 @@ const moveDownQueueMember = (queueId, queueMemberPosition) => {
         });
 };
 
-const renameQueue = (queueId, queueName) => {
+const renameQueue = (queueId, originalQueueName) => {
     const newQueueNameOrNull = document.querySelector("#new_queue_name");
     if (newQueueNameOrNull === null) {
         alert("Имя очереди не может быть пустым");
@@ -91,7 +91,7 @@ const renameQueue = (queueId, queueName) => {
         alert("Имя очереди не должно превышать 100 символов");
         return;
     }
-    if (newQueueName === queueName.trim()) {
+    if (newQueueName === originalQueueName.trim()) {
         alert("Новое имя очереди должно отличаться от старого");
         return;
     }
