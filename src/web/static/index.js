@@ -76,6 +76,38 @@ const moveDownQueueMember = (queueId, queueMemberPosition) => {
         });
 };
 
+const renameQueue = (queueId, queueName) => {
+    const newQueueNameOrNull = document.querySelector("#new_queue_name");
+    if (newQueueNameOrNull === null) {
+        alert("Имя очереди не может быть пустым");
+        return;
+    }
+    const newQueueName = newQueueNameOrNull.value.trim();
+    if (newQueueName === "") {
+        alert("Имя очереди не может быть пустым или состоять из пробелов");
+        return;
+    }
+    if (newQueueName.length > 99){
+        alert("Имя очереди не должно превышать 100 символов");
+        return;
+    }
+    if (newQueueName === queueName.trim()) {
+        alert("Новое имя очереди должно отличаться от старого");
+        return;
+    }
+    setSpinnerVisibility(true);
+    fetch(`/api/queues/${queueId}/rename-queue`, {method: "PUT", body: newQueueName})
+        .then(response => {
+            if (response.status !== 204) {
+                return Promise.reject();
+            }
+            location.reload();
+        })
+        .finally(() => {
+            setSpinnerVisibility(false)
+        });
+};
+
 const setSpinnerVisibility = isVisible => {
     document.getElementById("spinner").style.visibility = isVisible ? "visible" : "hidden";
 };
