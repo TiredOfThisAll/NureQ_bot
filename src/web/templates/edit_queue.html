@@ -3,7 +3,7 @@
 
     <div class="d-flex justify-content-between align-items-center mt-4">
         <div style="margin: 5px">
-            <input type="text" id="new_queue_name" class="new_queue_name" size="30" placeholder="{{ queue.name|e }}">
+            <input type="text" id="new_queue_name" size="30" placeholder="{{ queue.name|e }}">
             <i class="btn btn-primary" style="height: 35px" onclick='renameQueue({{ queue.id }}, {{ queue.name|tojson }})'>
                 Сохранить
             </i>
