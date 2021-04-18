@@ -1,11 +1,21 @@
 {% extends "layout.html" %}
 {% block content %}
-<div style="margin: 5px">
-    <input type="text" id="new_queue_name" class="new_queue_name" size="30" placeholder="{{ queue.name|e }}">
-    <i class="btn btn-primary" style="height: 35px" onclick='renameQueue({{ queue.id }}, {{ queue.name|tojson }})'>
-        Сохранить
-    </i>
-</div>
+
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <div style="margin: 5px">
+            <input type="text" id="new_queue_name" class="new_queue_name" size="30" placeholder="{{ queue.name|e }}">
+            <i class="btn btn-primary" style="height: 35px" onclick='renameQueue({{ queue.id }}, {{ queue.name|tojson }})'>
+                Сохранить
+            </i>
+        </div>
+
+        {% if queue_members %}
+            <a class="btn btn-outline-primary" href="{{ url_for('swap_queue_members', queue_id=queue.id) }}">
+                Поменять двух членов очереди местами <i class="bi bi-arrow-down-up"></i>
+            </a>
+        {% endif %}
+    </div>
+
     <table class="table table-striped">
         <thead>
             <tr>
