@@ -22,6 +22,7 @@ with open(config_file_path) as configuration_file:
 
 DATABASE_PATH = path.join(PROJECT_PATH, configuration["database"])
 TOKEN_PATH = path.join(PROJECT_PATH, configuration["token"])
+QUEUE_NAME_LIMIT = configuration["queue_name_limit"]
 
 with open(TOKEN_PATH) as token_file:
     TOKEN = token_file.readline()
@@ -214,8 +215,15 @@ def pull_down_queue_member(queue_id, action):
 def rename_queue(queue_id):
     new_name = request.data
     if not new_name:
-        return "New queue name is empty", 400
-    context.repository.rename_queue(queue_id, new_name.decode("utf-8"))
+        return "New queue name is blank", 400
+    decoded_new_name = new_name.decode("utf-8")
+    if decoded_new_name.strip() == "":
+        return "Queue name can't consist of only whitespaces or be blank"
+    if len(decoded_new_name) >= QUEUE_NAME_LIMIT:
+        return "Queue name is too long", 400
+    error = context.repository.rename_queue(queue_id, decoded_new_name)
+    if error == "QUEUE_NAME_DUPLICATE":
+        return f"Duplicate name not allowed: {decoded_new_name}", 409
     context.repository.commit()
     return "", 204
 
