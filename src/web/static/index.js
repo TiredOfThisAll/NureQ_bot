@@ -142,6 +142,10 @@ const swapQueueMembers = queueId => {
         });
 };
 
+const handleQueueNameChange = () => {
+    document.getElementById("new_queue_input_subtext").hidden = false;
+};
+
 const setSpinnerVisibility = isVisible => {
     document.getElementById("spinner").style.visibility = isVisible ? "visible" : "hidden";
 };
