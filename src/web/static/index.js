@@ -77,12 +77,7 @@ const moveDownQueueMember = (queueId, queueMemberPosition) => {
 };
 
 const renameQueue = (queueId, originalQueueName) => {
-    const newQueueNameOrNull = document.querySelector("#new_queue_name");
-    if (newQueueNameOrNull === null) {
-        alert("Имя очереди не может быть пустым");
-        return;
-    }
-    const newQueueName = newQueueNameOrNull.value.trim();
+    const newQueueName = document.querySelector("#new_queue_name").value.trim();
     if (newQueueName === "") {
         alert("Имя очереди не может быть пустым или состоять из пробелов");
         return;
@@ -99,6 +94,7 @@ const renameQueue = (queueId, originalQueueName) => {
     fetch(`/api/queues/${queueId}/name`, {method: "PUT", body: newQueueName})
         .then(response => {
             if (response.status !== 204) {
+                response.text().then(alert);
                 return Promise.reject();
             }
             location.reload();
