@@ -1,6 +1,11 @@
 {% extends "layout.html" %}
 {% block content %}
-<div><h2>{{ queue.name|e }} (ID {{ queue.id }})</h2></div>
+<div style="margin: 5px">
+    <input type="text" id="new_queue_name" class="new_queue_name" size="30" placeholder="{{ queue.name|e }}">
+    <i class="btn btn-primary" style="height: 35px" onclick='renameQueue({{ queue.id }}, {{ queue.name|tojson }})'>
+        Сохранить
+    </i>
+</div>
     <table class="table table-striped">
         <thead>
             <tr>
