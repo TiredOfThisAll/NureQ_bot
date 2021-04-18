@@ -48,6 +48,27 @@ nav > div > a {
     background-color: white;
 }
 
+.swap-member-list-container {
+    display: flex; /* row layout */
+    justify-content: space-around; /* visual spacing */
+    align-items: center; /* align content vertically */
+}
+
+.swap-member-list-container > div {
+    /* members are displayed as a list */
+    display: flex;
+    flex-direction: column;
+
+    /* visual spacing */
+    padding: 1em;
+    margin: 2em;
+    min-width: 30%;
+
+    /* comfy round borders */
+    border: 1px solid gray;
+    border-radius: 10px;
+}
+
 #login-widget-container {
     /* center the widget horizontally and vertically somewhere around the top */
     display: grid;

@@ -98,6 +98,18 @@ def edit_queue(id):
     )
 
 
+@app.route("/queues/<int:queue_id>/swap-queue-members", methods=["GET"])
+@login_required
+def swap_queue_members(queue_id):
+    queue = context.repository.get_queue_by_id(queue_id)
+    queue_members = context.repository.get_queue_members_by_queue_id(queue_id)
+    return render_template(
+        "swap_queue_members.html",
+        queue=queue,
+        queue_members=queue_members
+    )
+
+
 @app.route("/login")
 def login():
     # page navigation
@@ -193,6 +205,41 @@ def pull_down_queue_member(queue_id, action):
         return "", 400
     if error is not None:
         return "", 500
+    context.repository.commit()
+    return "", 204
+
+
+@app.route("/api/queues/<int:queue_id>/swap-queue-members", methods=["PUT"])
+@login_required
+def swap_queue_members_action(queue_id):
+    try:
+        position_data = json.loads(request.data)
+    except ValueError:
+        return "Request body is not JSON", 400
+
+    if set(position_data.keys()) != set(["left_position", "right_position"]):
+        return (
+            "Request body must be an object with two keys: "
+            + "'left_position' and 'right_position'",
+            400
+        )
+
+    left_position = position_data["left_position"]
+    right_position = position_data["right_position"]
+    if type(left_position) != int or type(right_position) != int:
+        return "Provided positions must be integer values", 400
+
+    error = context.repository.swap_positions(
+        queue_id,
+        left_position,
+        right_position
+    )
+
+    if error == "INVALID_POSITION":
+        return "Incorrect positions were provided", 400
+    elif error is not None:
+        return "", 500
+
     context.repository.commit()
     return "", 204
 
