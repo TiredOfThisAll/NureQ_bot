@@ -209,7 +209,7 @@ def pull_down_queue_member(queue_id, action):
     return "", 204
 
 
-@app.route("/api/queues/<int:queue_id>/rename-queue", methods=["PUT"])
+@app.route("/api/queues/<int:queue_id>/name", methods=["PUT"])
 @login_required
 def rename_queue(queue_id):
     new_name = request.data

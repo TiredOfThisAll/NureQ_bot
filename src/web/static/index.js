@@ -96,7 +96,7 @@ const renameQueue = (queueId, originalQueueName) => {
         return;
     }
     setSpinnerVisibility(true);
-    fetch(`/api/queues/${queueId}/rename-queue`, {method: "PUT", body: newQueueName})
+    fetch(`/api/queues/${queueId}/name`, {method: "PUT", body: newQueueName})
         .then(response => {
             if (response.status !== 204) {
                 return Promise.reject();
