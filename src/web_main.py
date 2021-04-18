@@ -197,4 +197,15 @@ def pull_down_queue_member(queue_id, action):
     return "", 204
 
 
+@app.route("/api/queues/<int:queue_id>/rename-queue", methods=["PUT"])
+@login_required
+def rename_queue(queue_id):
+    new_name = request.data
+    if not new_name:
+        return "", 400
+    context.repository.rename_queue(queue_id, new_name.decode("utf-8"))
+    context.repository.commit()
+    return "", 204
+
+
 app.run(port=80)
