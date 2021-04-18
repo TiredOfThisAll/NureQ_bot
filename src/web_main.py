@@ -98,6 +98,18 @@ def edit_queue(id):
     )
 
 
+@app.route("/queues/<int:queue_id>/swap-queue-members")
+@login_required
+def swap_queue_members(queue_id):
+    queue = context.repository.get_queue_by_id(queue_id)
+    queue_members = context.repository.get_queue_members_by_queue_id(queue_id)
+    return render_template(
+        "swap_queue_members.html",
+        queue=queue,
+        queue_members=queue_members
+    )
+
+
 @app.route("/login")
 def login():
     # page navigation

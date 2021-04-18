@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="d-flex flex-column mt-4">
+        <h2 class="align-self-center">Поменять двух членов очереди {{ queue.name|e }} (ID {{ queue.id }}) местами</h2>
+
+        <div class="swap-member-list-container">
+            <div>
+                {% for queue_member in queue_members %}
+                    <label>
+                        <input type="radio" name="left-member" />
+                        {{ queue_member.user_info.get_formatted_name()|e }}
+                    </label>
+                {% endfor %}
+            </div>
+
+            <i class="bi bi-arrow-left-right display-4"></i>
+
+            <div>
+                {% for queue_member in queue_members %}
+                    <label>
+                        <input type="radio" name="right-member" />
+                        {{ queue_member.user_info.get_formatted_name()|e }}
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <button class="btn btn-primary align-self-center">Поменять местами</button>
+    </div>
+{% endblock content %}
