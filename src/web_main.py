@@ -219,7 +219,7 @@ def swap_queue_members_action(queue_id):
 
     if set(position_data.keys()) != set(["left_position", "right_position"]):
         return (
-            "Request body must be an object with two keys: " \
+            "Request body must be an object with two keys: "
             + "'left_position' and 'right_position'",
             400
         )
