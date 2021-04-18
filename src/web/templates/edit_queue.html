@@ -3,9 +3,11 @@
     <div class="d-flex justify-content-between align-items-center mt-4">
         <h2>{{ queue.name|e }} (ID {{ queue.id }})</h2>
 
-        <a class="btn btn-outline-primary" href="{{ url_for('swap_queue_members', queue_id=queue.id) }}">
-            Поменять двух членов очереди местами <i class="bi bi-arrow-down-up"></i>
-        </a>
+        {% if queue_members %}
+            <a class="btn btn-outline-primary" href="{{ url_for('swap_queue_members', queue_id=queue.id) }}">
+                Поменять двух членов очереди местами <i class="bi bi-arrow-down-up"></i>
+            </a>
+        {% endif %}
     </div>
     <table class="table table-striped">
         <thead>
