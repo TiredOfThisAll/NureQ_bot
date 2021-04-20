@@ -42,6 +42,14 @@ class Repository:
                 user_id INTEGER PRIMARY KEY
             )
         """)
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS logs (
+                id INTEGER PRIMARY KEY,
+                level TEXT NOT NULL,
+                timestamp TEXT NOT NULL,
+                message TEXT NOT NULL
+            )
+        """)
 
     def create_queue(self, queue_name):
         try:
