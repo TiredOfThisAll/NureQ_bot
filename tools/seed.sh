@@ -3,6 +3,7 @@ echo "
 
   DELETE FROM queues;
   DELETE FROM admins;
+  DELETE FROM logs;
 
   INSERT INTO queues (name, last_updated_on)
   VALUES
@@ -25,5 +26,11 @@ echo "
   VALUES
     (477243002),
     (668426468);
+
+  INSERT INTO logs (level, timestamp, message)
+  VALUES
+    ('INFO', date('now'), 'Info log'),
+    ('WARN', date('now'), 'Warn log'),
+    ('ERROR', date('now'), 'Error log');
 " | sqlite3 ../nureq.db
 
