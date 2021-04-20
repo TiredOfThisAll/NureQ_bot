@@ -3,6 +3,7 @@ from os import path
 
 PROJECT_PATH = path.abspath(path.join(__file__, "..", "..", ".."))
 
+
 class Configuration:
     def load():
         config_file_path = path.join(
@@ -42,5 +43,6 @@ class Configuration:
             configuration.BOT_COMMANDS = json.loads(bot_commands_file.read())
 
         return configuration
+
 
 CONFIGURATION = Configuration.load()
