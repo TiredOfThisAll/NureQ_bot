@@ -7,27 +7,13 @@ from werkzeug.local import LocalProxy
 
 from data_access.repository import Repository
 from data_access.sqlite_connection import create_sqlite_connection
+from services.configuration import CONFIGURATION, PROJECT_PATH
 from services.telegram.authentication import validate_login_hash
 from web.models.user import User
 
 
 # constants
-PROJECT_PATH = path.abspath(path.join(__file__, "..", ".."))
 TELEGRAM_LOGIN_EXPIRY_TIME = 24 * 60 * 60  # 24 hours in seconds
-
-# configuration
-config_file_path = path.join(PROJECT_PATH, "config", "configuration.json")
-with open(config_file_path) as configuration_file:
-    configuration = json.loads(configuration_file.read())
-
-DATABASE_PATH = path.join(PROJECT_PATH, configuration["database"])
-TOKEN_PATH = path.join(PROJECT_PATH, configuration["token"])
-
-with open(TOKEN_PATH) as token_file:
-    TOKEN = token_file.readline()
-    if TOKEN[-1] == "\n":
-        TOKEN = TOKEN[:-1]
-    TOKEN = TOKEN.encode()
 
 # flask set-up
 app = Flask(
@@ -35,7 +21,7 @@ app = Flask(
     template_folder=path.join(PROJECT_PATH, "src", "web", "templates"),
     static_folder=path.join(PROJECT_PATH, "src", "web", "static")
 )
-app.secret_key = TOKEN
+app.secret_key = CONFIGURATION.TOKEN
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -52,7 +38,7 @@ def unathorized():
 
 class Context:
     def __init__(self):
-        self.connection = create_sqlite_connection(DATABASE_PATH)
+        self.connection = create_sqlite_connection(CONFIGURATION.DATABASE_PATH)
         self.repository = Repository(self.connection)
 
     def __enter__(self):
@@ -117,7 +103,7 @@ def login():
         return render_template("login.html")
     # redirect from telegram login page after login attempt
     user_id_str = request.args["id"]
-    is_login_valid = validate_login_hash(request.args, TOKEN)
+    is_login_valid = validate_login_hash(request.args, CONFIGURATION.TOKEN)
     if not is_login_valid:
         return render_template(
             "login.html",

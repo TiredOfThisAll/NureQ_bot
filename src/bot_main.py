@@ -1,5 +1,3 @@
-import json
-from os import path
 import time
 import traceback
 from urllib.error import HTTPError
@@ -8,73 +6,54 @@ from data_access.repository import Repository
 from bot.server.controller import Controller, ControllerConfiguration
 from bot.server.models.update_context import UpdateContext
 from bot.server.router import route
+from services.configuration import CONFIGURATION
 from services.telegram.message_manager import TelegramMessageManager
 from services.logging import CompositeLogger, ConsoleLogger, FileLogger, \
     LoggingLevel
 from data_access.sqlite_connection import create_sqlite_connection
 
-# configuration
-PROJECT_PATH = path.abspath(path.join(__file__, "..", ".."))
-
-config_file_path = path.join(PROJECT_PATH, "config", "configuration.json")
-with open(config_file_path) as configuration_file:
-    configuration = json.loads(configuration_file.read())
-
-TOKEN_PATH = path.join(PROJECT_PATH, configuration["token"])
-# load the token if available
-if not path.exists(TOKEN_PATH):
-    print(f"You need the token file at {TOKEN_PATH}")
-    exit(1)
-
-with open(TOKEN_PATH) as token_file:
-    TOKEN = token_file.readline()
-    if TOKEN[-1] == "\n":
-        TOKEN = TOKEN[:-1]
-
-DATABASE_PATH = path.join(PROJECT_PATH, configuration["database"])
-LOGS_PATH = path.join(PROJECT_PATH, configuration["logs"])
-PAUSE_DURATION = configuration["pause"]
-QUEUE_NAME_LIMIT = configuration["queue_name_limit"]
-BOT_USERNAME = configuration["bot_username"]
-
 # create DB schema if it doesn't exist yet
-with create_sqlite_connection(DATABASE_PATH) as connection:
+with create_sqlite_connection(CONFIGURATION.DATABASE_PATH) as connection:
     repository = Repository(connection)
     repository.create_schema()
     repository.commit()
 
-telegram_message_manager = TelegramMessageManager(TOKEN)
+telegram_message_manager = TelegramMessageManager(CONFIGURATION.TOKEN)
 
-bot_commands_file_path = path.join(PROJECT_PATH, "config", "bot_commands.json")
-with open(bot_commands_file_path, encoding="UTF-8") as bot_commands_file:
-    telegram_message_manager.set_bot_commands(bot_commands_file.read())
+telegram_message_manager.set_bot_commands(CONFIGURATION.BOT_COMMANDS)
 
 logger = CompositeLogger([
     ConsoleLogger(),
-    FileLogger(LOGS_PATH),
+    FileLogger(CONFIGURATION.LOGS_PATH),
 ])
 
 # the 'game' loop that listens for new messages and responds to them
 try:
     logger.log(LoggingLevel.INFO, "Bot started")
     while True:
-        time.sleep(PAUSE_DURATION)
+        time.sleep(CONFIGURATION.PAUSE_DURATION)
 
         updates = telegram_message_manager.get_latest_messages()
 
-        with create_sqlite_connection(DATABASE_PATH) as connection:
+        with create_sqlite_connection(CONFIGURATION.DATABASE_PATH) \
+                as connection:
             repository = Repository(connection)
             controller = Controller(
                 telegram_message_manager,
                 repository,
                 logger,
-                ControllerConfiguration(queue_name_limit=QUEUE_NAME_LIMIT)
+                ControllerConfiguration(
+                    queue_name_limit=CONFIGURATION.QUEUE_NAME_LIMIT
+                )
             )
 
             # iterate over the latest messages for update in updates:
             for update in updates:
                 update_context = UpdateContext.from_update(update)
-                target_handler = route(update_context, BOT_USERNAME)
+                target_handler = route(
+                    update_context,
+                    CONFIGURATION.BOT_USERNAME
+                )
                 if target_handler is None:
                     logger.log(
                         LoggingLevel.ERROR,
