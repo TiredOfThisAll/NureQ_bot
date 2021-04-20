@@ -8,7 +8,7 @@ def validate_login_hash(auth_data, bot_token):
         if key != "hash":
             auth_data_list.append(f"{key}={value}")
     data_check_string = "\n".join(sorted(auth_data_list))
-    secret_key = sha256(bot_token).digest()
+    secret_key = sha256(bot_token.encode()).digest()
     expected_hash = hmac.new(secret_key, data_check_string.encode(), sha256)\
         .hexdigest()
     return expected_hash == auth_data["hash"]
