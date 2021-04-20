@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block content %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th class="col-1">ID</th>
+                <th class="col-1">Level</th>
+                <th class="col-2">Timestamp</th>
+                <th class="col-8">Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+                <tr>
+                    <td>{{ log.id }}</td>
+
+                    {% if log.level == "INFO" %}
+                        <td class="fw-bold text-info">{{ log.level }}</td>
+                    {% elif log.level == "WARN" %}
+                        <td class="fw-bold text-warning">{{ log.level }}</td>
+                    {% elif log.level == "ERROR" %}
+                        <td class="fw-bold text-danger">{{ log.level }}</td>
+                    {% endif %}
+
+                    <td>{{ log.get_formatted_timestamp() }}</td>
+
+                    <td>{{ log.message }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock content %}

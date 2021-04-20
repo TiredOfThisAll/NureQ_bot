@@ -96,6 +96,12 @@ def swap_queue_members(queue_id):
     )
 
 
+@app.route("/logs")
+@login_required
+def logs():
+    return render_template("logs.html", logs=context.repository.get_all_logs())
+
+
 @app.route("/login")
 def login():
     # page navigation
