@@ -3,6 +3,7 @@ from datetime import datetime
 
 from data_access.models.queue import Queue
 from data_access.models.queue_member import QueueMember
+from data_access.models.log import Log
 from web.models.queue_view import QueueView
 
 
@@ -266,6 +267,14 @@ class Repository:
             WHERE user_id = ?
         """, (user_id,)).fetchone()
         return tuple_user_id is not None
+
+    def get_all_logs(self):
+        log_tuples = self.cursor.execute("""
+            SELECT *
+            FROM logs
+            ORDER BY datetime(timestamp) DESC
+        """).fetchall()
+        return list(map(Log.from_tuple, log_tuples))
 
     def commit(self):
         self.connection.commit()
