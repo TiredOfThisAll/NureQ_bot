@@ -201,6 +201,24 @@ def pull_down_queue_member(queue_id, action):
     return "", 204
 
 
+@app.route("/api/queues/<int:queue_id>/name", methods=["PUT"])
+@login_required
+def rename_queue(queue_id):
+    new_name = request.data
+    if not new_name:
+        return "New queue name is blank", 400
+    decoded_new_name = new_name.decode("utf-8").strip()
+    if decoded_new_name == "":
+        return "Queue name can't consist of only whitespaces or be blank", 400
+    if len(decoded_new_name) >= CONFIGURATION.QUEUE_NAME_LIMIT:
+        return "Queue name is too long", 400
+    error = context.repository.rename_queue(queue_id, decoded_new_name)
+    if error == "QUEUE_NAME_DUPLICATE":
+        return f"Duplicate name not allowed: {decoded_new_name}", 409
+    context.repository.commit()
+    return "", 204
+
+
 @app.route("/api/queues/<int:queue_id>/swap-queue-members", methods=["PUT"])
 @login_required
 def swap_queue_members_action(queue_id):
