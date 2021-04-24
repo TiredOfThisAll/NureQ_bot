@@ -3,8 +3,8 @@
     <div class="d-flex justify-content-between align-items-center mt-4">
         <div class="d-flex">
             <div class="d-flex flex-column">
-                <input type="text" id="new_queue_name" size="30" value="{{ queue.name|e }}" oninput="handleQueueNameChange()">
-                <small id="new_queue_input_subtext" class="text-muted" hidden>Сохранитесь</small>
+                <input type="text" id="new_queue_name" size="45" value="{{ queue.name|e }}" oninput="handleQueueNameChange()">
+                <small id="new_queue_input_subtext" class="text-muted" hidden>Нажмите "Сохранить" чтобы подтвердить изменения</small>
             </div>
             <button class="btn btn-primary ms-1" onclick='renameQueue({{ queue.id }}, {{ queue.name|tojson }})'>
                 Сохранить
