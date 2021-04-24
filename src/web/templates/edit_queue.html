@@ -6,7 +6,7 @@
                 <input type="text" id="new_queue_name" size="30" value="{{ queue.name|e }}" oninput="handleQueueNameChange()">
                 <small id="new_queue_input_subtext" class="text-muted" hidden>Сохранитесь</small>
             </div>
-            <button class="btn btn-primary" style="height: 35px" onclick='renameQueue({{ queue.id }}, {{ queue.name|tojson }})'>
+            <button class="btn btn-primary ms-1" onclick='renameQueue({{ queue.id }}, {{ queue.name|tojson }})'>
                 Сохранить
             </button>
         </div>
