@@ -211,14 +211,13 @@ def pull_down_queue_member(queue_id, action):
 
 
 @app.route("/api/queues/<int:queue_id>/name", methods=["PUT"])
-@login_required
 def rename_queue(queue_id):
     new_name = request.data
     if not new_name:
         return "New queue name is blank", 400
-    decoded_new_name = new_name.decode("utf-8")
-    if decoded_new_name.strip() == "":
-        return "Queue name can't consist of only whitespaces or be blank"
+    decoded_new_name = new_name.decode("utf-8").strip()
+    if decoded_new_name == "":
+        return "Queue name can't consist of only whitespaces or be blank", 400
     if len(decoded_new_name) >= QUEUE_NAME_LIMIT:
         return "Queue name is too long", 400
     error = context.repository.rename_queue(queue_id, decoded_new_name)
