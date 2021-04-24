@@ -16,7 +16,8 @@
         </small>
 
         <button
-            class="btn btn-primary ms-2"
+            id="save_queue_name_button"
+            class="btn btn-outline-primary ms-2"
             style="grid-area: save-button"
             onclick='renameQueue({{ queue.id }}, {{ queue.name|tojson }})'
         >

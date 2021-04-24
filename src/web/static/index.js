@@ -140,6 +140,10 @@ const swapQueueMembers = queueId => {
 
 const handleQueueNameChange = () => {
     document.getElementById("new_queue_input_subtext").hidden = false;
+
+    const saveQueueNameButton = document.getElementById("save_queue_name_button");
+    saveQueueNameButton.classList.remove("btn-outline-primary");
+    saveQueueNameButton.classList.add("btn-primary");
 };
 
 const setSpinnerVisibility = isVisible => {
