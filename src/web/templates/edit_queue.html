@@ -3,6 +3,7 @@
     <div class="edit-queue-controls">
         <input
             id="new_queue_name"
+            class="form-control"
             style="grid-area: textbox"
             type="text"
             size="45"
@@ -15,7 +16,7 @@
         </small>
 
         <button
-            class="btn btn-primary ms-1"
+            class="btn btn-primary ms-2"
             style="grid-area: save-button"
             onclick='renameQueue({{ queue.id }}, {{ queue.name|tojson }})'
         >
