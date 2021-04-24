@@ -1,18 +1,33 @@
 {% extends "layout.html" %}
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center mt-4">
-        <div class="d-flex">
-            <div class="d-flex flex-column">
-                <input type="text" id="new_queue_name" size="45" value="{{ queue.name|e }}" oninput="handleQueueNameChange()">
-                <small id="new_queue_input_subtext" class="text-muted" hidden>Нажмите "Сохранить" чтобы подтвердить изменения</small>
-            </div>
-            <button class="btn btn-primary ms-1" onclick='renameQueue({{ queue.id }}, {{ queue.name|tojson }})'>
-                Сохранить
-            </button>
-        </div>
+    <div class="edit-queue-controls">
+        <input
+            id="new_queue_name"
+            style="grid-area: textbox"
+            type="text"
+            size="45"
+            value="{{ queue.name|e }}"
+            oninput="handleQueueNameChange()"
+        >
+
+        <small id="new_queue_input_subtext" class="text-muted" style="grid-area: hint" hidden>
+            Нажмите "Сохранить" чтобы подтвердить изменения
+        </small>
+
+        <button
+            class="btn btn-primary ms-1"
+            style="grid-area: save-button"
+            onclick='renameQueue({{ queue.id }}, {{ queue.name|tojson }})'
+        >
+            Сохранить
+        </button>
 
         {% if queue_members %}
-            <a class="btn btn-outline-primary" href="{{ url_for('swap_queue_members', queue_id=queue.id) }}">
+            <a
+                class="btn btn-outline-primary"
+                style="grid-area: swap-page-link"
+                href="{{ url_for('swap_queue_members', queue_id=queue.id) }}"
+            >
                 Поменять двух членов очереди местами <i class="bi bi-arrow-down-up"></i>
             </a>
         {% endif %}

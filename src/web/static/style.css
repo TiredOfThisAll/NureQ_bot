@@ -69,6 +69,17 @@ nav > div > a {
     border-radius: 10px;
 }
 
+.edit-queue-controls {
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    grid-template-rows: 3fr 5fr 3fr;
+    grid-template-areas:
+        ".       .           . ."
+        "textbox save-button . swap-page-link"
+        "hint    .           . ."
+    ;
+}
+
 #login-widget-container {
     /* center the widget horizontally and vertically somewhere around the top */
     display: grid;
