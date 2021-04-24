@@ -149,3 +149,11 @@ const handleQueueNameChange = () => {
 const setSpinnerVisibility = isVisible => {
     document.getElementById("spinner").style.visibility = isVisible ? "visible" : "hidden";
 };
+
+(() => {
+    document.getElementById("new_queue_name").addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+            document.getElementById("save_queue_name_button").click();
+        }
+    });
+})();
