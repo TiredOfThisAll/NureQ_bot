@@ -7,28 +7,13 @@ from werkzeug.local import LocalProxy
 
 from data_access.repository import Repository
 from data_access.sqlite_connection import create_sqlite_connection
+from services.configuration import CONFIGURATION, PROJECT_PATH
 from services.telegram.authentication import validate_login_hash
 from web.models.user import User
 
 
 # constants
-PROJECT_PATH = path.abspath(path.join(__file__, "..", ".."))
 TELEGRAM_LOGIN_EXPIRY_TIME = 24 * 60 * 60  # 24 hours in seconds
-
-# configuration
-config_file_path = path.join(PROJECT_PATH, "config", "configuration.json")
-with open(config_file_path) as configuration_file:
-    configuration = json.loads(configuration_file.read())
-
-DATABASE_PATH = path.join(PROJECT_PATH, configuration["database"])
-TOKEN_PATH = path.join(PROJECT_PATH, configuration["token"])
-QUEUE_NAME_LIMIT = configuration["queue_name_limit"]
-
-with open(TOKEN_PATH) as token_file:
-    TOKEN = token_file.readline()
-    if TOKEN[-1] == "\n":
-        TOKEN = TOKEN[:-1]
-    TOKEN = TOKEN.encode()
 
 # flask set-up
 app = Flask(
@@ -36,7 +21,7 @@ app = Flask(
     template_folder=path.join(PROJECT_PATH, "src", "web", "templates"),
     static_folder=path.join(PROJECT_PATH, "src", "web", "static")
 )
-app.secret_key = TOKEN
+app.secret_key = CONFIGURATION.TOKEN
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -53,7 +38,7 @@ def unathorized():
 
 class Context:
     def __init__(self):
-        self.connection = create_sqlite_connection(DATABASE_PATH)
+        self.connection = create_sqlite_connection(CONFIGURATION.DATABASE_PATH)
         self.repository = Repository(self.connection)
 
     def __enter__(self):
@@ -111,6 +96,12 @@ def swap_queue_members(queue_id):
     )
 
 
+@app.route("/logs")
+@login_required
+def logs():
+    return render_template("logs.html", logs=context.repository.get_all_logs())
+
+
 @app.route("/login")
 def login():
     # page navigation
@@ -118,7 +109,7 @@ def login():
         return render_template("login.html")
     # redirect from telegram login page after login attempt
     user_id_str = request.args["id"]
-    is_login_valid = validate_login_hash(request.args, TOKEN)
+    is_login_valid = validate_login_hash(request.args, CONFIGURATION.TOKEN)
     if not is_login_valid:
         return render_template(
             "login.html",
@@ -219,7 +210,7 @@ def rename_queue(queue_id):
     decoded_new_name = new_name.decode("utf-8").strip()
     if decoded_new_name == "":
         return "Queue name can't consist of only whitespaces or be blank", 400
-    if len(decoded_new_name) >= QUEUE_NAME_LIMIT:
+    if len(decoded_new_name) >= CONFIGURATION.QUEUE_NAME_LIMIT:
         return "Queue name is too long", 400
     error = context.repository.rename_queue(queue_id, decoded_new_name)
     if error == "QUEUE_NAME_DUPLICATE":

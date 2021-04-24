@@ -25,6 +25,18 @@ class FileLogger:
             log_file.write(get_formatted_log(level, message))
 
 
+class DatabaseLogger:
+    def __init__(self, connection):
+        self.connection = connection
+
+    def log(self, level, message):
+        self.connection.execute("""
+            INSERT INTO logs (level, timestamp, message)
+            VALUES (?, ?, ?)
+        """, (level, datetime.utcnow(), message))
+        self.connection.commit()
+
+
 class CompositeLogger:
     def __init__(self, loggers):
         self.loggers = loggers

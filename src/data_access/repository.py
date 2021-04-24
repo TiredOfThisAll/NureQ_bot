@@ -3,6 +3,7 @@ from datetime import datetime
 
 from data_access.models.queue import Queue
 from data_access.models.queue_member import QueueMember
+from data_access.models.log import Log
 from web.models.queue_view import QueueView
 
 
@@ -40,6 +41,14 @@ class Repository:
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS admins (
                 user_id INTEGER PRIMARY KEY
+            )
+        """)
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS logs (
+                id INTEGER PRIMARY KEY,
+                level TEXT NOT NULL,
+                timestamp TEXT NOT NULL,
+                message TEXT NOT NULL
             )
         """)
 
@@ -268,6 +277,14 @@ class Repository:
             """, (new_name, id))
         except sqlite3.IntegrityError:
             return "QUEUE_NAME_DUPLICATE"
+
+    def get_all_logs(self):
+        log_tuples = self.cursor.execute("""
+            SELECT *
+            FROM logs
+            ORDER BY datetime(timestamp) DESC
+        """).fetchall()
+        return list(map(Log.from_tuple, log_tuples))
 
     def commit(self):
         self.connection.commit()

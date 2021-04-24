@@ -27,6 +27,11 @@
                     <a class="text-decoration-none fs-5" href="{{ url_for('queues') }}">Queues</a>
                 </div>
                 <div class="d-flex col-auto align-items-center {{
+                    request.path == url_for('logs') and 'current-page-link'
+                }}">
+                    <a class="text-decoration-none fs-5" href="{{ url_for('logs') }}">Logs</a>
+                </div>
+                <div class="d-flex col-auto align-items-center {{
                     request.path == url_for('login') and 'current-page-link'
                 }}">
                     {% if current_user.is_authenticated %}
