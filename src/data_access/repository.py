@@ -259,5 +259,15 @@ class Repository:
         """, (user_id,)).fetchone()
         return tuple_user_id is not None
 
+    def rename_queue(self, id, new_name):
+        try:
+            self.cursor.execute("""
+                UPDATE queues
+                SET name = ?
+                WHERE id = ?
+            """, (new_name, id))
+        except sqlite3.IntegrityError:
+            return "QUEUE_NAME_DUPLICATE"
+
     def commit(self):
         self.connection.commit()

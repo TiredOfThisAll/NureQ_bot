@@ -76,6 +76,38 @@ const moveDownQueueMember = (queueId, queueMemberPosition) => {
         });
 };
 
+const renameQueue = (queueId, originalQueueName) => {
+    const newQueueName = document.querySelector("#new_queue_name").value.trim();
+    if (newQueueName === "") {
+        alert("Имя очереди не может быть пустым или состоять из пробелов");
+        return;
+    }
+    if (newQueueName.length > 99){
+        alert("Имя очереди не должно превышать 100 символов");
+        return;
+    }
+    if (newQueueName === originalQueueName) {
+        alert("Новое имя очереди должно отличаться от старого");
+        return;
+    }
+    setSpinnerVisibility(true);
+    fetch(`/api/queues/${queueId}/name`, {method: "PUT", body: newQueueName})
+        .then(response => {
+            if (response.status === 409) {
+                alert(`Имя '${newQueueName}' уже используется`);
+                return;
+            }
+            if (response.status !== 204) {
+                response.text().then(alert);
+                return Promise.reject();
+            }
+            location.reload();
+        })
+        .finally(() => {
+            setSpinnerVisibility(false)
+        });
+};
+
 const swapQueueMembers = queueId => {
     const leftPositionInputOrNull = document.querySelector("input[name='left-member']:checked");
     const rightPositionInputOrNull = document.querySelector("input[name='right-member']:checked");
@@ -110,6 +142,22 @@ const swapQueueMembers = queueId => {
         });
 };
 
+const handleQueueNameChange = () => {
+    document.getElementById("new_queue_input_subtext").hidden = false;
+
+    const saveQueueNameButton = document.getElementById("save_queue_name_button");
+    saveQueueNameButton.classList.remove("btn-outline-primary");
+    saveQueueNameButton.classList.add("btn-primary");
+};
+
 const setSpinnerVisibility = isVisible => {
     document.getElementById("spinner").style.visibility = isVisible ? "visible" : "hidden";
 };
+
+(() => {
+    document.getElementById("new_queue_name").addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+            document.getElementById("save_queue_name_button").click();
+        }
+    });
+})();
