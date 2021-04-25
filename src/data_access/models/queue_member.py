@@ -1,4 +1,4 @@
-from server.models.user_info import UserInfo
+from bot.server.models.user_info import UserInfo
 
 
 class QueueMember:
@@ -10,7 +10,8 @@ class QueueMember:
         user_last_name,
         user_username,
         queue_id,
-        crossed
+        crossed,
+        position
     ):
         self.id = id
         self.user_id = user_id
@@ -19,6 +20,7 @@ class QueueMember:
         self.user_username = user_username
         self.queue_id = queue_id
         self.crossed = crossed
+        self.position = position
         self.user_info = UserInfo(
             user_id,
             user_first_name,
@@ -27,15 +29,7 @@ class QueueMember:
         )
 
     def from_tuple(queue_member_tuple):
-        return QueueMember(
-            queue_member_tuple[0],
-            queue_member_tuple[1],
-            queue_member_tuple[2],
-            queue_member_tuple[3],
-            queue_member_tuple[4],
-            queue_member_tuple[5],
-            queue_member_tuple[6],
-        )
+        return QueueMember(*queue_member_tuple)
 
     def get_formatted_queue_string(self, queue_pos):
         formatted_queue_string \
@@ -52,4 +46,5 @@ class QueueMember:
             + f"user_last_name = {self.user_last_name}, " \
             + f"user_username = {self.user_username}, " \
             + f"queue_id = {self.queue_id}, " \
-            + f"crossed = {self.crossed}"
+            + f"crossed = {self.crossed}, " \
+            + f"position = {self.position}"

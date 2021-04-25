@@ -57,7 +57,9 @@ class TelegramMessageManager:
 
     def set_bot_commands(self, bot_commands):
         set_bot_commands_url = TELEGRAM_BOT_API_URL + self.token \
-            + "/setMyCommands?" + urlencode({"commands": bot_commands})
+            + "/setMyCommands?" + urlencode({
+                "commands": json.dumps(bot_commands),
+            })
         with urlopen(set_bot_commands_url):
             pass
 

@@ -1,0 +1,107 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="edit-queue-controls">
+        <input
+            id="new_queue_name"
+            class="form-control"
+            style="grid-area: textbox"
+            type="text"
+            size="45"
+            value="{{ queue.name|e }}"
+            oninput="handleQueueNameChange()"
+        >
+
+        <small id="new_queue_input_subtext" class="text-muted" style="grid-area: hint" hidden>
+            Нажмите "Сохранить" чтобы подтвердить изменения
+        </small>
+
+        <button
+            id="save_queue_name_button"
+            class="btn btn-outline-primary ms-2"
+            style="grid-area: save-button"
+            onclick='renameQueue({{ queue.id }}, {{ queue.name|tojson }})'
+        >
+            Сохранить
+        </button>
+
+        {% if queue_members %}
+            <a
+                class="btn btn-outline-primary"
+                style="grid-area: swap-page-link"
+                href="{{ url_for('swap_queue_members', queue_id=queue.id) }}"
+            >
+                Поменять двух участников очереди местами <i class="bi bi-arrow-down-up"></i>
+            </a>
+        {% endif %}
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th></th>
+                <th class="col-2">
+                    ID Пользователя
+                </th>
+                <th class="col-8">
+                    Имя пользователя
+                </th>
+                <th class="col-2">
+                    Вычеркнут?
+                </th>
+                <th class="col-1"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for queue_member in queue_members %}
+                <tr class="align-middle">
+                    <td class="queue-reorder-controls">
+                        {% if queue_member.position != 0 %}
+                            <i
+                                class="bi bi-arrow-up btn btn-primary"
+                                onclick="moveUpQueueMember({{ queue.id }}, {{ queue_member.position }})"
+                            >
+                            </i>
+                        {% else %}
+                            <i class="bi bi-arrow-up btn disabled"></i>
+                        {% endif %}
+                        {% if queue_member.position != queue_members|length - 1 %}
+                            <i
+                                class="bi bi-arrow-down btn btn-primary"
+                                onclick="moveDownQueueMember({{ queue.id }}, {{ queue_member.position }})"
+                            >
+                            </i>
+                        {% else %}
+                            <i class="bi bi-arrow-down btn disabled"></i>
+                        {% endif %}
+                    </td>
+                    <td>{{ queue_member.id }}</td>
+                    <td class="col-4">{{ queue_member.user_info.get_formatted_name()|e }}</td>
+                    <td>
+                        <input
+                            class="form-check-input ms-2"
+                            type="checkbox"
+                            {{ queue_member.crossed and "checked" }}
+                            onclick="setMemberCrossedOut(
+                                {{ queue.id }},
+                                {{ queue_member.user_id }},
+                                {{ (not queue_member.crossed)|int }}
+                            )"
+                        >
+                    </td>
+                    <td>
+                        <i
+                            class="bi bi-trash-fill btn btn-danger"
+                            onclick='deleteMember(
+                                {{ queue.id }},
+                                {{ queue.name|tojson }},
+                                {{ queue_member.user_info.get_formatted_name()|tojson }},
+                                {{ queue_member.user_id }}
+                            )'
+                        >
+                        </i>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock content %}

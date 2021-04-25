@@ -2,13 +2,14 @@ import math
 import json
 import random
 
-from server.router import command_handler, response_handler, \
+from bot.server.router import command_handler, response_handler, \
     callback_handler, default_callback_handler, default_command_handler, \
     default_response_handler, default_other_handler
-from server.models.update_context import UpdateContext
+from bot.server.models.update_context import UpdateContext
 from services.logging import LoggingLevel
 from services.telegram.message_entities_builder import MessageEntitiesBuilder
 from services.telegram.message_manager import MAX_MESSAGE_LENGTH
+
 
 NEW_QUEUE_COMMAND_RESPONSE_TEXT \
     = "Введите имя новой очереди в ответ на это сообщение"
@@ -58,7 +59,6 @@ class Controller:
         )
 
     @command_handler("/newqueue")
-    @command_handler("/newqueue@NureQ_bot")
     def handle_new_queue_command(self, update_context):
         self.telegram_message_manager.send_message(
             update_context.chat_id,
@@ -68,7 +68,6 @@ class Controller:
         )
 
     @command_handler("/showqueue")
-    @command_handler("/showqueue@NureQ_bot")
     def handle_show_queue_command(self, update_context):
         self.handle_generic_queue_command(
             update_context,
@@ -77,7 +76,6 @@ class Controller:
         )
 
     @command_handler("/crossout")
-    @command_handler("/crossout@NureQ_bot")
     def handle_cross_out_command(self, update_context):
         self.handle_generic_queue_command(
             update_context,
@@ -86,7 +84,6 @@ class Controller:
         )
 
     @command_handler("/uncrossout")
-    @command_handler("/uncrossout@NureQ_bot")
     def handle_uncross_out_command(self, update_context):
         self.handle_generic_queue_command(
             update_context,
@@ -95,7 +92,6 @@ class Controller:
         )
 
     @command_handler("/addme")
-    @command_handler("/addme@NureQ_bot")
     def handle_add_me_command(self, update_context):
         self.handle_generic_queue_command(
             update_context,
@@ -104,7 +100,6 @@ class Controller:
         )
 
     @command_handler("/removeme")
-    @command_handler("/removeme@NureQ_bot")
     def handle_remove_me_command(self, update_context):
         self.handle_generic_queue_command(
             update_context,

@@ -1,0 +1,89 @@
+nav > div:hover,
+nav > div.current-page-link {
+    background-color: white;
+}
+
+nav > div:hover > a,
+nav > div.current-page-link > a {
+    color: black;
+}
+
+nav > div > a {
+    color: white;
+}
+
+#spinner {
+    /* display spinner covering the whole viewport */
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
+    left: 0;
+    /* hide the spinner initially */
+    visibility: hidden;
+    background-color: rgba(0, 0, 0, 0.3); /* partially transparent black */
+    /* centering spinner */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* TODO: commments */
+/* TODO: review */
+.queue-reorder-controls {
+    padding-top: 0.125em !important;
+    padding-bottom: 0 !important;
+
+    /* gap between the arrows */
+    display: grid;
+    gap: 1px;
+}
+
+.queue-reorder-controls > i {
+    padding: 0; /* clear default Bootstrap button size */
+}
+
+.queue-reorder-controls > i.disabled {
+    color: lightgray;
+    border: 1px solid lightgray;
+    background-color: white;
+}
+
+.swap-member-list-container {
+    display: flex; /* row layout */
+    justify-content: space-around; /* visual spacing */
+    align-items: center; /* align content vertically */
+}
+
+.swap-member-list-container > div {
+    /* members are displayed as a list */
+    display: flex;
+    flex-direction: column;
+
+    /* visual spacing */
+    padding: 1em;
+    margin: 2em;
+    min-width: 30%;
+
+    /* comfy round borders */
+    border: 1px solid gray;
+    border-radius: 10px;
+}
+
+.edit-queue-controls {
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    grid-template-rows: 3fr 5fr 3fr;
+    grid-template-areas:
+        ".       .           . ."
+        "textbox save-button . swap-page-link"
+        "hint    .           . ."
+    ;
+}
+
+#login-widget-container {
+    /* center the widget horizontally and vertically somewhere around the top */
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    height: 40vh;
+}
