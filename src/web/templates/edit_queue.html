@@ -30,7 +30,7 @@
                 style="grid-area: swap-page-link"
                 href="{{ url_for('swap_queue_members', queue_id=queue.id) }}"
             >
-                Поменять двух членов очереди местами <i class="bi bi-arrow-down-up"></i>
+                Поменять двух участников очереди местами <i class="bi bi-arrow-down-up"></i>
             </a>
         {% endif %}
     </div>
@@ -40,13 +40,13 @@
             <tr>
                 <th></th>
                 <th class="col-2">
-                    User ID
+                    ID Пользователя
                 </th>
                 <th class="col-8">
-                    Name
+                    Имя пользователя
                 </th>
                 <th class="col-2">
-                    Crossed Out
+                    Вычеркнут?
                 </th>
                 <th class="col-1"></th>
             </tr>

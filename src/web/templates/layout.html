@@ -7,7 +7,7 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css">
         <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
         <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-        <title>NureQ Admin - Queues</title>
+        <title>NureQ Admin</title>
     </head>
 
     <body class="container-fluid">
@@ -25,20 +25,20 @@
                     if request.path.startswith('/queues') or request.path == '/'
                     else ''
                 }}">
-                    <a class="text-decoration-none fs-5" href="{{ url_for('queues') }}">Queues</a>
+                    <a class="text-decoration-none fs-5" href="{{ url_for('queues') }}">Очереди</a>
                 </div>
                 <div class="d-flex col-auto align-items-center {{
                     request.path == url_for('logs') and 'current-page-link'
                 }}">
-                    <a class="text-decoration-none fs-5" href="{{ url_for('logs') }}">Logs</a>
+                    <a class="text-decoration-none fs-5" href="{{ url_for('logs') }}">Логи</a>
                 </div>
                 <div class="d-flex col-auto align-items-center {{
                     request.path == url_for('login') and 'current-page-link'
                 }}">
                     {% if current_user.is_authenticated %}
-                        <a class="text-decoration-none fs-5" href="{{ url_for('logout') }}">Log Out</a>
+                        <a class="text-decoration-none fs-5" href="{{ url_for('logout') }}">Выйти</a>
                     {% else %}
-                        <a class="text-decoration-none fs-5" href="{{ url_for('login') }}">Log In</a>
+                        <a class="text-decoration-none fs-5" href="{{ url_for('login') }}">Войти</a>
                     {% endif %}
                 </div>
             </nav>
