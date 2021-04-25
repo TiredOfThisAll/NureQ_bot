@@ -3,11 +3,16 @@ from flask_login import LoginManager, login_user, login_required, logout_user
 import json
 from os import path
 import time
+import traceback
+import waitress
 from werkzeug.local import LocalProxy
+from werkzeug.exceptions import InternalServerError
 
 from data_access.repository import Repository
 from data_access.sqlite_connection import create_sqlite_connection
 from services.configuration import CONFIGURATION, PROJECT_PATH
+from services.logging import CompositeLogger, ConsoleLogger, DatabaseLogger, \
+    FileLogger, LoggingLevel
 from services.telegram.authentication import validate_login_hash
 from web.models.user import User
 
@@ -88,6 +93,8 @@ def edit_queue(id):
 @login_required
 def swap_queue_members(queue_id):
     queue = context.repository.get_queue_by_id(queue_id)
+    if queue is None:
+        return f"Queue with ID {queue_id} was not found", 404
     queue_members = context.repository.get_queue_members_by_queue_id(queue_id)
     return render_template(
         "swap_queue_members.html",
@@ -167,7 +174,11 @@ def delete_queue_member(queue_id, user_id):
 )
 @login_required
 def set_queue_member_crossed_out(queue_id, user_id):
-    new_is_crossed_out = int(request.data)
+    try:
+        new_is_crossed_out = int(request.data)
+    except ValueError:
+        return "Request body must contain an integer", 400
+
     context.repository.set_queue_member_crossed_out(
         user_id,
         queue_id,
@@ -180,7 +191,10 @@ def set_queue_member_crossed_out(queue_id, user_id):
 @app.route("/api/queues/<int:queue_id>/<action>", methods=["PUT"])
 @login_required
 def pull_down_queue_member(queue_id, action):
-    current_position = int(request.data)
+    try:
+        current_position = int(request.data)
+    except ValueError:
+        return "Reques body must contain an integer", 400
     if action == "move-up":
         error = context.repository.move_up_queue_member(
             queue_id,
@@ -192,11 +206,11 @@ def pull_down_queue_member(queue_id, action):
             current_position
         )
     else:
-        return "", 404
+        return f"Action {action} not recognized", 404
     if error == "INVALID_POSITION":
-        return "", 400
+        return "Provided position was invalid", 400
     if error is not None:
-        return "", 500
+        return str(error), 500
     context.repository.commit()
     return "", 204
 
@@ -254,4 +268,22 @@ def swap_queue_members_action(queue_id):
     return "", 204
 
 
-app.run(port=80)
+@app.errorhandler(InternalServerError)
+def handle_exception(e):
+    original_exception = getattr(e, "original_exception", None)
+    if original_exception is not None:
+        with create_sqlite_connection(CONFIGURATION.DATABASE_PATH) \
+                as connection:
+            logger = CompositeLogger([
+                ConsoleLogger(),
+                FileLogger(CONFIGURATION.LOGS_PATH),
+                DatabaseLogger(create_sqlite_connection(
+                    CONFIGURATION.DATABASE_PATH
+                )),
+            ])
+            logger.log(LoggingLevel.ERROR, traceback.format_exc())
+
+    return e.get_response()
+
+
+waitress.serve(app, port=80)

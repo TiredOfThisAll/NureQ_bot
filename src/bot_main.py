@@ -35,11 +35,21 @@ controller = Controller(
 )
 
 # the 'game' loop that listens for new messages and responds to them
+http_fail_counter = 0
 try:
     logger.log(LoggingLevel.INFO, "Bot started")
     while True:
         time.sleep(CONFIGURATION.PAUSE_DURATION)
-        updates = telegram_message_manager.get_latest_messages()
+        try:
+            updates = telegram_message_manager.get_latest_messages()
+            http_fail_counter = 0
+        except HTTPError:
+            if http_fail_counter == 10:
+                raise Exception("Too many retries, exiting")
+            http_fail_counter += 1
+            logger.log(LoggingLevel.WARN, traceback.format_exc())
+            time.sleep(1)
+            continue
 
         # iterate over the latest messages for update in updates:
         for update in updates:
