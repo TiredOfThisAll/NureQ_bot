@@ -159,8 +159,8 @@ class Repository:
             SELECT *
             FROM queues
             ORDER BY datetime(last_updated_on) DESC
-        """).fetchall()
-        # TODO: pagination
+            LIMIT ?, ?
+        """, (skip_amount, page_size)).fetchall()
         return list(map(Queue.from_tuple, queue_tuples))
 
     def get_queue_members_by_queue_id(self, queue_id):
