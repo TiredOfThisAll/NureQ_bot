@@ -3,11 +3,15 @@ from flask_login import LoginManager, login_user, login_required, logout_user
 import json
 from os import path
 import time
+import traceback
 from werkzeug.local import LocalProxy
+from werkzeug.exceptions import InternalServerError
 
 from data_access.repository import Repository
 from data_access.sqlite_connection import create_sqlite_connection
 from services.configuration import CONFIGURATION, PROJECT_PATH
+from services.logging import CompositeLogger, ConsoleLogger, DatabaseLogger, \
+    FileLogger, LoggingLevel
 from services.telegram.authentication import validate_login_hash
 from web.models.user import User
 
@@ -261,6 +265,24 @@ def swap_queue_members_action(queue_id):
 
     context.repository.commit()
     return "", 204
+
+
+@app.errorhandler(InternalServerError)
+def handle_exception(e):
+    original_exception = getattr(e, "original_exception", None)
+    if original_exception is not None:
+        with create_sqlite_connection(CONFIGURATION.DATABASE_PATH) \
+                as connection:
+            logger = CompositeLogger([
+                ConsoleLogger(),
+                FileLogger(CONFIGURATION.LOGS_PATH),
+                DatabaseLogger(create_sqlite_connection(
+                    CONFIGURATION.DATABASE_PATH
+                )),
+            ])
+            logger.log(LoggingLevel.ERROR, traceback.format_exc())
+
+    return e.get_response()
 
 
 app.run(port=80)
