@@ -5,6 +5,10 @@
 
         <div class="swap-member-list-container">
             <div>
+                {% if not queue_members %}
+                    Очередь пуста
+                {% endif %}
+
                 {% for queue_member in queue_members %}
                     <label>
                         <input type="radio" name="left-member" value="{{ queue_member.position }}" />
@@ -16,6 +20,11 @@
             <i class="bi bi-arrow-left-right display-4"></i>
 
             <div>
+                {% if not queue_members %}
+                    Очередь пуста
+                {% endif %}
+
+
                 {% for queue_member in queue_members %}
                     <label>
                         <input type="radio" name="right-member" value="{{ queue_member.position }}" />

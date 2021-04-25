@@ -88,6 +88,8 @@ def edit_queue(id):
 @login_required
 def swap_queue_members(queue_id):
     queue = context.repository.get_queue_by_id(queue_id)
+    if queue is None:
+        return f"Queue with ID {queue_id} was not found", 404
     queue_members = context.repository.get_queue_members_by_queue_id(queue_id)
     return render_template(
         "swap_queue_members.html",
@@ -167,7 +169,11 @@ def delete_queue_member(queue_id, user_id):
 )
 @login_required
 def set_queue_member_crossed_out(queue_id, user_id):
-    new_is_crossed_out = int(request.data)
+    try:
+        new_is_crossed_out = int(request.data)
+    except ValueError:
+        return "Request body must contain an integer", 400
+
     context.repository.set_queue_member_crossed_out(
         user_id,
         queue_id,
@@ -180,7 +186,10 @@ def set_queue_member_crossed_out(queue_id, user_id):
 @app.route("/api/queues/<int:queue_id>/<action>", methods=["PUT"])
 @login_required
 def pull_down_queue_member(queue_id, action):
-    current_position = int(request.data)
+    try:
+        current_position = int(request.data)
+    except ValueError:
+        return "Reques body must contain an integer", 400
     if action == "move-up":
         error = context.repository.move_up_queue_member(
             queue_id,
@@ -192,11 +201,11 @@ def pull_down_queue_member(queue_id, action):
             current_position
         )
     else:
-        return "", 404
+        return f"Action {action} not recognized", 404
     if error == "INVALID_POSITION":
-        return "", 400
+        return "Provided position was invalid", 400
     if error is not None:
-        return "", 500
+        return str(error), 500
     context.repository.commit()
     return "", 204
 
