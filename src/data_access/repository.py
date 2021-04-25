@@ -197,9 +197,9 @@ class Repository:
             FROM queues
             LEFT JOIN queue_members ON queues.id == queue_members.queue_id
             GROUP BY queues.id, queues.name, queues.last_updated_on
-            ORDER BY queues.id
-            LIMIT ?, ?
-        """, (skip_amount, page_size)).fetchall()
+            ORDER BY datetime(queues.last_updated_on) DESC
+        """).fetchall()
+        # TODO: pagination
         return list(map(QueueView.from_tuple, queue_tuples))
 
     def get_queue_by_id(self, id):
