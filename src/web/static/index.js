@@ -7,6 +7,7 @@ const deleteQueue = queueId => {
     fetch(`/api/queues/${queueId}`, {method: "DELETE"})
         .then(response => {
             if (response.status !== 204) {
+                response.text().then(alert);
                 return Promise.reject();
             }
             location.reload();
@@ -25,6 +26,7 @@ const deleteMember = (queueId, queueName, queueMemberName, queueMemberUserId) =>
     fetch(`/api/queues/${queueId}/members/${queueMemberUserId}`, {method: "DELETE"})
         .then(response => {
             if (response.status !== 204) {
+                response.text().then(alert);
                 return Promise.reject();
             }
             location.reload();
@@ -39,6 +41,7 @@ const setMemberCrossedOut = (queueId, queueMemberUserId, newValue) => {
     fetch(`/api/queues/${queueId}/members/${queueMemberUserId}/crossed`, {method: "PUT", body: newValue})
         .then(response => {
             if (response.status !== 204) {
+                response.text().then(alert);
                 return Promise.reject();
             }
             location.reload();
@@ -53,6 +56,7 @@ const moveUpQueueMember = (queueId, queueMemberPosition) => {
     fetch(`/api/queues/${queueId}/move-up`, {method: "PUT", body: queueMemberPosition})
         .then(response => {
             if (response.status !== 204) {
+                response.text().then(alert);
                 return Promise.reject();
             }
             location.reload();
@@ -67,6 +71,7 @@ const moveDownQueueMember = (queueId, queueMemberPosition) => {
     fetch(`/api/queues/${queueId}/move-down`, {method: "PUT", body: queueMemberPosition})
         .then(response => {
             if (response.status !== 204) {
+                response.text().then(alert);
                 return Promise.reject();
             }
             location.reload();
