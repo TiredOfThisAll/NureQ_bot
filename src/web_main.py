@@ -4,6 +4,7 @@ import json
 from os import path
 import time
 import traceback
+import waitress
 from werkzeug.local import LocalProxy
 from werkzeug.exceptions import InternalServerError
 
@@ -285,4 +286,4 @@ def handle_exception(e):
     return e.get_response()
 
 
-app.run(port=80)
+waitress.serve(app, port=80)
