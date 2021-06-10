@@ -288,4 +288,4 @@ def handle_exception(e):
     return e.get_response()
 
 
-waitress.serve(app, port=80)
+waitress.serve(app, port=80, host="0.0.0.0")
