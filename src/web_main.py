@@ -209,10 +209,8 @@ def pull_down_queue_member(queue_id, action):
         return f"Action {action} not recognized", 404
     context.repository.commit()
     if error == "INVALID_POSITION":
-        context.repository.commit()
         return "Provided position was invalid", 400
     if error is not None:
-        context.repository.commit()
         return str(error), 500
     return "", 204
 
