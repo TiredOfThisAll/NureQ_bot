@@ -42,3 +42,18 @@ class RepositoryTests(unittest.TestCase):
         successful = self.repository.remove_user_from_queue(2, 1)
 
         self.assertTrue(successful)
+
+    def test_remove_user_from_queue_recalculates_positions(self):
+        user_id = 2
+        queue_id = 1
+        self.generate_queue_member_test_data()
+
+        self.repository.remove_user_from_queue(user_id, queue_id)
+
+        position_tuples = self.connection.execute("""
+            SELECT position
+            FROM queue_members
+            WHERE queue_id = ?
+            ORDER BY position
+        """, (queue_id,)).fetchall()
+        self.assertEqual(position_tuples, [(0,), (1,)])
