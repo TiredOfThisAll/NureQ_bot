@@ -142,13 +142,13 @@ class Controller:
             )
             return
         error = self.repository.create_queue(queue_name)
+        self.repository.commit()
         if error == "QUEUE_NAME_DUPLICATE":
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
                 f"Очередь с именем {queue_name} уже существует"
             )
             return
-        self.repository.commit()
 
         self.telegram_message_manager.send_message(
             update_context.chat_id,
@@ -186,12 +186,12 @@ class Controller:
                 )
                 return
             self.repository.refresh_queues_last_time_updated_on(queue_id)
-            self.repository.commit()
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
                 f"{name} добавлен(а) в очередь: {queue_name}"
             )
         finally:
+            self.repository.commit()
             self.telegram_message_manager.answer_callback_query(
                 update_context.callback_query_id
             )
@@ -280,12 +280,12 @@ class Controller:
                 )
                 return
             self.repository.refresh_queues_last_time_updated_on(queue_id)
-            self.repository.commit()
             self.telegram_message_manager.send_message(
                 update_context.chat_id,
                 f"Участник {name} удален из очереди: {queue_name}"
             )
         finally:
+            self.repository.commit()
             self.telegram_message_manager.answer_callback_query(
                 update_context.callback_query_id
             )

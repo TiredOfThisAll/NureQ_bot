@@ -86,6 +86,9 @@ try:
                 controller.handle_error_while_processing_update(
                     update_context
                 )
+            finally:
+                # finish the transaction in case there is one
+                repository.commit()
 except Exception as error:
     logger.log(
         LoggingLevel.ERROR,

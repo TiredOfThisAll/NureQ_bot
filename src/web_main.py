@@ -207,11 +207,11 @@ def pull_down_queue_member(queue_id, action):
         )
     else:
         return f"Action {action} not recognized", 404
+    context.repository.commit()
     if error == "INVALID_POSITION":
         return "Provided position was invalid", 400
     if error is not None:
         return str(error), 500
-    context.repository.commit()
     return "", 204
 
 
@@ -227,9 +227,9 @@ def rename_queue(queue_id):
     if len(decoded_new_name) >= CONFIGURATION.QUEUE_NAME_LIMIT:
         return "Queue name is too long", 400
     error = context.repository.rename_queue(queue_id, decoded_new_name)
+    context.repository.commit()
     if error == "QUEUE_NAME_DUPLICATE":
         return f"Duplicate name not allowed: {decoded_new_name}", 409
-    context.repository.commit()
     return "", 204
 
 
@@ -258,13 +258,13 @@ def swap_queue_members_action(queue_id):
         left_position,
         right_position
     )
+    context.repository.commit()
 
     if error == "INVALID_POSITION":
         return "Incorrect positions were provided", 400
     elif error is not None:
         return "", 500
 
-    context.repository.commit()
     return "", 204
 
 
@@ -286,4 +286,4 @@ def handle_exception(e):
     return e.get_response()
 
 
-waitress.serve(app, port=80)
+waitress.serve(app, port=80, host="0.0.0.0")
