@@ -35,3 +35,10 @@ class RepositoryTests(unittest.TestCase):
         successful = self.repository.remove_user_from_queue(100, 100)
 
         self.assertFalse(successful)
+
+    def test_remove_user_from_queue_returns_true(self):
+        self.generate_queue_member_test_data()
+
+        successful = self.repository.remove_user_from_queue(2, 1)
+
+        self.assertTrue(successful)
