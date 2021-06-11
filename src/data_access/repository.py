@@ -140,12 +140,32 @@ class Repository:
             WHERE user_id = ? AND queue_id = ?
         """, (crossed_out, user_id, queue_id))
 
+    # returns True if the member to remove was found and False otherwise
     def remove_user_from_queue(self, user_id, queue_id):
+        # get position of the member that we are removing
+        position_tuple_or_none = self.cursor.execute("""
+            SELECT position
+            FROM queue_members
+            WHERE queue_id = ? AND user_id = ?
+        """, (queue_id, user_id)).fetchone()
+        if position_tuple_or_none is None:
+            return False
+        position = position_tuple_or_none[0]
+
+        # remove the member from queue
         self.cursor.execute("""
             DELETE FROM queue_members
             WHERE queue_id = ? AND user_id = ?
         """, (queue_id, user_id))
-        return self.cursor.rowcount == 1
+
+        # update all affected queue member positions
+        self.cursor.execute("""
+            UPDATE queue_members
+            SET position = position - 1
+            WHERE queue_id = ? AND position > ?
+        """, (queue_id, position))
+
+        return True
 
     def get_total_queue_count(self):
         return self.cursor.execute("""
