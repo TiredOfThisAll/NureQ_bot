@@ -36,4 +36,5 @@
 
         <button class="btn btn-primary align-self-center" onclick="swapQueueMembers({{ queue.id }})">Поменять местами</button>
     </div>
+    <script type="text/javascript" src="{{ url_for('static', filename='swap_queue_members.js') }}"></script>
 {% endblock content %}
