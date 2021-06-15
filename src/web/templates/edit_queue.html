@@ -1,4 +1,7 @@
 {% extends "layout.html" %}
+{% block head %}
+    <script type="text/javascript" async src="{{ url_for('static', filename='edit_queue.js') }}"></script>
+{% endblock head %}
 {% block content %}
     <div class="edit-queue-controls">
         <input
@@ -104,5 +107,4 @@
             {% endfor %}
         </tbody>
     </table>
-    <script type="text/javascript" src="{{ url_for('static', filename='edit_queue.js') }}"></script>
 {% endblock content %}

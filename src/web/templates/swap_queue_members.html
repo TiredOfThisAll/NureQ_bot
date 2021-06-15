@@ -1,4 +1,7 @@
 {% extends "layout.html" %}
+{% block head %}
+    <script type="text/javascript" async src="{{ url_for('static', filename='swap_queue_members.js') }}"></script>{% endblock head %}
+{% endblock head %}
 {% block content %}
     <div class="d-flex flex-column mt-4">
         <h2 class="align-self-center">Поменять двух участников очереди {{ queue.name|e }} (ID {{ queue.id }}) местами</h2>
@@ -36,5 +39,4 @@
 
         <button class="btn btn-primary align-self-center" onclick="swapQueueMembers({{ queue.id }})">Поменять местами</button>
     </div>
-    <script type="text/javascript" src="{{ url_for('static', filename='swap_queue_members.js') }}"></script>
 {% endblock content %}
