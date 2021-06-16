@@ -1,4 +1,7 @@
 {% extends "layout.html" %}
+{% block head %}
+    <script type="text/javascript" async src="{{ url_for('static', filename='queues.js') }}"></script>
+{% endblock head %}
 {% block content %}
     <table class="table table-striped">
         <thead>

@@ -1,4 +1,7 @@
 {% extends "layout.html" %}
+{% block head %}
+    <script type="text/javascript" async src="{{ url_for('static', filename='swap_queue_members.js') }}"></script>
+{% endblock head %}
 {% block content %}
     <div class="d-flex flex-column mt-4">
         <h2 class="align-self-center">Поменять двух участников очереди {{ queue.name|e }} (ID {{ queue.id }}) местами</h2>
