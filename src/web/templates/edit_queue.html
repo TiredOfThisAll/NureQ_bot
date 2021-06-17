@@ -56,7 +56,16 @@
         </thead>
         <tbody>
             {% for queue_member in queue_members %}
-                <tr class="align-middle">
+                <tr
+                    id="queue-member-{{ queue_member.user_id }}"
+                    class="align-middle"
+                    draggable="true"
+                    ondragstart="handleQueueMemberRowDragstart(event)"
+                    ondragover="handleQueueMemberRowDragover(event)"
+                    ondragleave="handleQueueMemberRowDragleave(event)"
+                    ondragend="handleQueueMemberRowDragend(event)"
+                    ondrop="handleQueueMemberRowDrop(event)"
+                >
                     <td class="queue-reorder-controls">
                         {% if queue_member.position != 0 %}
                             <i

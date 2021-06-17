@@ -102,6 +102,77 @@ const handleQueueNameChange = () => {
     saveQueueNameButton.classList.add("btn-primary");
 };
 
+const handleQueueMemberRowDragstart = event => {
+    event.currentTarget.ondragover = null;
+    event.dataTransfer.setData("text/plain", event.currentTarget.id);
+};
+
+const handleQueueMemberRowDragover = event => {
+    event.preventDefault(); // prevent additional event processing for this event
+
+    const dropTargetQueueMemberRow = event.currentTarget;
+    const draggedQueueMemberRowId = event.dataTransfer.getData("text/plain");
+    console.log(draggedQueueMemberRowId)
+    if (dropTargetQueueMemberRow.id === draggedQueueMemberRowId) {
+        return;
+    }
+
+    event.dataTransfer.dropEffect = "move";
+
+    const isInUpperHalf = getIsInUpperHalf(event.clientY, dropTargetQueueMemberRow);
+    if (isInUpperHalf) {
+        dropTargetQueueMemberRow.classList.remove("drop-to-lower-half");
+        dropTargetQueueMemberRow.classList.add("drop-to-upper-half");
+    } else {
+        dropTargetQueueMemberRow.classList.remove("drop-to-upper-half");
+        dropTargetQueueMemberRow.classList.add("drop-to-lower-half");
+    }
+};
+
+const handleQueueMemberRowDragleave = event => {
+    const dropTargetQueueMemberRow = event.currentTarget;
+    dropTargetQueueMemberRow.classList.remove("drop-to-lower-half", "drop-to-upper-half");
+}
+
+const handleQueueMemberRowDragend = event => {
+    const draggedQueueMemberRowId = event.dataTransfer.getData("text/plain");
+    const draggedQueueMemberRow = document.getElementById(draggedQueueMemberRowId);
+    draggedQueueMemberRow.addEventListener("dragover", handleQueueMemberRowDragover);
+}
+
+const handleQueueMemberRowDrop = event => {
+    event.preventDefault(); // prevent additional event processing for this event
+
+    const draggedQueueMemberRowId = event.dataTransfer.getData("text/plain");
+    const draggedQueueMemberRow = document.getElementById(draggedQueueMemberRowId);
+    const dropTargetQueueMemberRow = event.currentTarget;
+
+    const isInUpperHalf = getIsInUpperHalf(event.clientY, dropTargetQueueMemberRow);
+    if (isInUpperHalf) {
+        insertBefore(draggedQueueMemberRow, dropTargetQueueMemberRow);
+    } else {
+        insertAfter(draggedQueueMemberRow, dropTargetQueueMemberRow.nextSibling);
+    }
+    dropTargetQueueMemberRow.classList.remove("drop-to-lower-half", "drop-to-upper-half");
+};
+
+const isBetween = (min, value, max) => value >= min && value < max;
+
+const insertAfter = (elementToInsert, referenceElement) => {
+    referenceElement.parentNode.insertBefore(elementToInsert, referenceElement.nextSibling);
+};
+
+const insertBefore = (elementToInsert, referenceElement) => {
+    referenceElement.parentNode.insertBefore(elementToInsert, referenceElement);
+};
+
+const getIsInUpperHalf = (positionY, element) => {
+    const elementRect = element.getBoundingClientRect();
+
+    const elementMidPoint = elementRect.top + element.clientHeight / 2;
+    return isBetween(elementRect.top, positionY, elementMidPoint);
+};
+
 (() => {
     document.getElementById("new_queue_name").addEventListener("keydown", event => {
         if (event.key === "Enter") {
