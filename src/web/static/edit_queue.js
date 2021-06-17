@@ -128,15 +128,16 @@ const handleQueueMemberRowDragover = event => {
         return;
     }
 
-    event.dataTransfer.dropEffect = "move";
-
-    const isInUpperHalf = getIsInUpperHalf(event.clientY, dropTargetQueueMemberRow);
-    if (isInUpperHalf) {
+    if (isInUpperHalf(event.clientY, dropTargetQueueMemberRow)) {
+        event.dataTransfer.dropEffect = "move";
         dropTargetQueueMemberRow.classList.remove("drop-to-lower-half");
         dropTargetQueueMemberRow.classList.add("drop-to-upper-half");
-    } else {
+    } else if (isInLowerHalf(event.clientY, dropTargetQueueMemberRow)) {
+        event.dataTransfer.dropEffect = "move";
         dropTargetQueueMemberRow.classList.remove("drop-to-upper-half");
         dropTargetQueueMemberRow.classList.add("drop-to-lower-half");
+    } else {
+        event.dataTransfer.dropEffect = "none";
     }
 };
 
@@ -166,10 +167,9 @@ const handleQueueMemberRowDrop = event => {
     const draggedQueueMemberRow = document.getElementById(dragState.draggedQueueMemberRowId);
     const dropTargetQueueMemberRow = event.currentTarget;
 
-    const isInUpperHalf = getIsInUpperHalf(event.clientY, dropTargetQueueMemberRow);
-    if (isInUpperHalf) {
+    if (isInUpperHalf(event.clientY, dropTargetQueueMemberRow)) {
         insertBefore(draggedQueueMemberRow, dropTargetQueueMemberRow);
-    } else {
+    } else if (isInLowerHalf(event.clientY, dropTargetQueueMemberRow)) {
         insertAfter(draggedQueueMemberRow, dropTargetQueueMemberRow);
     }
     dropTargetQueueMemberRow.classList.remove("drop-to-lower-half", "drop-to-upper-half");
@@ -185,11 +185,18 @@ const insertBefore = (elementToInsert, referenceElement) => {
     referenceElement.parentNode.insertBefore(elementToInsert, referenceElement);
 };
 
-const getIsInUpperHalf = (positionY, element) => {
+const isInUpperHalf = (positionY, element) => {
     const elementRect = element.getBoundingClientRect();
 
     const elementMidPoint = elementRect.top + element.clientHeight / 2;
     return isBetween(elementRect.top, positionY, elementMidPoint);
+};
+
+const isInLowerHalf = (positionY, element) => {
+    const elementRect = element.getBoundingClientRect();
+
+    const elementMidPoint = elementRect.top + element.clientHeight / 2;
+    return isBetween(elementMidPoint, positionY, elementRect.bottom);
 };
 
 (() => {
