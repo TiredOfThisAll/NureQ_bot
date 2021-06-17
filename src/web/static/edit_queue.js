@@ -102,18 +102,29 @@ const handleQueueNameChange = () => {
     saveQueueNameButton.classList.add("btn-primary");
 };
 
+let dragState;
+
 const handleQueueMemberRowDragstart = event => {
-    event.currentTarget.ondragover = null;
-    event.dataTransfer.setData("text/plain", event.currentTarget.id);
+    const draggedQueueMemberRow = event.currentTarget;
+    dragState = {draggedQueueMemberRowId: draggedQueueMemberRow.id};
+    draggedQueueMemberRow.ondragover = null; // prevent dropping row on itself
 };
 
 const handleQueueMemberRowDragover = event => {
     event.preventDefault(); // prevent additional event processing for this event
 
+    // If drag state is not initialized,
+    // that means that the user is trying to drag and drop something from outside the app,
+    // so just exit
+    if (dragState === undefined) {
+        event.dataTransfer.dropEffect = "none";
+        return;
+    }
+
+    // forbid trying to drag and drop a row onto itself
     const dropTargetQueueMemberRow = event.currentTarget;
-    const draggedQueueMemberRowId = event.dataTransfer.getData("text/plain");
-    console.log(draggedQueueMemberRowId)
-    if (dropTargetQueueMemberRow.id === draggedQueueMemberRowId) {
+    if (dragState.draggedQueueMemberRowId === dropTargetQueueMemberRow.id) {
+        event.dataTransfer.dropEffect = "none";
         return;
     }
 
@@ -134,24 +145,32 @@ const handleQueueMemberRowDragleave = event => {
     dropTargetQueueMemberRow.classList.remove("drop-to-lower-half", "drop-to-upper-half");
 }
 
-const handleQueueMemberRowDragend = event => {
-    const draggedQueueMemberRowId = event.dataTransfer.getData("text/plain");
-    const draggedQueueMemberRow = document.getElementById(draggedQueueMemberRowId);
+const handleQueueMemberRowDragend = _event => {
+    const draggedQueueMemberRow = document.getElementById(dragState.draggedQueueMemberRowId);
+    // after dragging is finished, restore dragover event for the dragged row
     draggedQueueMemberRow.addEventListener("dragover", handleQueueMemberRowDragover);
-}
+
+    dragState = undefined;
+};
 
 const handleQueueMemberRowDrop = event => {
     event.preventDefault(); // prevent additional event processing for this event
 
-    const draggedQueueMemberRowId = event.dataTransfer.getData("text/plain");
-    const draggedQueueMemberRow = document.getElementById(draggedQueueMemberRowId);
+    // If drag state is not initialized,
+    // that means that the user is trying to drag and drop something from outside the app,
+    // so just exit
+    if (dragState === undefined) {
+        return;
+    }
+
+    const draggedQueueMemberRow = document.getElementById(dragState.draggedQueueMemberRowId);
     const dropTargetQueueMemberRow = event.currentTarget;
 
     const isInUpperHalf = getIsInUpperHalf(event.clientY, dropTargetQueueMemberRow);
     if (isInUpperHalf) {
         insertBefore(draggedQueueMemberRow, dropTargetQueueMemberRow);
     } else {
-        insertAfter(draggedQueueMemberRow, dropTargetQueueMemberRow.nextSibling);
+        insertAfter(draggedQueueMemberRow, dropTargetQueueMemberRow);
     }
     dropTargetQueueMemberRow.classList.remove("drop-to-lower-half", "drop-to-upper-half");
 };
