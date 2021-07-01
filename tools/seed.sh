@@ -16,11 +16,14 @@ echo "
   INSERT INTO queue_members (user_id, user_first_name, user_last_name, user_username, queue_id, crossed, position)
   VALUES
     (1, 'Anton', 'Bodiak', 'levant47', 1, 1, 0),
-    (2, 'Sanya', 'Sanya', 'Sanya', 1, 1, 2),
-    (3, 'Danya', 'Danya', 'Danya', 1, 1, 1),
+    (2, 'Sanya', 'Sanya', 'Sanya', 1, 1, 1),
+    (3, 'Danya', 'Danya', 'Danya', 1, 1, 2),
     (4, 'Anthony', 'Anthony', 'Anthony', 1, 0, 3),
-    (5, 'Sanya', 'Zlobin', 'Zhaba', 2, 0, 0),
-    (6, 'Anton', 'Bodiak', 'levant47', 3, 0, 0);
+    (5, 'Sergio', 'Gavrilov', 'Serg', 1, 1, 4),
+    (6, 'Boris', 'Borisov', 'Bor', 1, 1, 5),
+    (7, 'Dima', 'Dimovi4', 'Dim', 1, 0, 6),
+    (8, 'Sanya', 'Zlobin', 'Zhaba', 2, 0, 0),
+    (9, 'Anton', 'Bodiak', 'levant47', 3, 0, 0);
 
   INSERT INTO admins (user_id)
   VALUES
