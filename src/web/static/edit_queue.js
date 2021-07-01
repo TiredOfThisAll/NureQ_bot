@@ -167,12 +167,35 @@ const handleQueueMemberRowDrop = event => {
     const draggedQueueMemberRow = document.getElementById(dragState.draggedQueueMemberRowId);
     const dropTargetQueueMemberRow = event.currentTarget;
 
+    let insertedBefore;
     if (isInUpperHalf(event.clientY, dropTargetQueueMemberRow)) {
         insertBefore(draggedQueueMemberRow, dropTargetQueueMemberRow);
+        insertedBefore = true;
     } else if (isInLowerHalf(event.clientY, dropTargetQueueMemberRow)) {
         insertAfter(draggedQueueMemberRow, dropTargetQueueMemberRow);
+        insertedBefore = false;
+    } else {
+        return;
     }
     dropTargetQueueMemberRow.classList.remove("drop-to-lower-half", "drop-to-upper-half");
+
+    const queueId = dropTargetQueueMemberRow.dataset.queueId;
+    const body = JSON.stringify({
+        movedUserId: Number(draggedQueueMemberRow.dataset.queueMemberUserId),
+        targetUserId: Number(dropTargetQueueMemberRow.dataset.queueMemberUserId),
+        insertedBefore,
+    });
+    fetch(`/api/queues/${queueId}/move-queue-member`, {method: "PUT", body})
+        .then(response => {
+            if (response.status !== 204) {
+                response.text().then(responseText => {
+                    alert(responseText);
+                    location.reload();
+                });
+                return Promise.reject();
+            }
+        })
+    ;
 };
 
 const isBetween = (min, value, max) => value >= min && value < max;
