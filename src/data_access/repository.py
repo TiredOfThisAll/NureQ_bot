@@ -64,12 +64,12 @@ class Repository:
             raise integrity_error
 
     def add_me_to_queue(
-        self,
-        user_id,
-        user_first_name,
-        user_last_name,
-        user_username,
-        queue_id
+            self,
+            user_id,
+            user_first_name,
+            user_last_name,
+            user_username,
+            queue_id
     ):
         try:
             self.cursor.execute("""
@@ -253,8 +253,8 @@ class Repository:
         self.cursor.execute("""
             UPDATE queue_members
             SET position = CASE position
-                WHEN :pos_1 THEN -1
-                WHEN :pos_2 THEN -2
+                WHEN :pos_1 THEN -:pos_2
+                WHEN :pos_2 THEN -:pos_1
             END
             WHERE queue_id = :queue_id AND position IN (:pos_1, :pos_2)
         """, {
@@ -264,15 +264,60 @@ class Repository:
         })
         self.cursor.execute("""
             UPDATE queue_members
-            SET position = CASE position
-                WHEN -1 THEN :pos_2
-                WHEN -2 THEN :pos_1
-            END
+            SET position = -position
             WHERE position < 0
+        """)
+
+    def move_queue_member(
+            self,
+            queue_id,
+            user_id_1,
+            user_id_2,
+            inserted_before
+    ):
+        positions = self.cursor.execute(f"""
+            SELECT user_id, position
+            FROM queue_members
+            WHERE id IN (?, ?)
+        """, (user_id_1, user_id_2)).fetchall()
+
+        if len(positions) != 2:
+            return "INVALID_USER_ID"
+
+        moved_from_position = next(
+            position for user_id, position in positions if user_id == user_id_1
+        )
+        target_position = next(
+            position for user_id, position in positions if user_id == user_id_2
+        )
+
+        moved_down = target_position > moved_from_position
+
+        target_position += int(not moved_down) * int(not inserted_before) \
+            - int(moved_down) * int(inserted_before)
+
+        self.cursor.execute("""
+            UPDATE queue_members
+            SET position = CASE position
+                WHEN :moved_from_position THEN -:target_position
+                ELSE -(position + :offset_for_others)
+            END
+            WHERE queue_id = :queue_id AND
+            position BETWEEN MIN(:moved_from_position, :target_position)
+            AND MAX(:moved_from_position, :target_position)
         """, {
-            "pos_1": pos_1,
-            "pos_2": pos_2
+            "moved_from_position": moved_from_position,
+            "target_position": target_position,
+            "queue_id": queue_id,
+            "offset_for_others":
+                1 if moved_from_position > target_position else -1
         })
+
+        self.cursor.execute("""
+            UPDATE queue_members
+            SET position = -position
+            WHERE position < 0
+        """)
 
     def delete_queue(self, queue_id):
         self.cursor.execute("""
