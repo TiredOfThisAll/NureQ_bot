@@ -65,6 +65,8 @@
                     ondragleave="handleQueueMemberRowDragleave(event)"
                     ondragend="handleQueueMemberRowDragend(event)"
                     ondrop="handleQueueMemberRowDrop(event)"
+                    data-queue-member-user-id="{{ queue_member.user_id }}"
+                    data-queue-id="{{ queue.id }}"
                 >
                     <td class="queue-reorder-controls">
                         {% if queue_member.position != 0 %}
