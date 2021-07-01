@@ -268,6 +268,44 @@ def swap_queue_members_action(queue_id):
     return "", 204
 
 
+@app.route("/api/queues/<int:queue_id>/move-queue-member", methods=["PUT"])
+@login_required
+def move_queue_member(queue_id):
+    try:
+        data = json.loads(request.data)
+    except ValueError:
+        return "Request body is not JSON", 400
+    if not isinstance(data, dict) or len(data) != 3:
+        return "Request body must be an object with 3 keys", 400
+    if "movedUserId" not in data or not isinstance(data["movedUserId"], int) \
+            or data["movedUserId"] <= 0:
+        return "Request body must include 'movedUserId' key" \
+               " with a positive integer value", 400
+    if "targetUserId" not in data or not isinstance(data["targetUserId"], int) \
+            or data["targetUserId"] <= 0:
+        return "Request body must include 'targetUserId' key" \
+               " with a positive integer value", 400
+    if "insertedBefore" not in data or not \
+            isinstance(data["insertedBefore"], bool):
+        return "Request body must include 'insertedBefore' key" \
+               " with a boolean value", 400
+
+    moved_user_id = data["movedUserId"]
+    target_user_id = data["targetUserId"]
+    is_moved_below = data["insertedBefore"]
+    error = context.repository.move_queue_member(
+        queue_id,
+        moved_user_id,
+        target_user_id,
+        is_moved_below
+    )
+    context.repository.commit()
+    if error == "INVALID_USER_ID":
+        return "Invalid user id", 400
+    return "", 204
+
+
+@app.route("/api/queues")
 @app.errorhandler(InternalServerError)
 def handle_exception(e):
     original_exception = getattr(e, "original_exception", None)
