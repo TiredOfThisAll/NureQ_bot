@@ -60,22 +60,25 @@ class RepositoryTests(unittest.TestCase):
 
     def test_move_queue_member(self):
         queue_id = 1
-        dragged_queue_member_position = 0
-        drop_queue_member_position = 2
+        moved_from_user_id = 1
+        target_user_id = 3
         self.generate_queue_member_test_data()
 
-        self.repository.move_queue_member(
+        error = self.repository.move_queue_member(
             queue_id,
-            dragged_queue_member_position,
-            drop_queue_member_position
+            moved_from_user_id,
+            target_user_id,
+            inserted_before=True
         )
+
+        self.assertIsNone(error)
         position_tuples = self.connection.execute("""
             SELECT user_id, position
             FROM queue_members
             WHERE queue_id = ?
             ORDER BY position
         """, (queue_id,)).fetchall()
-        self.assertEqual(position_tuples, [(2, 0), (3, 1), (1, 2)])
+        self.assertEqual(position_tuples, [(2, 0), (1, 1), (3, 2)])
 
     def test_swap_positions(self):
         queue_id = 1
