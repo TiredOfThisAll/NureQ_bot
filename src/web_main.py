@@ -281,7 +281,7 @@ def move_queue_member(queue_id):
             or data["movedUserId"] <= 0:
         return "Request body must include 'movedUserId' key" \
                " with a positive integer value", 400
-    if "targetUserId" not in data or not isinstance(data["targetUserId"], int) \
+    if "targetUserId" not in data or not isinstance(data["targetUserId"], int)\
             or data["targetUserId"] <= 0:
         return "Request body must include 'targetUserId' key" \
                " with a positive integer value", 400
