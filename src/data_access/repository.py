@@ -278,8 +278,8 @@ class Repository:
         positions = self.cursor.execute(f"""
             SELECT user_id, position
             FROM queue_members
-            WHERE id IN (?, ?)
-        """, (user_id_1, user_id_2)).fetchall()
+            WHERE queue_id = ? AND user_id IN (?, ?)
+        """, (queue_id, user_id_1, user_id_2)).fetchall()
 
         if len(positions) != 2:
             return "INVALID_USER_ID"
