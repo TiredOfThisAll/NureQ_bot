@@ -174,6 +174,18 @@ class RepositoryTests(unittest.TestCase):
 
         self.assertEqual(error, "INVALID_QUEUE_OR_USER_ID")
 
+    def test_move_queue_member_same_user_id(self):
+        self.generate_queue_member_test_data()
+
+        error = self.repository.move_queue_member(
+            queue_id=1,
+            user_id_1=1,
+            user_id_2=1,
+            inserted_before=True
+        )
+
+        self.assertEqual(error, "INVALID_QUEUE_OR_USER_ID")
+
     def test_swap_positions(self):
         queue_id = 1
         first_queue_member_position = 0
