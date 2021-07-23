@@ -32,36 +32,6 @@ const setMemberCrossedOut = (queueId, queueMemberUserId, newValue) => {
         });
 };
 
-const moveUpQueueMember = (queueId, queueMemberPosition) => {
-    setSpinnerVisibility(true);
-    fetch(`/api/queues/${queueId}/move-up`, {method: "PUT", body: queueMemberPosition})
-        .then(response => {
-            if (response.status !== 204) {
-                response.text().then(alert);
-                return Promise.reject();
-            }
-            location.reload();
-        })
-        .finally(() => {
-            setSpinnerVisibility(false)
-        });
-};
-
-const moveDownQueueMember = (queueId, queueMemberPosition) => {
-    setSpinnerVisibility(true);
-    fetch(`/api/queues/${queueId}/move-down`, {method: "PUT", body: queueMemberPosition})
-        .then(response => {
-            if (response.status !== 204) {
-                response.text().then(alert);
-                return Promise.reject();
-            }
-            location.reload();
-        })
-        .finally(() => {
-            setSpinnerVisibility(false)
-        });
-};
-
 const renameQueue = (queueId, originalQueueName) => {
     const newQueueName = document.querySelector("#new_queue_name").value.trim();
     if (newQueueName === "") {

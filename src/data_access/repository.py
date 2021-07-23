@@ -232,12 +232,6 @@ class Repository:
             return None
         return Queue.from_tuple(queue_tuple)
 
-    def move_up_queue_member(self, queue_id, position):
-        return self.swap_positions(queue_id, position, position - 1)
-
-    def move_down_queue_member(self, queue_id, position):
-        return self.swap_positions(queue_id, position, position + 1)
-
     def swap_positions(self, queue_id, pos_1, pos_2):
         # Validate positions
         if pos_1 < 0 or pos_2 < 0 or pos_1 == pos_2:
