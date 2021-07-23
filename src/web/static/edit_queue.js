@@ -78,6 +78,10 @@ const handleQueueMemberRowDragstart = event => {
     const draggedQueueMemberRow = event.currentTarget;
     dragState = {draggedQueueMemberRowId: draggedQueueMemberRow.id};
     draggedQueueMemberRow.ondragover = null; // prevent dropping row on itself
+
+    // we can't the use tr or td itself for the preview, because the take up too much space visually
+    const queueMemberNameCell = draggedQueueMemberRow.querySelector("td:nth-child(2) > span")
+    event.dataTransfer.setDragImage(queueMemberNameCell, -15, -15);
 };
 
 const handleQueueMemberRowDragover = event => {
@@ -165,8 +169,7 @@ const handleQueueMemberRowDrop = event => {
                 });
                 return Promise.reject();
             }
-        })
-    ;
+        });
 };
 
 const render_queue_positions = () => {

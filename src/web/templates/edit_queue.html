@@ -68,7 +68,10 @@
                     data-queue-id="{{ queue.id }}"
                 >
                     <td class="text-center">{{ queue_member.position + 1 }}</td>
-                    <td class="col-4">{{ queue_member.user_info.get_formatted_name()|e }}</td>
+                    <td class="col-4">
+                        {# this span is used for drag-n-drop preview #}
+                        <span>{{ queue_member.user_info.get_formatted_name()|e }}</span>
+                    </td>
                     <td>
                         <input
                             class="form-check-input ms-2"
