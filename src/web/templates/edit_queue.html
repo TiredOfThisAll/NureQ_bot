@@ -67,7 +67,14 @@
                     data-queue-member-user-id="{{ queue_member.user_id }}"
                     data-queue-id="{{ queue.id }}"
                 >
-                    <td class="text-center">{{ queue_member.position + 1 }}</td>
+                    <td>
+                        {# need an extra span because applying flexbox to a td breaks its height #}
+                        <span class="d-flex justify-content-between">
+                            <i class="bi bi-grip-vertical">{# signifies that the row is draggable #}</i>
+                            <span>{{ queue_member.position + 1 }}</span>
+                            <i>{# spacing for flexbox #}</i>
+                        </span>
+                    </td>
                     <td class="col-4">
                         {# this span is used for drag-n-drop preview #}
                         <span>{{ queue_member.user_info.get_formatted_name()|e }}</span>

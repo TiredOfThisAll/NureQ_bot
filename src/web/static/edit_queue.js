@@ -173,7 +173,7 @@ const handleQueueMemberRowDrop = event => {
 };
 
 const renderQueuePositions = () => {
-    document.querySelectorAll("td:first-child").forEach((td, index) => {
+    document.querySelectorAll("td:first-child > span > span").forEach((td, index) => {
         td.textContent = (index + 1).toString();
     });
 };
