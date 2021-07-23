@@ -157,6 +157,26 @@ class RepositoryTests(unittest.TestCase):
         """, (queue_id,)).fetchall()
         self.assertEqual(position_tuples, [(1, 0), (2, 1), (3, 2)])
 
+    def test_move_queue_member_to_same_position_from_above(self):
+        self.generate_queue_member_test_data()
+        queue_id = 1
+
+        error = self.repository.move_queue_member(
+            queue_id,
+            user_id_1=1,
+            user_id_2=2,
+            inserted_before=True
+        )
+
+        self.assertIsNone(error)
+        position_tuples = self.connection.execute("""
+            SELECT user_id, position
+            FROM queue_members
+            WHERE queue_id = ?
+            ORDER BY position
+        """, (queue_id,)).fetchall()
+        self.assertEqual(position_tuples, [(1, 0), (2, 1), (3, 2)])
+
     def test_move_queue_member_invalid_queue_id(self):
         self.generate_queue_member_test_data()
 
