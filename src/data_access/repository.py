@@ -291,10 +291,20 @@ class Repository:
             position for user_id, position in positions if user_id == user_id_2
         )
 
+        # is the member being moved down in the queue or up
         moved_down = target_position > moved_from_position
+        moved_up = not moved_down
+        # are we moving the source member above the target member or below
+        inserted_after = not inserted_before
 
-        target_position += int(not moved_down) * int(not inserted_before) \
-            - int(moved_down) * int(inserted_before)
+        # we need to take into account both where the member is moving from
+        # and whether the source member is being moved above the target
+        # member or below them in order to calculate the final position of
+        # the member being moved
+        if moved_up and inserted_after:
+            target_position += 1
+        elif moved_down and inserted_before:
+            target_position -= 1
 
         self.cursor.execute("""
             UPDATE queue_members
