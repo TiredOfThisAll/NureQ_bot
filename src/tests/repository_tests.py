@@ -208,7 +208,7 @@ class RepositoryTests(unittest.TestCase):
             WHERE queue_id = ?
             ORDER BY position
         """, (queue_id,)).fetchall()
-        self.assertEqual(position_tuples, [(1, 0), (2, 1), (3, 2)])
+        self.assertEqual(position_tuples, [(2, 0), (1, 1), (3, 2)])
 
     def test_move_queue_member_invalid_queue_id(self):
         self.generate_queue_member_test_data()
