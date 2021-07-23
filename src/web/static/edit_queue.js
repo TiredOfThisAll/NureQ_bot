@@ -148,6 +148,7 @@ const handleQueueMemberRowDrop = event => {
         return;
     }
     dropTargetQueueMemberRow.classList.remove("drop-to-lower-half", "drop-to-upper-half");
+    render_queue_positions();
 
     const queueId = dropTargetQueueMemberRow.dataset.queueId;
     const body = JSON.stringify({
@@ -166,6 +167,12 @@ const handleQueueMemberRowDrop = event => {
             }
         })
     ;
+};
+
+const render_queue_positions = () => {
+    document.querySelectorAll("td:first-child").forEach((td, index) => {
+        td.textContent = (index + 1).toString();
+    });
 };
 
 const isBetween = (min, value, max) => value >= min && value < max;

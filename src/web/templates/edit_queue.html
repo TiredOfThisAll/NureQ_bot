@@ -42,7 +42,7 @@
         <thead>
             <tr>
                 <th class="col-2">
-                    ID Пользователя
+                    Номер в очереди
                 </th>
                 <th class="col-8">
                     Имя пользователя
@@ -67,7 +67,7 @@
                     data-queue-member-user-id="{{ queue_member.user_id }}"
                     data-queue-id="{{ queue.id }}"
                 >
-                    <td>{{ queue_member.id }}</td>
+                    <td class="text-center">{{ queue_member.position + 1 }}</td>
                     <td class="col-4">{{ queue_member.user_info.get_formatted_name()|e }}</td>
                     <td>
                         <input
