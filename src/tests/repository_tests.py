@@ -3,6 +3,7 @@ import unittest
 
 from data_access.repository import Repository
 
+
 class RepositoryTests(unittest.TestCase):
     def setUp(self):
         self.connection = sqlite3.connect(":memory:")
