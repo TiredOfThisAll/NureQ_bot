@@ -300,8 +300,8 @@ def move_queue_member(queue_id):
         is_moved_below
     )
     context.repository.commit()
-    if error == "INVALID_USER_ID":
-        return "Invalid user id", 400
+    if error == "INVALID_QUEUE_OR_USER_ID":
+        return "Invalid queue or user ID", 400
     return "", 204
 
 

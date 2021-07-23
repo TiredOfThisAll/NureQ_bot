@@ -282,7 +282,7 @@ class Repository:
         """, (queue_id, user_id_1, user_id_2)).fetchall()
 
         if len(positions) != 2:
-            return "INVALID_USER_ID"
+            return "INVALID_QUEUE_OR_USER_ID"
 
         moved_from_position = next(
             position for user_id, position in positions if user_id == user_id_1
