@@ -3,7 +3,6 @@ import unittest
 
 from data_access.repository import Repository
 
-
 class RepositoryTests(unittest.TestCase):
     def setUp(self):
         self.connection = sqlite3.connect(":memory:")
@@ -137,6 +136,26 @@ class RepositoryTests(unittest.TestCase):
             ORDER BY position
         """, (queue_id,)).fetchall()
         self.assertEqual(position_tuples, [(1, 0), (3, 1), (2, 2)])
+
+    def test_move_queue_member_to_same_position_from_below(self):
+        self.generate_queue_member_test_data()
+        queue_id = 1
+
+        error = self.repository.move_queue_member(
+            queue_id,
+            user_id_1=2,
+            user_id_2=1,
+            inserted_before=False
+        )
+
+        self.assertIsNone(error)
+        position_tuples = self.connection.execute("""
+            SELECT user_id, position
+            FROM queue_members
+            WHERE queue_id = ?
+            ORDER BY position
+        """, (queue_id,)).fetchall()
+        self.assertEqual(position_tuples, [(1, 0), (2, 1), (3, 2)])
 
     def test_move_queue_member_invalid_queue_id(self):
         self.generate_queue_member_test_data()
