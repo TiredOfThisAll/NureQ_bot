@@ -64,12 +64,12 @@ class Repository:
             raise integrity_error
 
     def add_me_to_queue(
-            self,
-            user_id,
-            user_first_name,
-            user_last_name,
-            user_username,
-            queue_id
+        self,
+        user_id,
+        user_first_name,
+        user_last_name,
+        user_username,
+        queue_id
     ):
         try:
             self.cursor.execute("""
@@ -269,11 +269,11 @@ class Repository:
         """)
 
     def move_queue_member(
-            self,
-            queue_id,
-            user_id_1,
-            user_id_2,
-            inserted_before
+        self,
+        queue_id,
+        user_id_1,
+        user_id_2,
+        inserted_before
     ):
         positions = self.cursor.execute(f"""
             SELECT user_id, position
