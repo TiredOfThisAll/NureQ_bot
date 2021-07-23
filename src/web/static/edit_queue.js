@@ -152,7 +152,7 @@ const handleQueueMemberRowDrop = event => {
         return;
     }
     dropTargetQueueMemberRow.classList.remove("drop-to-lower-half", "drop-to-upper-half");
-    render_queue_positions();
+    renderQueuePositions();
 
     const queueId = dropTargetQueueMemberRow.dataset.queueId;
     const body = JSON.stringify({
@@ -172,7 +172,7 @@ const handleQueueMemberRowDrop = event => {
         });
 };
 
-const render_queue_positions = () => {
+const renderQueuePositions = () => {
     document.querySelectorAll("td:first-child").forEach((td, index) => {
         td.textContent = (index + 1).toString();
     });
