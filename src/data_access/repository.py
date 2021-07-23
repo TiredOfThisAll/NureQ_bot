@@ -312,15 +312,15 @@ class Repository:
                 WHEN :moved_from_position THEN -:target_position
                 ELSE -(position + :offset_for_others)
             END
-            WHERE queue_id = :queue_id AND
-            position BETWEEN MIN(:moved_from_position, :target_position)
-            AND MAX(:moved_from_position, :target_position)
+            WHERE queue_id = :queue_id AND position BETWEEN
+                MIN(:moved_from_position, :target_position)
+                    AND MAX(:moved_from_position, :target_position)
         """, {
             "moved_from_position": moved_from_position,
             "target_position": target_position,
             "queue_id": queue_id,
-            "offset_for_others":
-                1 if moved_from_position > target_position else -1
+            # make sure to also move all other affected members
+            "offset_for_others": 1 if moved_up else -1
         })
 
         self.cursor.execute("""
