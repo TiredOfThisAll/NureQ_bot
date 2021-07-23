@@ -200,7 +200,6 @@ class RepositoryTests(unittest.TestCase):
             user_id_2=1,
             inserted_before=True
         )
-        self.repository.commit()
 
         self.assertIsNone(error)
         position_tuples = self.connection.execute("""
