@@ -309,8 +309,8 @@ class Repository:
         self.cursor.execute("""
             UPDATE queue_members
             SET position = CASE position
-                WHEN :moved_from_position THEN -:target_position
-                ELSE -(position + :offset_for_others)
+                WHEN :moved_from_position THEN (-:target_position - 1)
+                ELSE -(position + :offset_for_others) - 1
             END
             WHERE queue_id = :queue_id AND position BETWEEN
                 MIN(:moved_from_position, :target_position)
@@ -325,7 +325,7 @@ class Repository:
 
         self.cursor.execute("""
             UPDATE queue_members
-            SET position = -position
+            SET position = (-position - 1)
             WHERE position < 0
         """)
 
