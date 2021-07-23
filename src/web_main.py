@@ -308,6 +308,10 @@ def move_queue_member(queue_id):
 @app.route("/api/queues")
 @app.errorhandler(InternalServerError)
 def handle_exception(e):
+    # gracefully destroy the context before processing the exception, because
+    # if the DB is locked, attempting to log anything will throw an exception
+    context.__exit__()
+
     original_exception = getattr(e, "original_exception", None)
     if original_exception is not None:
         with create_sqlite_connection(CONFIGURATION.DATABASE_PATH) \
@@ -315,13 +319,11 @@ def handle_exception(e):
             logger = CompositeLogger([
                 ConsoleLogger(),
                 FileLogger(CONFIGURATION.LOGS_PATH),
-                DatabaseLogger(create_sqlite_connection(
-                    CONFIGURATION.DATABASE_PATH
-                )),
+                DatabaseLogger(connection),
             ])
             logger.log(LoggingLevel.ERROR, traceback.format_exc())
 
-    return e.get_response()
+    return (str(original_exception) if original_exception else str(e)), 500
 
 
 waitress.serve(app, port=80, host="0.0.0.0")
