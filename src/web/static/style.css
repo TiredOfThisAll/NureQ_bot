@@ -87,3 +87,12 @@ nav > div > a {
     align-items: center;
     height: 40vh;
 }
+
+/* Highlight whether we are dropping above the row or below it */
+.drop-to-upper-half {
+    background-image: linear-gradient(to bottom, lightgreen, transparent 30%);
+}
+
+.drop-to-lower-half {
+    background-image: linear-gradient(to top, lightgreen, transparent 30%);
+}

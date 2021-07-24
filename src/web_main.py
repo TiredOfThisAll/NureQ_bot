@@ -188,33 +188,6 @@ def set_queue_member_crossed_out(queue_id, user_id):
     return "", 204
 
 
-@app.route("/api/queues/<int:queue_id>/<action>", methods=["PUT"])
-@login_required
-def pull_down_queue_member(queue_id, action):
-    try:
-        current_position = int(request.data)
-    except ValueError:
-        return "Reques body must contain an integer", 400
-    if action == "move-up":
-        error = context.repository.move_up_queue_member(
-            queue_id,
-            current_position
-        )
-    elif action == "move-down":
-        error = context.repository.move_down_queue_member(
-            queue_id,
-            current_position
-        )
-    else:
-        return f"Action {action} not recognized", 404
-    context.repository.commit()
-    if error == "INVALID_POSITION":
-        return "Provided position was invalid", 400
-    if error is not None:
-        return str(error), 500
-    return "", 204
-
-
 @app.route("/api/queues/<int:queue_id>/name", methods=["PUT"])
 @login_required
 def rename_queue(queue_id):
@@ -268,8 +241,50 @@ def swap_queue_members_action(queue_id):
     return "", 204
 
 
+@app.route("/api/queues/<int:queue_id>/move-queue-member", methods=["PUT"])
+@login_required
+def move_queue_member(queue_id):
+    try:
+        data = json.loads(request.data)
+    except ValueError:
+        return "Request body is not JSON", 400
+    if not isinstance(data, dict) or len(data) != 3:
+        return "Request body must be an object with 3 keys", 400
+    if "movedUserId" not in data or not isinstance(data["movedUserId"], int) \
+            or data["movedUserId"] <= 0:
+        return "Request body must include 'movedUserId' key" \
+               " with a positive integer value", 400
+    if "targetUserId" not in data or not isinstance(data["targetUserId"], int)\
+            or data["targetUserId"] <= 0:
+        return "Request body must include 'targetUserId' key" \
+               " with a positive integer value", 400
+    if "insertedBefore" not in data or not \
+            isinstance(data["insertedBefore"], bool):
+        return "Request body must include 'insertedBefore' key" \
+               " with a boolean value", 400
+
+    moved_user_id = data["movedUserId"]
+    target_user_id = data["targetUserId"]
+    is_moved_below = data["insertedBefore"]
+    error = context.repository.move_queue_member(
+        queue_id,
+        moved_user_id,
+        target_user_id,
+        is_moved_below
+    )
+    context.repository.commit()
+    if error == "INVALID_QUEUE_OR_USER_ID":
+        return "Invalid queue or user ID", 400
+    return "", 204
+
+
+@app.route("/api/queues")
 @app.errorhandler(InternalServerError)
 def handle_exception(e):
+    # gracefully destroy the context before processing the exception, because
+    # if the DB is locked, attempting to log anything will throw an exception
+    context.__exit__()
+
     original_exception = getattr(e, "original_exception", None)
     if original_exception is not None:
         with create_sqlite_connection(CONFIGURATION.DATABASE_PATH) \
@@ -277,13 +292,11 @@ def handle_exception(e):
             logger = CompositeLogger([
                 ConsoleLogger(),
                 FileLogger(CONFIGURATION.LOGS_PATH),
-                DatabaseLogger(create_sqlite_connection(
-                    CONFIGURATION.DATABASE_PATH
-                )),
+                DatabaseLogger(connection),
             ])
             logger.log(LoggingLevel.ERROR, traceback.format_exc())
 
-    return e.get_response()
+    return (str(original_exception) if original_exception else str(e)), 500
 
 
 waitress.serve(app, port=80, host="0.0.0.0")
