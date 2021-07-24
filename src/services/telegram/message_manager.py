@@ -63,11 +63,12 @@ class TelegramMessageManager:
         with urlopen(set_bot_commands_url):
             pass
 
-    def answer_callback_query(self, callback_query_id):
+    def answer_callback_query(self, callback_query_id, text=None):
+        parameters = {"callback_query_id": str(callback_query_id)}
+        if text is not None:
+            parameters["text"] = text
         target_url = TELEGRAM_BOT_API_URL + self.token \
-            + "/answerCallbackQuery?" + urlencode({
-                "callback_query_id": str(callback_query_id)
-            })
+            + "/answerCallbackQuery?" + urlencode(parameters)
         with urlopen(target_url):
             pass
 
