@@ -81,3 +81,25 @@ class TelegramMessageManager:
             })
         with urlopen(target_url):
             pass
+
+    def edit_message_text(
+        self,
+        chat_id,
+        message_id,
+        text,
+        entities=None,
+        reply_markup=None
+    ):
+        parameters = {
+            "chat_id": chat_id,
+            "message_id": message_id,
+            "text": text,
+        }
+        if entities is not None:
+            parameters["entities"] = json.dumps(entities)
+        if reply_markup is not None:
+            parameters["reply_markup"] = json.dumps(reply_markup)
+        target_url = TELEGRAM_BOT_API_URL + self.token \
+            + "/editMessageText?" + urlencode(parameters)
+        with urlopen(target_url):
+            pass
