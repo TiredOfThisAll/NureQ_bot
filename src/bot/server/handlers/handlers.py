@@ -2,6 +2,7 @@ import math
 import json
 import random
 
+import bot.server.handlers.constants as constants
 from bot.server.router import command_handler, response_handler, \
     callback_handler, default_callback_handler, default_command_handler, \
     default_response_handler, default_other_handler
@@ -9,27 +10,6 @@ from bot.server.models.update_context import UpdateContext
 from services.logging import LoggingLevel
 from services.telegram.message_entities_builder import MessageEntitiesBuilder
 from services.telegram.message_manager import MAX_MESSAGE_LENGTH
-
-
-NEW_QUEUE_COMMAND_RESPONSE_TEXT \
-    = "Введите имя новой очереди в ответ на это сообщение"
-QUEUE_NAME_ONLY_TEXT_RESPONSE_TEXT \
-    = "Имя очереди должно быть введено в текстовом формате"
-QUEUE_NAME_TOO_LONG_RESPONSE_TEXT \
-    = "Имя очереди не должно быть длиннее {} символов"
-DEFAULT_QUEUES_PAGE_SIZE = 3
-DEFAULT_TRUNCATED_MESSAGE_PLACEHOLDER = "...\n[Обрезано]"
-
-
-class ButtonCallbackType:
-    NOOP = 1
-    SHOW_NEXT_QUEUE_PAGE = 2
-    SHOW_PREVIOUS_QUEUE_PAGE = 3
-    SHOW_QUEUE = 4
-    ADD_ME = 5
-    CROSS_OUT = 6
-    UNCROSS_OUT = 7
-    REMOVE_ME = 8
 
 
 @command_handler("/start")
@@ -45,7 +25,7 @@ def handle_start_command(handler_context, update_context):
 def handle_new_queue_command(handler_context, update_context):
     handler_context.telegram_message_manager.send_message(
         update_context.chat_id,
-        NEW_QUEUE_COMMAND_RESPONSE_TEXT,
+        constants.NEW_QUEUE_COMMAND_RESPONSE_TEXT,
         reply_markup={"force_reply": True, "selective": True},
         reply_to_message_id=update_context.message_id
     )
@@ -56,7 +36,7 @@ def handle_show_queue_command(handler_context, update_context):
     handle_generic_queue_command(
         handler_context,
         update_context,
-        ButtonCallbackType.SHOW_QUEUE,
+        constants.ButtonCallbackType.SHOW_QUEUE,
         "Выберите очередь, которую хотите посмотреть."
     )
 
@@ -66,7 +46,7 @@ def handle_cross_out_command(handler_context, update_context):
     handle_generic_queue_command(
         handler_context,
         update_context,
-        ButtonCallbackType.CROSS_OUT,
+        constants.ButtonCallbackType.CROSS_OUT,
         "Выберите очередь, из которой необходимо вычеркнуть участника"
     )
 
@@ -76,7 +56,7 @@ def handle_uncross_out_command(handler_context, update_context):
     handle_generic_queue_command(
         handler_context,
         update_context,
-        ButtonCallbackType.UNCROSS_OUT,
+        constants.ButtonCallbackType.UNCROSS_OUT,
         "Выберите очередь, в которую необходимо вернуть участника"
     )
 
@@ -86,7 +66,7 @@ def handle_add_me_command(handler_context, update_context):
     handle_generic_queue_command(
         handler_context,
         update_context,
-        ButtonCallbackType.ADD_ME,
+        constants.ButtonCallbackType.ADD_ME,
         "Выберите очередь, в которую хотите добавиться."
     )
 
@@ -96,14 +76,14 @@ def handle_remove_me_command(handler_context, update_context):
     handle_generic_queue_command(
         handler_context,
         update_context,
-        ButtonCallbackType.REMOVE_ME,
+        constants.ButtonCallbackType.REMOVE_ME,
         "Выберите очередь, которую хотите покинуть."
     )
 
 
-@response_handler(NEW_QUEUE_COMMAND_RESPONSE_TEXT)
-@response_handler(QUEUE_NAME_ONLY_TEXT_RESPONSE_TEXT)
-@response_handler(QUEUE_NAME_TOO_LONG_RESPONSE_TEXT)
+@response_handler(constants.NEW_QUEUE_COMMAND_RESPONSE_TEXT)
+@response_handler(constants.QUEUE_NAME_ONLY_TEXT_RESPONSE_TEXT)
+@response_handler(constants.QUEUE_NAME_TOO_LONG_RESPONSE_TEXT)
 def handle_new_queue_response(handler_context, update_context):
     if update_context.response_type != UpdateContext.Type.TEXT_MESSAGE:
         handler_context.logger.log(
@@ -113,7 +93,7 @@ def handle_new_queue_response(handler_context, update_context):
         )
         handler_context.telegram_message_manager.send_message(
             update_context.chat_id,
-            QUEUE_NAME_ONLY_TEXT_RESPONSE_TEXT,
+            constants.QUEUE_NAME_ONLY_TEXT_RESPONSE_TEXT,
             reply_markup={"force_reply": True, "selective": True},
             reply_to_message_id=update_context.message_id
         )
@@ -129,7 +109,9 @@ def handle_new_queue_response(handler_context, update_context):
         )
         handler_context.telegram_message_manager.send_message(
             update_context.chat_id,
-            QUEUE_NAME_TOO_LONG_RESPONSE_TEXT.format(queue_name_limit),
+            constants.QUEUE_NAME_TOO_LONG_RESPONSE_TEXT.format(
+                queue_name_limit
+            ),
             reply_markup={"force_reply": True, "selective": True},
             reply_to_message_id=update_context.message_id
         )
@@ -149,7 +131,7 @@ def handle_new_queue_response(handler_context, update_context):
     )
 
 
-@callback_handler(ButtonCallbackType.ADD_ME)
+@callback_handler(constants.ButtonCallbackType.ADD_ME)
 def handle_add_me_callback(handler_context, update_context):
     try:
         queue_id = update_context.callback_query_data["queue_id"]
@@ -195,7 +177,7 @@ def handle_add_me_callback(handler_context, update_context):
         )
 
 
-@callback_handler(ButtonCallbackType.CROSS_OUT)
+@callback_handler(constants.ButtonCallbackType.CROSS_OUT)
 def handle_cross_out_callback(handler_context, update_context):
     try:
         queue_id = update_context.callback_query_data["queue_id"]
@@ -233,7 +215,7 @@ def handle_cross_out_callback(handler_context, update_context):
         )
 
 
-@callback_handler(ButtonCallbackType.UNCROSS_OUT)
+@callback_handler(constants.ButtonCallbackType.UNCROSS_OUT)
 def handle_uncross_out_callback(handler_context, update_context):
     try:
         queue_id = update_context.callback_query_data["queue_id"]
@@ -271,7 +253,7 @@ def handle_uncross_out_callback(handler_context, update_context):
         )
 
 
-@callback_handler(ButtonCallbackType.REMOVE_ME)
+@callback_handler(constants.ButtonCallbackType.REMOVE_ME)
 def handle_remove_me_callback(handler_context, update_context):
     try:
         user_info = update_context.sender_user_info
@@ -304,14 +286,14 @@ def handle_remove_me_callback(handler_context, update_context):
         )
 
 
-@callback_handler(ButtonCallbackType.NOOP)
+@callback_handler(constants.ButtonCallbackType.NOOP)
 def handle_noop_callback(handler_context, update_context):
     handler_context.telegram_message_manager.answer_callback_query(
         update_context.callback_query_id
     )
 
 
-@callback_handler(ButtonCallbackType.SHOW_NEXT_QUEUE_PAGE)
+@callback_handler(constants.ButtonCallbackType.SHOW_NEXT_QUEUE_PAGE)
 def handle_show_next_queue_page_callback(handler_context, update_context):
     try:
         main_button_type \
@@ -321,7 +303,7 @@ def handle_show_next_queue_page_callback(handler_context, update_context):
             = build_queue_pagination_reply_markup(
                 handler_context.repository,
                 page_index=page_index+1,
-                page_size=DEFAULT_QUEUES_PAGE_SIZE,
+                page_size=constants.DEFAULT_QUEUES_PAGE_SIZE,
                 main_button_type=main_button_type
             )
         if queue_pagination_reply_markup is None:
@@ -342,7 +324,7 @@ def handle_show_next_queue_page_callback(handler_context, update_context):
         )
 
 
-@callback_handler(ButtonCallbackType.SHOW_PREVIOUS_QUEUE_PAGE)
+@callback_handler(constants.ButtonCallbackType.SHOW_PREVIOUS_QUEUE_PAGE)
 def handle_show_previous_queue_page_callback(handler_context, update_context):
     try:
         main_button_type \
@@ -352,7 +334,7 @@ def handle_show_previous_queue_page_callback(handler_context, update_context):
             = build_queue_pagination_reply_markup(
                 handler_context.repository,
                 page_index=page_index-1,
-                page_size=DEFAULT_QUEUES_PAGE_SIZE,
+                page_size=constants.DEFAULT_QUEUES_PAGE_SIZE,
                 main_button_type=main_button_type
             )
         if queue_pagination_reply_markup is None:
@@ -373,7 +355,7 @@ def handle_show_previous_queue_page_callback(handler_context, update_context):
         )
 
 
-@callback_handler(ButtonCallbackType.SHOW_QUEUE)
+@callback_handler(constants.ButtonCallbackType.SHOW_QUEUE)
 def handle_show_queue_callback(handler_context, update_context):
     try:
         queue_id = update_context.callback_query_data["queue_id"]
@@ -410,7 +392,7 @@ def handle_show_queue_callback(handler_context, update_context):
         truncated_queue_description = truncate(
             queue_description,
             MAX_MESSAGE_LENGTH,
-            DEFAULT_TRUNCATED_MESSAGE_PLACEHOLDER
+            constants.DEFAULT_TRUNCATED_MESSAGE_PLACEHOLDER
         )
         truncated_entities = truncate_entities(
             entities,
@@ -492,7 +474,7 @@ def handle_generic_queue_command(
     queue_pagination_reply_markup = build_queue_pagination_reply_markup(
         handler_context.repository,
         page_index=1,
-        page_size=DEFAULT_QUEUES_PAGE_SIZE,
+        page_size=constants.DEFAULT_QUEUES_PAGE_SIZE,
         main_button_type=main_button_type
     )
     if queue_pagination_reply_markup is None:
@@ -562,12 +544,13 @@ def make_queue_choice_buttons(
             "text": "<" if not is_first_page else "x",
             "callback_data":
                 json.dumps({
-                    "type": ButtonCallbackType.NOOP,
+                    "type": constants.ButtonCallbackType.NOOP,
                     "distinction_factor": random.random(),
                 })
                 if is_first_page
                 else json.dumps({
-                    "type": ButtonCallbackType.SHOW_PREVIOUS_QUEUE_PAGE,
+                    "type":
+                        constants.ButtonCallbackType.SHOW_PREVIOUS_QUEUE_PAGE,
                     "page_index": page_index,
                     "main_button_type": main_button_type,
                 }),
@@ -575,7 +558,7 @@ def make_queue_choice_buttons(
         {
             "text": f"{page_index}/{total_page_count}",
             "callback_data": json.dumps({
-                "type": ButtonCallbackType.NOOP,
+                "type": constants.ButtonCallbackType.NOOP,
                 "distinction_factor": random.random(),
             }),
         },
@@ -583,12 +566,12 @@ def make_queue_choice_buttons(
             "text": ">" if not is_last_page else "x",
             "callback_data":
                 json.dumps({
-                    "type": ButtonCallbackType.NOOP,
+                    "type": constants.ButtonCallbackType.NOOP,
                     "distinction_factor": random.random(),
                 })
                 if is_last_page
                 else json.dumps({
-                    "type": ButtonCallbackType.SHOW_NEXT_QUEUE_PAGE,
+                    "type": constants.ButtonCallbackType.SHOW_NEXT_QUEUE_PAGE,
                     "page_index": page_index,
                     "main_button_type": main_button_type,
                 }),

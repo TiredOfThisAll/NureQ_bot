@@ -3,9 +3,9 @@ import traceback
 from urllib.error import HTTPError
 
 from data_access.repository import Repository
-from bot.server.handler_context import HandlerContext, HandlerConfiguration
-from bot.server.handlers import handle_error_while_processing_update, \
-    handle_error_while_processing_update
+from bot.server.handlers.handler_context import HandlerContext, \
+    HandlerConfiguration
+from bot.server.handlers.handlers import handle_error_while_processing_update
 from bot.server.models.update_context import UpdateContext
 from bot.server.router import route
 from services.configuration import CONFIGURATION
