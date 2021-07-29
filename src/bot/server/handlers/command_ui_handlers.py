@@ -387,11 +387,12 @@ def handle_show_queue_callback(handler_context, update_context):
             )
             return
 
-        queue_description, entities = queue_description_data
+        queue_description, entities, reply_markup = queue_description_data
         handler_context.telegram_message_manager.send_message(
             update_context.chat_id,
             queue_description,
-            entities=entities
+            entities=entities,
+            reply_markup=reply_markup
         )
     finally:
         handler_context.telegram_message_manager.answer_callback_query(
@@ -421,7 +422,7 @@ def handle_generic_queue_command(
     handler_context.telegram_message_manager.send_message(
         update_context.chat_id,
         success_message,
-        queue_pagination_reply_markup
+        reply_markup=queue_pagination_reply_markup
     )
 
 

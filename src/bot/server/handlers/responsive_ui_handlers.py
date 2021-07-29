@@ -1,3 +1,5 @@
+import json
+
 import bot.server.handlers.constants as constants
 from services.telegram.message_entities_builder import MessageEntitiesBuilder
 from services.telegram.message_manager import MAX_MESSAGE_LENGTH
@@ -39,8 +41,13 @@ def generate_queue_description(repository, queue_id):
         entities,
         MAX_MESSAGE_LENGTH
     )
+    reply_markup = generate_queue_actions_reply_markup(queue_id)
 
-    return (truncated_queue_description, truncated_entities), None
+    return (
+        truncated_queue_description,
+        truncated_entities,
+        reply_markup,
+    ), None
 
 
 def truncate(source, length, placeholder="..."):
@@ -54,3 +61,51 @@ def truncate_entities(entities, length):
         lambda entity: entity["offset"] + entity["length"] <= length,
         entities
     ))
+
+
+def generate_queue_actions_reply_markup(queue_id):
+    return {
+        "inline_keyboard": [
+            [
+                {
+                    "text": "Добавить меня",
+                    "callback_data": json.dumps({
+                        "type": constants.ButtonCallbackType
+                        .RESPONSIVE_UI_ADD_ME,
+                    })
+                },
+                {
+                    "text": "Убрать меня",
+                    "callback_data": json.dumps({
+                        "type": constants.ButtonCallbackType
+                        .RESPONSIVE_UI_REMOVE_ME,
+                    })
+                },
+            ],
+            [
+                {
+                    "text": "Вычеркнуть",
+                    "callback_data": json.dumps({
+                        "type": constants.ButtonCallbackType
+                        .RESPONSIVE_UI_CROSS_OUT,
+                    })
+                },
+                {
+                    "text": "Убрать вычеркивание",
+                    "callback_data": json.dumps({
+                        "type": constants.ButtonCallbackType
+                        .RESPONSIVE_UI_UNCROSS_OUT,
+                    })
+                },
+            ],
+            [
+                {
+                    "text": "Обновить сообщение",
+                    "callback_data": json.dumps({
+                        "type": constants.ButtonCallbackType
+                        .RESPONSIVE_UI_REFRESH
+                    })
+                }
+            ],
+        ]
+    }
