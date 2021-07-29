@@ -2,10 +2,12 @@ import time
 import traceback
 from urllib.error import HTTPError
 
+import bot.server.handlers.command_ui_handlers
 from data_access.repository import Repository
 from bot.server.handlers.handler_context import HandlerContext, \
     HandlerConfiguration
-from bot.server.handlers.handlers import handle_error_while_processing_update
+from bot.server.handlers.fallback_handlers import \
+    handle_error_while_processing_update
 from bot.server.models.update_context import UpdateContext
 from bot.server.router import route
 from services.configuration import CONFIGURATION
