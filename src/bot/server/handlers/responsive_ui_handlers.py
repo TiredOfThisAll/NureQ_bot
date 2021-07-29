@@ -172,7 +172,7 @@ def handle_responsive_ui_cross_out_callback(handler_context, update_context):
 
 
 @callback_handler(constants.ButtonCallbackType.RESPONSIVE_UI_UNCROSS_OUT)
-def handle_uncross_out_callback(handler_context, update_context):
+def handle_responsive_ui_uncross_out_callback(handler_context, update_context):
     notification_text = None
     try:
         queue_id = update_context.callback_query_data["queue_id"]
@@ -226,6 +226,52 @@ def handle_uncross_out_callback(handler_context, update_context):
         )
 
 
+@callback_handler(constants.ButtonCallbackType.RESPONSIVE_UI_REFRESH)
+def handle_responsive_ui_refresh_callback(handler_context, update_context):
+    notification_text = None
+    try:
+        queue_id = update_context.callback_query_data["queue_id"]
+        queue_name = handler_context.repository.get_queue_name_by_queue_id(
+            queue_id
+        )
+        if queue_name is None:
+            handler_context.logger.log(
+                LoggingLevel.WARN,
+                "Received a RESPONSIVE_UI_REFRESH callback for a "
+                + f"non-existent queue with ID {queue_id}"
+            )
+            notification_text = "Очередь не найдена"
+            return
+
+        queue_description_data, _error = generate_queue_description(
+            handler_context.repository,
+            queue_id
+        )
+        queue_description, entities, reply_markup = queue_description_data
+        if update_context.is_message_unchanged(
+            queue_description,
+            entities,
+            reply_markup
+        ):
+            notification_text = f"Очередь актуальна: {queue_name}"
+            return
+
+        handler_context.telegram_message_manager.edit_message_text(
+            update_context.chat_id,
+            update_context.message_id,
+            queue_description,
+            entities=entities,
+            reply_markup=reply_markup
+        )
+
+        notification_text = f"Очередь обновлена: {queue_name}"
+    finally:
+        handler_context.telegram_message_manager.answer_callback_query(
+            update_context.callback_query_id,
+            text=notification_text
+        )
+
+
 def generate_queue_description(repository, queue_id):
     # check if queue exists and get its name, because we need to display it in
     # the response
@@ -243,9 +289,13 @@ def generate_queue_description(repository, queue_id):
             name = queue_member.user_info.get_formatted_name()
             type = "strikethrough" if queue_member.crossed else None
             message_builder = message_builder.add_text(
-                f"{index + 1}. {name}\n",
+                f"{index + 1}. {name}",
                 type=type
             )
+            # have to omit the final new line character, because otherwise
+            # message diffing will start failing
+            if index != len(queue_members) - 1:
+                message_builder = message_builder.add_text("\n")
     else:
         message_builder = message_builder.add_text("Очередь пуста")
     queue_description, entities = message_builder.build()
