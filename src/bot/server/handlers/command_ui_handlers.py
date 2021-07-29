@@ -159,7 +159,7 @@ def handle_add_me_callback(handler_context, update_context):
             )
             handler_context.telegram_message_manager.send_message(
                 update_context.chat_id,
-                "Данной очереди не существует: " + queue_name
+                "Очередь не найдена"
             )
             return
         handler_context.repository.refresh_queues_last_time_updated_on(
