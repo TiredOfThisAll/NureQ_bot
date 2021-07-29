@@ -66,3 +66,13 @@ class UpdateContext:
             update_context.update = update
 
         return update_context
+
+    def is_message_unchanged(self, text, entities=None, reply_markup=None):
+        if entities == []:
+            entities = None  # because Telegram will provide us with None
+
+        if self.type == UpdateContext.Type.CALLBACK_QUERY:
+            message = self.callback_query["message"]
+            return message.get("text") == text \
+                and message.get("entities") == entities \
+                and message.get("reply_markup") == reply_markup
