@@ -260,6 +260,18 @@ def handle_remove_me_callback(handler_context, update_context):
         queue_name = handler_context.repository.get_queue_name_by_queue_id(
             queue_id
         )
+        if queue_name is None:
+            handler_context.logger.log(
+                LoggingLevel.WARN,
+                "Received a REMOVE_ME callback for a "
+                + f"non-existent queue with ID {queue_id}"
+            )
+            handler_context.telegram_message_manager.send_message(
+                update_context.chat_id,
+                "Очередь не найдена"
+            )
+            return
+
         success = handler_context.repository.remove_user_from_queue(
             user_info.id,
             queue_id
