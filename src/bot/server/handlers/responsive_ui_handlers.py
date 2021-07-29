@@ -7,62 +7,11 @@ from services.telegram.message_manager import MAX_MESSAGE_LENGTH
 
 
 @callback_handler(constants.ButtonCallbackType.RESPONSIVE_UI_ADD_ME)
-def handle_responsive_ui_add_me_callback(handler_context, update_context):
-    notification_text = None
-    try:
-        queue_id = update_context.callback_query_data["queue_id"]
-        error = handler_context.repository.add_me_to_queue(
-            update_context.sender_user_info.id,
-            update_context.sender_user_info.first_name,
-            update_context.sender_user_info.last_name,
-            update_context.sender_user_info.username,
-            queue_id
-        )
-        queue_name = handler_context.repository.get_queue_name_by_queue_id(
-            queue_id
-        )
-        name = update_context.sender_user_info.get_formatted_name()
-        if error == "DUPLICATE_MEMBERS":
-            notification_text \
-                = f"{name} уже состоит в данной очереди: {queue_name}"
-            return
-        if error == "NO_QUEUE":
-            handler_context.logger.log(
-                LoggingLevel.WARN,
-                "Received a RESPONSIVE_UI_ADD_ME callback for a non-existent "
-                + f"queue with ID {queue_id}"
-            )
-            notification_text = f"Очередь не найдена"
-            return
-
-        handler_context.repository.refresh_queues_last_time_updated_on(
-            queue_id
-        )
-
-        queue_description_data, _error = generate_queue_description(
-            handler_context.repository,
-            queue_id
-        )
-        queue_description, entities, reply_markup = queue_description_data
-        handler_context.telegram_message_manager.edit_message_text(
-            update_context.chat_id,
-            update_context.message_id,
-            queue_description,
-            entities=entities,
-            reply_markup=reply_markup
-        )
-
-        notification_text = f"{name} добавлен(а) в очередь: {queue_name}"
-    finally:
-        handler_context.repository.commit()
-        handler_context.telegram_message_manager.answer_callback_query(
-            update_context.callback_query_id,
-            text=notification_text
-        )
-
-
 @callback_handler(constants.ButtonCallbackType.RESPONSIVE_UI_REMOVE_ME)
-def handle_responsive_ui_remove_me_callback(handler_context, update_context):
+@callback_handler(constants.ButtonCallbackType.RESPONSIVE_UI_CROSS_OUT)
+@callback_handler(constants.ButtonCallbackType.RESPONSIVE_UI_UNCROSS_OUT)
+@callback_handler(constants.ButtonCallbackType.RESPONSIVE_UI_REFRESH)
+def handle_generic_responsive_ui_callback(handler_context, update_context):
     notification_text = None
     try:
         user_info = update_context.sender_user_info
@@ -73,175 +22,81 @@ def handle_responsive_ui_remove_me_callback(handler_context, update_context):
         if queue_name is None:
             handler_context.logger.log(
                 LoggingLevel.WARN,
-                "Received a RESPONSIVE_UI_REMOVE_ME callback for a "
-                + f"non-existent queue with ID {queue_id}"
+                f"Received callback ID {update_context.callback_query_type} "
+                + "for a non-existent queue with ID {queue_id}"
             )
             notification_text = f"Очередь не найдена"
             return
 
-        success = handler_context.repository.remove_user_from_queue(
-            user_info.id,
-            queue_id
-        )
-        name = user_info.get_formatted_name()
-        if not success:
-            notification_text = f"{name} не состоит в очереди {queue_name}"
-            return
-
-        handler_context.repository.refresh_queues_last_time_updated_on(
-            queue_id
-        )
-
-        queue_description_data, _error = generate_queue_description(
-            handler_context.repository,
-            queue_id
-        )
-        queue_description, entities, reply_markup = queue_description_data
-        handler_context.telegram_message_manager.edit_message_text(
-            update_context.chat_id,
-            update_context.message_id,
-            queue_description,
-            entities=entities,
-            reply_markup=reply_markup
-        )
-
-        notification_text = f"Участник {name} удален из очереди: {queue_name}"
-    finally:
-        handler_context.repository.commit()
-        handler_context.telegram_message_manager.answer_callback_query(
-            update_context.callback_query_id,
-            text=notification_text
-        )
-
-
-@callback_handler(constants.ButtonCallbackType.RESPONSIVE_UI_CROSS_OUT)
-def handle_responsive_ui_cross_out_callback(handler_context, update_context):
-    notification_text = None
-    try:
-        queue_id = update_context.callback_query_data["queue_id"]
-        queue_name = handler_context.repository.get_queue_name_by_queue_id(
-            queue_id
-        )
-        if queue_name is None:
-            handler_context.logger.log(
-                LoggingLevel.WARN,
-                "Received a RESPONSIVE_UI_CROSS_OUT callback for a "
-                + f"non-existent queue with ID {queue_id}"
+        if update_context.callback_query_type \
+                == constants.ButtonCallbackType.RESPONSIVE_UI_ADD_ME:
+            error = handler_context.repository.add_me_to_queue(
+                update_context.sender_user_info.id,
+                update_context.sender_user_info.first_name,
+                update_context.sender_user_info.last_name,
+                update_context.sender_user_info.username,
+                queue_id
             )
-            notification_text = f"Очередь не найдена"
-            return
+            name = update_context.sender_user_info.get_formatted_name()
+            if error == "DUPLICATE_MEMBERS":
+                notification_text \
+                    = f"{name} уже состоит в данной очереди: {queue_name}"
+                return
+            success_notification_text \
+                = f"{name} добавлен(а) в очередь: {queue_name}"
+        elif update_context.callback_query_type \
+                == constants.ButtonCallbackType.RESPONSIVE_UI_REMOVE_ME:
+            success = handler_context.repository.remove_user_from_queue(
+                user_info.id,
+                queue_id
+            )
+            name = user_info.get_formatted_name()
+            if not success:
+                notification_text = f"{name} не состоит в очереди {queue_name}"
+                return
+            success_notification_text \
+                = f"Участник {name} удален из очереди: {queue_name}"
+        elif update_context.callback_query_type \
+                == constants.ButtonCallbackType.RESPONSIVE_UI_CROSS_OUT:
+            queue_member = handler_context \
+                .repository.find_uncrossed_queue_member(queue_id)
+            if queue_member is None:
+                notification_text = "В данной очереди не осталось " \
+                    + f"участников: {queue_name}"
+                return
 
-        queue_member = handler_context.repository.find_uncrossed_queue_member(
-            queue_id
-        )
-        if queue_member is None:
-            notification_text = "В данной очереди не осталось участников: " \
+            handler_context.repository.cross_out_queue_member(
+                queue_member.user_id,
+                queue_id
+            )
+            name = queue_member.user_info.get_formatted_name()
+            success_notification_text = f"Участник {name} вычеркнут из " \
+                + f"очереди: {queue_name}"
+        elif update_context.callback_query_type \
+                == constants.ButtonCallbackType.RESPONSIVE_UI_UNCROSS_OUT:
+            queue_member = handler_context.repository \
+                .find_last_crossed_queue_member(queue_id)
+            if queue_member is None:
+                notification_text = "В данной очереди не осталось " \
+                    + f"подходящих участников: {queue_name}"
+                return
+
+            handler_context.repository.uncross_out_the_queue_member(
+                queue_member.user_id,
+                queue_id
+            )
+            name = queue_member.user_info.get_formatted_name()
+            success_notification_text = f"Участник {name} снова в очереди: " \
                 + queue_name
-            return
+        elif update_context.callback_query_type \
+                == constants.ButtonCallbackType.RESPONSIVE_UI_REFRESH:
+            success_notification_text = f"Очередь обновлена: {queue_name}"
 
-        handler_context.repository.cross_out_queue_member(
-            queue_member.user_id,
-            queue_id
-        )
-        handler_context.repository.refresh_queues_last_time_updated_on(
-            queue_id
-        )
-
-        queue_description_data, _error = generate_queue_description(
-            handler_context.repository,
-            queue_id
-        )
-        queue_description, entities, reply_markup = queue_description_data
-        handler_context.telegram_message_manager.edit_message_text(
-            update_context.chat_id,
-            update_context.message_id,
-            queue_description,
-            entities=entities,
-            reply_markup=reply_markup
-        )
-
-        name = queue_member.user_info.get_formatted_name()
-        notification_text = f"Участник {name} вычеркнут из очереди: " \
-            + queue_name
-    finally:
-        handler_context.repository.commit()
-        handler_context.telegram_message_manager.answer_callback_query(
-            update_context.callback_query_id,
-            text=notification_text
-        )
-
-
-@callback_handler(constants.ButtonCallbackType.RESPONSIVE_UI_UNCROSS_OUT)
-def handle_responsive_ui_uncross_out_callback(handler_context, update_context):
-    notification_text = None
-    try:
-        queue_id = update_context.callback_query_data["queue_id"]
-        queue_name = handler_context.repository.get_queue_name_by_queue_id(
-            queue_id
-        )
-        if queue_name is None:
-            handler_context.logger.log(
-                LoggingLevel.WARN,
-                "Received a RESPONSIVE_UI_UNCROSS_OUT callback for a "
-                + f"non-existent queue with ID {queue_id}"
+        if update_context.callback_query_type \
+                != constants.ButtonCallbackType.RESPONSIVE_UI_REFRESH:
+            handler_context.repository.refresh_queues_last_time_updated_on(
+                queue_id
             )
-            notification_text = f"Очередь не найдена"
-            return
-
-        queue_member = handler_context.repository \
-            .find_last_crossed_queue_member(queue_id)
-        if queue_member is None:
-            notification_text = "В данной очереди не осталось подходящих " \
-                + f"участников: {queue_name}"
-            return
-
-        handler_context.repository.uncross_out_the_queue_member(
-            queue_member.user_id,
-            queue_id
-        )
-        handler_context.repository.refresh_queues_last_time_updated_on(
-            queue_id
-        )
-
-        queue_description_data, _error = generate_queue_description(
-            handler_context.repository,
-            queue_id
-        )
-        queue_description, entities, reply_markup = queue_description_data
-        handler_context.telegram_message_manager.edit_message_text(
-            update_context.chat_id,
-            update_context.message_id,
-            queue_description,
-            entities=entities,
-            reply_markup=reply_markup
-        )
-
-        name = queue_member.user_info.get_formatted_name()
-        notification_text = f"Участник {name} снова в очереди: {queue_name}"
-    finally:
-        handler_context.repository.commit()
-        handler_context.telegram_message_manager.answer_callback_query(
-            update_context.callback_query_id,
-            text=notification_text
-        )
-
-
-@callback_handler(constants.ButtonCallbackType.RESPONSIVE_UI_REFRESH)
-def handle_responsive_ui_refresh_callback(handler_context, update_context):
-    notification_text = None
-    try:
-        queue_id = update_context.callback_query_data["queue_id"]
-        queue_name = handler_context.repository.get_queue_name_by_queue_id(
-            queue_id
-        )
-        if queue_name is None:
-            handler_context.logger.log(
-                LoggingLevel.WARN,
-                "Received a RESPONSIVE_UI_REFRESH callback for a "
-                + f"non-existent queue with ID {queue_id}"
-            )
-            notification_text = "Очередь не найдена"
-            return
 
         queue_description_data, _error = generate_queue_description(
             handler_context.repository,
@@ -255,7 +110,6 @@ def handle_responsive_ui_refresh_callback(handler_context, update_context):
         ):
             notification_text = f"Очередь актуальна: {queue_name}"
             return
-
         handler_context.telegram_message_manager.edit_message_text(
             update_context.chat_id,
             update_context.message_id,
@@ -264,8 +118,9 @@ def handle_responsive_ui_refresh_callback(handler_context, update_context):
             reply_markup=reply_markup
         )
 
-        notification_text = f"Очередь обновлена: {queue_name}"
+        notification_text = success_notification_text
     finally:
+        handler_context.repository.commit()
         handler_context.telegram_message_manager.answer_callback_query(
             update_context.callback_query_id,
             text=notification_text
