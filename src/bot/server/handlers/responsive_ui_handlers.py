@@ -29,8 +29,8 @@ def handle_responsive_ui_add_me_callback(handler_context, update_context):
         if error == "NO_QUEUE":
             handler_context.logger.log(
                 LoggingLevel.WARN,
-                "Received an /addme request for a non-existent queue "
-                + f"with ID {queue_id}"
+                "Received a RESPONSIVE_UI_ADD_ME callback for a non-existent "
+                + f"queue with ID {queue_id}"
             )
             notification_text = f"Очередь не найдена"
             return
@@ -39,21 +39,10 @@ def handle_responsive_ui_add_me_callback(handler_context, update_context):
             queue_id
         )
 
-        queue_description_data, error = generate_queue_description(
+        queue_description_data, _error = generate_queue_description(
             handler_context.repository,
             queue_id
         )
-        if error is not None or queue_description_data is None:
-            handler_context.logger.log(
-                LoggingLevel.ERROR,
-                "Encountered an unknown error while processing a "
-                + "RESPONSIVE_UI_ADD_ME callback"
-                + f"command for queue ID {queue_id}. Error: {error}, "
-                + f"queue description data: {queue_description_data}"
-            )
-            notification_text = "Ошибка"
-            return
-
         queue_description, entities, reply_markup = queue_description_data
         handler_context.telegram_message_manager.edit_message_text(
             update_context.chat_id,
@@ -64,6 +53,59 @@ def handle_responsive_ui_add_me_callback(handler_context, update_context):
         )
 
         notification_text = f"{name} добавлен(а) в очередь: {queue_name}"
+    finally:
+        handler_context.repository.commit()
+        handler_context.telegram_message_manager.answer_callback_query(
+            update_context.callback_query_id,
+            text=notification_text
+        )
+
+
+@callback_handler(constants.ButtonCallbackType.RESPONSIVE_UI_REMOVE_ME)
+def handle_responsive_ui_remove_me_callback(handler_context, update_context):
+    notification_text = None
+    try:
+        user_info = update_context.sender_user_info
+        queue_id = update_context.callback_query_data["queue_id"]
+        queue_name = handler_context.repository.get_queue_name_by_queue_id(
+            queue_id
+        )
+        if queue_name is None:
+            handler_context.logger.log(
+                LoggingLevel.WARN,
+                "Received a RESPONSIVE_UI_REMOVE_ME callback for a "
+                + f"non-existent queue with ID {queue_id}"
+            )
+            notification_text = f"Очередь не найдена"
+            return
+
+        success = handler_context.repository.remove_user_from_queue(
+            user_info.id,
+            queue_id
+        )
+        name = user_info.get_formatted_name()
+        if not success:
+            notification_text = f"{name} не состоит в очереди {queue_name}"
+            return
+
+        handler_context.repository.refresh_queues_last_time_updated_on(
+            queue_id
+        )
+
+        queue_description_data, _error = generate_queue_description(
+            handler_context.repository,
+            queue_id
+        )
+        queue_description, entities, reply_markup = queue_description_data
+        handler_context.telegram_message_manager.edit_message_text(
+            update_context.chat_id,
+            update_context.message_id,
+            queue_description,
+            entities=entities,
+            reply_markup=reply_markup
+        )
+
+        notification_text = f"Участник {name} удален из очереди: {queue_name}"
     finally:
         handler_context.repository.commit()
         handler_context.telegram_message_manager.answer_callback_query(

@@ -374,18 +374,6 @@ def handle_show_queue_callback(handler_context, update_context):
                 f"Очереди с ID: {queue_id} не существует"
             )
             return
-        elif error is not None or queue_description_data is None:
-            handler_context.logger.log(
-                LoggingLevel.ERROR,
-                "Encountered an unknown error while processing a /showqueue "
-                + f"command for queue ID {queue_id}. Error: {error}, "
-                + f"queue description data: {queue_description_data}"
-            )
-            handler_context.telegram_message_manager.send_message(
-                update_context.chat_id,
-                "Ошибка"
-            )
-            return
 
         queue_description, entities, reply_markup = queue_description_data
         handler_context.telegram_message_manager.send_message(
