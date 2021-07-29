@@ -180,10 +180,22 @@ def handle_add_me_callback(handler_context, update_context):
 def handle_cross_out_callback(handler_context, update_context):
     try:
         queue_id = update_context.callback_query_data["queue_id"]
-        queue_member = handler_context.repository.find_uncrossed_queue_member(
+        queue_name = handler_context.repository.get_queue_name_by_queue_id(
             queue_id
         )
-        queue_name = handler_context.repository.get_queue_name_by_queue_id(
+        if queue_name is None:
+            handler_context.logger.log(
+                LoggingLevel.WARN,
+                "Received a CROSS_OUT callback for a "
+                + f"non-existent queue with ID {queue_id}"
+            )
+            handler_context.telegram_message_manager.send_message(
+                update_context.chat_id,
+                "Очередь не найдена"
+            )
+            return
+
+        queue_member = handler_context.repository.find_uncrossed_queue_member(
             queue_id
         )
 
