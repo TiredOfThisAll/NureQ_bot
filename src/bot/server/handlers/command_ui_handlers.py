@@ -7,8 +7,8 @@ from bot.server.router import command_handler, response_handler, \
     callback_handler
 from bot.server.models.update_context import UpdateContext
 from services.logging import LoggingLevel
-from services.telegram.message_entities_builder import MessageEntitiesBuilder
-from services.telegram.message_manager import MAX_MESSAGE_LENGTH
+from bot.server.handlers.responsive_ui_handlers import \
+    generate_queue_description
 
 
 @command_handler("/start")
@@ -358,10 +358,12 @@ def handle_show_previous_queue_page_callback(handler_context, update_context):
 def handle_show_queue_callback(handler_context, update_context):
     try:
         queue_id = update_context.callback_query_data["queue_id"]
-        queue_name = handler_context.repository.get_queue_name_by_queue_id(
+
+        queue_description_data, error = generate_queue_description(
+            handler_context.repository,
             queue_id
         )
-        if queue_name is None:
+        if error == "QUEUE_NOT_FOUND":
             handler_context.logger.log(
                 LoggingLevel.WARN,
                 "Received a /showqueue request for a non-existent queue "
@@ -372,44 +374,24 @@ def handle_show_queue_callback(handler_context, update_context):
                 f"Очереди с ID: {queue_id} не существует"
             )
             return
-        queue_members = handler_context.repository \
-            .get_queue_members_by_queue_id(queue_id)
-
-        message_builder = MessageEntitiesBuilder(f"{queue_name}:\n")
-        if len(queue_members) != 0:
-            for index, queue_member in enumerate(queue_members):
-                name = queue_member.user_info.get_formatted_name()
-                type = "strikethrough" if queue_member.crossed else None
-                message_builder = message_builder.add_text(
-                    f"{index + 1}. {name}\n",
-                    type=type
-                )
-        else:
-            message_builder = message_builder.add_text("Очередь пуста")
-
-        queue_description, entities = message_builder.build()
-        truncated_queue_description = truncate(
-            queue_description,
-            MAX_MESSAGE_LENGTH,
-            constants.DEFAULT_TRUNCATED_MESSAGE_PLACEHOLDER
-        )
-        truncated_entities = truncate_entities(
-            entities,
-            MAX_MESSAGE_LENGTH
-        )
-        if truncated_queue_description != queue_description:
+        elif error is not None or queue_description_data is None:
             handler_context.logger.log(
-                LoggingLevel.WARN,
-                "Forced to truncate message to fit the message limit of "
-                + f"{MAX_MESSAGE_LENGTH} UTF-8 characters. Original "
-                + f"message: {queue_description}\nOriginal entities: "
-                + f"{entities}"
+                LoggingLevel.ERROR,
+                "Encountered an unknown error while processing a /showqueue "
+                + f"command for queue ID {queue_id}. Error: {error}, "
+                + f"queue description data: {queue_description_data}"
             )
+            handler_context.telegram_message_manager.send_message(
+                update_context.chat_id,
+                "Ошибка"
+            )
+            return
 
+        queue_description, entities = queue_description_data
         handler_context.telegram_message_manager.send_message(
             update_context.chat_id,
-            truncated_queue_description,
-            entities=truncated_entities
+            queue_description,
+            entities=entities
         )
     finally:
         handler_context.telegram_message_manager.answer_callback_query(
@@ -529,16 +511,3 @@ def make_queue_choice_buttons(
                 }),
         },
     ]]
-
-
-def truncate(source, length, placeholder="..."):
-    if len(source) > length:
-        return source[:length - len(placeholder)] + placeholder
-    return source
-
-
-def truncate_entities(entities, length):
-    return list(filter(
-        lambda entity: entity["offset"] + entity["length"] <= length,
-        entities
-    ))
