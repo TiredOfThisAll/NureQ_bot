@@ -171,6 +171,61 @@ def handle_responsive_ui_cross_out_callback(handler_context, update_context):
         )
 
 
+@callback_handler(constants.ButtonCallbackType.RESPONSIVE_UI_UNCROSS_OUT)
+def handle_uncross_out_callback(handler_context, update_context):
+    notification_text = None
+    try:
+        queue_id = update_context.callback_query_data["queue_id"]
+        queue_name = handler_context.repository.get_queue_name_by_queue_id(
+            queue_id
+        )
+        if queue_name is None:
+            handler_context.logger.log(
+                LoggingLevel.WARN,
+                "Received a RESPONSIVE_UI_UNCROSS_OUT callback for a "
+                + f"non-existent queue with ID {queue_id}"
+            )
+            notification_text = f"Очередь не найдена"
+            return
+
+        queue_member = handler_context.repository \
+            .find_last_crossed_queue_member(queue_id)
+        if queue_member is None:
+            notification_text = "В данной очереди не осталось подходящих " \
+                + f"участников: {queue_name}"
+            return
+
+        handler_context.repository.uncross_out_the_queue_member(
+            queue_member.user_id,
+            queue_id
+        )
+        handler_context.repository.refresh_queues_last_time_updated_on(
+            queue_id
+        )
+
+        queue_description_data, _error = generate_queue_description(
+            handler_context.repository,
+            queue_id
+        )
+        queue_description, entities, reply_markup = queue_description_data
+        handler_context.telegram_message_manager.edit_message_text(
+            update_context.chat_id,
+            update_context.message_id,
+            queue_description,
+            entities=entities,
+            reply_markup=reply_markup
+        )
+
+        name = queue_member.user_info.get_formatted_name()
+        notification_text = f"Участник {name} снова в очереди: {queue_name}"
+    finally:
+        handler_context.repository.commit()
+        handler_context.telegram_message_manager.answer_callback_query(
+            update_context.callback_query_id,
+            text=notification_text
+        )
+
+
 def generate_queue_description(repository, queue_id):
     # check if queue exists and get its name, because we need to display it in
     # the response
