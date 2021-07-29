@@ -1,8 +1,75 @@
 import json
 
 import bot.server.handlers.constants as constants
+from bot.server.router import callback_handler
 from services.telegram.message_entities_builder import MessageEntitiesBuilder
 from services.telegram.message_manager import MAX_MESSAGE_LENGTH
+
+
+@callback_handler(constants.ButtonCallbackType.RESPONSIVE_UI_ADD_ME)
+def handle_responsive_ui_add_me_callback(handler_context, update_context):
+    notification_text = None
+    try:
+        queue_id = update_context.callback_query_data["queue_id"]
+        error = handler_context.repository.add_me_to_queue(
+            update_context.sender_user_info.id,
+            update_context.sender_user_info.first_name,
+            update_context.sender_user_info.last_name,
+            update_context.sender_user_info.username,
+            queue_id
+        )
+        queue_name = handler_context.repository.get_queue_name_by_queue_id(
+            queue_id
+        )
+        name = update_context.sender_user_info.get_formatted_name()
+        if error == "DUPLICATE_MEMBERS":
+            notification_text \
+                = f"{name} уже состоит в данной очереди: {queue_name}"
+            return
+        if error == "NO_QUEUE":
+            handler_context.logger.log(
+                LoggingLevel.WARN,
+                "Received an /addme request for a non-existent queue "
+                + f"with ID {queue_id}"
+            )
+            notification_text = f"Очередь не найдена"
+            return
+
+        handler_context.repository.refresh_queues_last_time_updated_on(
+            queue_id
+        )
+
+        queue_description_data, error = generate_queue_description(
+            handler_context.repository,
+            queue_id
+        )
+        if error is not None or queue_description_data is None:
+            handler_context.logger.log(
+                LoggingLevel.ERROR,
+                "Encountered an unknown error while processing a "
+                + "RESPONSIVE_UI_ADD_ME callback"
+                + f"command for queue ID {queue_id}. Error: {error}, "
+                + f"queue description data: {queue_description_data}"
+            )
+            notification_text = "Ошибка"
+            return
+
+        queue_description, entities, reply_markup = queue_description_data
+        handler_context.telegram_message_manager.edit_message_text(
+            update_context.chat_id,
+            update_context.message_id,
+            queue_description,
+            entities=entities,
+            reply_markup=reply_markup
+        )
+
+        notification_text = f"{name} добавлен(а) в очередь: {queue_name}"
+    finally:
+        handler_context.repository.commit()
+        handler_context.telegram_message_manager.answer_callback_query(
+            update_context.callback_query_id,
+            text=notification_text
+        )
 
 
 def generate_queue_description(repository, queue_id):
@@ -72,6 +139,7 @@ def generate_queue_actions_reply_markup(queue_id):
                     "callback_data": json.dumps({
                         "type": constants.ButtonCallbackType
                         .RESPONSIVE_UI_ADD_ME,
+                        "queue_id": queue_id,
                     })
                 },
                 {
@@ -79,6 +147,7 @@ def generate_queue_actions_reply_markup(queue_id):
                     "callback_data": json.dumps({
                         "type": constants.ButtonCallbackType
                         .RESPONSIVE_UI_REMOVE_ME,
+                        "queue_id": queue_id,
                     })
                 },
             ],
@@ -88,6 +157,7 @@ def generate_queue_actions_reply_markup(queue_id):
                     "callback_data": json.dumps({
                         "type": constants.ButtonCallbackType
                         .RESPONSIVE_UI_CROSS_OUT,
+                        "queue_id": queue_id,
                     })
                 },
                 {
@@ -95,6 +165,7 @@ def generate_queue_actions_reply_markup(queue_id):
                     "callback_data": json.dumps({
                         "type": constants.ButtonCallbackType
                         .RESPONSIVE_UI_UNCROSS_OUT,
+                        "queue_id": queue_id,
                     })
                 },
             ],
@@ -103,7 +174,8 @@ def generate_queue_actions_reply_markup(queue_id):
                     "text": "Обновить сообщение",
                     "callback_data": json.dumps({
                         "type": constants.ButtonCallbackType
-                        .RESPONSIVE_UI_REFRESH
+                        .RESPONSIVE_UI_REFRESH,
+                        "queue_id": queue_id,
                     })
                 }
             ],
