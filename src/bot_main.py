@@ -2,8 +2,12 @@ import time
 import traceback
 from urllib.error import HTTPError
 
+import bot.server.handlers.command_ui_handlers
 from data_access.repository import Repository
-from bot.server.controller import Controller, ControllerConfiguration
+from bot.server.handlers.handler_context import HandlerContext, \
+    HandlerConfiguration
+from bot.server.handlers.fallback_handlers import \
+    handle_error_while_processing_update
 from bot.server.models.update_context import UpdateContext
 from bot.server.router import route
 from services.configuration import CONFIGURATION
@@ -27,11 +31,13 @@ logger = CompositeLogger([
     FileLogger(CONFIGURATION.LOGS_PATH),
     DatabaseLogger(create_sqlite_connection(CONFIGURATION.DATABASE_PATH)),
 ])
-controller = Controller(
+handler_context = HandlerContext(
     telegram_message_manager,
     repository,
     logger,
-    ControllerConfiguration(queue_name_limit=CONFIGURATION.QUEUE_NAME_LIMIT)
+    HandlerConfiguration(
+        queue_name_limit=CONFIGURATION.QUEUE_NAME_LIMIT
+    )
 )
 
 # the 'game' loop that listens for new messages and responds to them
@@ -65,7 +71,7 @@ try:
                 )
                 continue
             try:
-                target_handler(controller, update_context)
+                target_handler(handler_context, update_context)
             except KeyboardInterrupt:
                 exit()
             except HTTPError as http_error:
@@ -78,12 +84,14 @@ try:
                     + "Response: "
                     + f"{http_error.file.read().decode('UTF-8')}\n\n"
                 )
-                controller.handle_error_while_processing_update(
+                handle_error_while_processing_update(
+                    handler_context,
                     update_context
                 )
             except Exception as error:
                 logger.log(LoggingLevel.ERROR, traceback.format_exc())
-                controller.handle_error_while_processing_update(
+                handle_error_while_processing_update(
+                    handler_context,
                     update_context
                 )
             finally:

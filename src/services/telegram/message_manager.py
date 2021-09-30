@@ -63,11 +63,12 @@ class TelegramMessageManager:
         with urlopen(set_bot_commands_url):
             pass
 
-    def answer_callback_query(self, callback_query_id):
+    def answer_callback_query(self, callback_query_id, text=None):
+        query_parameters = {"callback_query_id": str(callback_query_id)}
+        if text is not None:
+            query_parameters["text"] = text
         target_url = TELEGRAM_BOT_API_URL + self.token \
-            + "/answerCallbackQuery?" + urlencode({
-                "callback_query_id": str(callback_query_id)
-            })
+            + "/answerCallbackQuery?" + urlencode(query_parameters)
         with urlopen(target_url):
             pass
 
@@ -78,5 +79,27 @@ class TelegramMessageManager:
                 "message_id": message_id,
                 "reply_markup": json.dumps(reply_markup),
             })
+        with urlopen(target_url):
+            pass
+
+    def edit_message_text(
+        self,
+        chat_id,
+        message_id,
+        text,
+        entities=None,
+        reply_markup=None
+    ):
+        parameters = {
+            "chat_id": chat_id,
+            "message_id": message_id,
+            "text": text,
+        }
+        if entities is not None:
+            parameters["entities"] = json.dumps(entities)
+        if reply_markup is not None:
+            parameters["reply_markup"] = json.dumps(reply_markup)
+        target_url = TELEGRAM_BOT_API_URL + self.token \
+            + "/editMessageText?" + urlencode(parameters)
         with urlopen(target_url):
             pass
