@@ -64,11 +64,11 @@ class TelegramMessageManager:
             pass
 
     def answer_callback_query(self, callback_query_id, text=None):
-        parameters = {"callback_query_id": str(callback_query_id)}
+        query_parameters = {"callback_query_id": str(callback_query_id)}
         if text is not None:
-            parameters["text"] = text
+            query_parameters["text"] = text
         target_url = TELEGRAM_BOT_API_URL + self.token \
-            + "/answerCallbackQuery?" + urlencode(parameters)
+            + "/answerCallbackQuery?" + urlencode(query_parameters)
         with urlopen(target_url):
             pass
 
