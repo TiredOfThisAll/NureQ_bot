@@ -41,9 +41,8 @@
     <table class="table table-striped">
         <thead>
             <tr>
-                <th></th>
                 <th class="col-2">
-                    ID Пользователя
+                    Номер в очереди
                 </th>
                 <th class="col-8">
                     Имя пользователя
@@ -56,29 +55,30 @@
         </thead>
         <tbody>
             {% for queue_member in queue_members %}
-                <tr class="align-middle">
-                    <td class="queue-reorder-controls">
-                        {% if queue_member.position != 0 %}
-                            <i
-                                class="bi bi-arrow-up btn btn-primary"
-                                onclick="moveUpQueueMember({{ queue.id }}, {{ queue_member.position }})"
-                            >
-                            </i>
-                        {% else %}
-                            <i class="bi bi-arrow-up btn disabled"></i>
-                        {% endif %}
-                        {% if queue_member.position != queue_members|length - 1 %}
-                            <i
-                                class="bi bi-arrow-down btn btn-primary"
-                                onclick="moveDownQueueMember({{ queue.id }}, {{ queue_member.position }})"
-                            >
-                            </i>
-                        {% else %}
-                            <i class="bi bi-arrow-down btn disabled"></i>
-                        {% endif %}
+                <tr
+                    id="queue-member-{{ queue_member.user_id }}"
+                    class="align-middle"
+                    draggable="true"
+                    ondragstart="handleQueueMemberRowDragstart(event)"
+                    ondragover="handleQueueMemberRowDragover(event)"
+                    ondragleave="handleQueueMemberRowDragleave(event)"
+                    ondragend="handleQueueMemberRowDragend(event)"
+                    ondrop="handleQueueMemberRowDrop(event)"
+                    data-queue-member-user-id="{{ queue_member.user_id }}"
+                    data-queue-id="{{ queue.id }}"
+                >
+                    <td>
+                        {# need an extra span because applying flexbox to a td breaks its height #}
+                        <span class="d-flex justify-content-between">
+                            <i class="bi bi-grip-vertical">{# signifies that the row is draggable #}</i>
+                            <span>{{ queue_member.position + 1 }}</span>
+                            <i>{# spacing for flexbox #}</i>
+                        </span>
                     </td>
-                    <td>{{ queue_member.id }}</td>
-                    <td class="col-4">{{ queue_member.user_info.get_formatted_name()|e }}</td>
+                    <td class="col-4">
+                        {# this span is used for drag-n-drop preview #}
+                        <span>{{ queue_member.user_info.get_formatted_name()|e }}</span>
+                    </td>
                     <td>
                         <input
                             class="form-check-input ms-2"
