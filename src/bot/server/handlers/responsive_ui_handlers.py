@@ -1,4 +1,5 @@
 import json
+from urllib.error import HTTPError
 
 import bot.server.handlers.constants as constants
 from bot.server.router import callback_handler
@@ -110,13 +111,22 @@ def handle_generic_responsive_ui_callback(handler_context, update_context):
         ):
             notification_text = f"Очередь актуальна: {queue_name}"
             return
-        handler_context.telegram_message_manager.edit_message_text(
-            update_context.chat_id,
-            update_context.message_id,
-            queue_description,
-            entities=entities,
-            reply_markup=reply_markup
-        )
+        try:
+            handler_context.telegram_message_manager.edit_message_text(
+                update_context.chat_id,
+                update_context.message_id,
+                queue_description,
+                entities=entities,
+                reply_markup=reply_markup
+            )
+        except HTTPError as http_error:
+            # despite us checking for this above, if the message has changed,
+            # while we were processing it, Telegram API will still throw this
+            # 'message not modified' error, so we need an additional check here
+            if http_error.code == 400:
+                notification_text = f"Очередь актуальна: {queue_name}"
+                return
+            raise http_error
 
         notification_text = success_notification_text
     finally:
