@@ -52,11 +52,11 @@ while True:
             logger.log(LoggingLevel.WARN, traceback.format_exc())
             time.sleep(1)
             continue
-        except OSError as os_error: # this happens when the network fails
+        except OSError as os_error:  # this happens when the network fails
             logger.log(
                 LoggingLevel.WARN,
-                f"Got an OS error while fetching latest messages: {os_error}.\n"
-                    + f"Stack trace:\n{traceback.format_exc()}"
+                f"Got an OS error while fetching the latest messages: "
+                + f"{os_error}.\nStack trace:\n{traceback.format_exc()}"
             )
             time.sleep(1)
 
@@ -104,5 +104,5 @@ while True:
         logger.log(
             LoggingLevel.ERROR,
             f"An unhandled exception occured: {error}.\n"
-                + f"Stack trace: {traceback.format_exc()}"
+            + f"Stack trace: {traceback.format_exc()}"
         )
