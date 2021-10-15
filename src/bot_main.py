@@ -41,21 +41,24 @@ handler_context = HandlerContext(
 )
 
 # the 'game' loop that listens for new messages and responds to them
-http_fail_counter = 0
-try:
-    logger.log(LoggingLevel.INFO, "Bot started")
-    while True:
+logger.log(LoggingLevel.INFO, "Bot started")
+while True:
+    try:
         time.sleep(CONFIGURATION.PAUSE_DURATION)
         try:
             updates = telegram_message_manager.get_latest_messages()
             http_fail_counter = 0
         except HTTPError:
-            if http_fail_counter == 10:
-                raise Exception("Too many retries, exiting")
-            http_fail_counter += 1
             logger.log(LoggingLevel.WARN, traceback.format_exc())
             time.sleep(1)
             continue
+        except OSError as os_error: # this happens when the network fails
+            logger.log(
+                LoggingLevel.WARN,
+                f"Got an OS error while fetching latest messages: {os_error}.\n"
+                    + f"Stack trace:\n{traceback.format_exc()}"
+            )
+            time.sleep(1)
 
         # iterate over the latest messages for update in updates:
         for update in updates:
@@ -97,11 +100,9 @@ try:
             finally:
                 # finish the transaction in case there is one
                 repository.commit()
-except Exception as error:
-    logger.log(
-        LoggingLevel.ERROR,
-        f"An unhandled exception occured: {error}"
-    )
-    raise error
-finally:
-    logger.log(LoggingLevel.INFO, "Bot stopped")
+    except Exception as error:
+        logger.log(
+            LoggingLevel.ERROR,
+            f"An unhandled exception occured: {error}.\n"
+                + f"Stack trace: {traceback.format_exc()}"
+        )
