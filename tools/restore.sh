@@ -1,4 +1,4 @@
-pip3 install pycodestyle
-pip3 install flask
-pip3 install flask-login
-pip3 install waitress
+python3.8 -m pip install pycodestyle
+python3.8 -m pip install flask
+python3.8 -m pip install flask-login
+python3.8 -m pip install waitress
