@@ -4,6 +4,7 @@ import json
 
 TELEGRAM_BOT_API_URL = "https://api.telegram.org/bot"
 MAX_MESSAGE_LENGTH = 4096
+DEFAULT_NETWORK_TIMEOUT = 5  # in seconds
 
 
 class TelegramMessageManager:
@@ -16,7 +17,7 @@ class TelegramMessageManager:
         if self.offset is not None:
             get_updates_url += "?offset=" + str(self.offset)
 
-        with urlopen(get_updates_url) as response:
+        with urlopen(get_updates_url, timeout=DEFAULT_NETWORK_TIMEOUT) as response:
             response_string = response.read().decode("utf-8")
         updates = json.loads(response_string)["result"]
 
@@ -52,7 +53,7 @@ class TelegramMessageManager:
             query_parameters["reply_to_message_id"] = reply_to_message_id
         send_message_url = TELEGRAM_BOT_API_URL + self.token \
             + "/sendMessage?" + urlencode(query_parameters)
-        with urlopen(send_message_url):
+        with urlopen(send_message_url, timeout=DEFAULT_NETWORK_TIMEOUT):
             pass
 
     def set_bot_commands(self, bot_commands):
@@ -60,7 +61,7 @@ class TelegramMessageManager:
             + "/setMyCommands?" + urlencode({
                 "commands": json.dumps(bot_commands),
             })
-        with urlopen(set_bot_commands_url):
+        with urlopen(set_bot_commands_url, timeout=DEFAULT_NETWORK_TIMEOUT):
             pass
 
     def answer_callback_query(self, callback_query_id, text=None):
@@ -69,7 +70,7 @@ class TelegramMessageManager:
             query_parameters["text"] = text
         target_url = TELEGRAM_BOT_API_URL + self.token \
             + "/answerCallbackQuery?" + urlencode(query_parameters)
-        with urlopen(target_url):
+        with urlopen(target_url, timeout=DEFAULT_NETWORK_TIMEOUT):
             pass
 
     def edit_message_reply_markup(self, chat_id, message_id, reply_markup):
@@ -79,7 +80,7 @@ class TelegramMessageManager:
                 "message_id": message_id,
                 "reply_markup": json.dumps(reply_markup),
             })
-        with urlopen(target_url):
+        with urlopen(target_url, timeout=DEFAULT_NETWORK_TIMEOUT):
             pass
 
     def edit_message_text(
@@ -101,5 +102,5 @@ class TelegramMessageManager:
             parameters["reply_markup"] = json.dumps(reply_markup)
         target_url = TELEGRAM_BOT_API_URL + self.token \
             + "/editMessageText?" + urlencode(parameters)
-        with urlopen(target_url):
+        with urlopen(target_url, timeout=DEFAULT_NETWORK_TIMEOUT):
             pass
