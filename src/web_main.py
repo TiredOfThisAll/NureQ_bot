@@ -27,7 +27,6 @@ app = Flask(
     static_folder=path.join(PROJECT_PATH, "src", "web", "static")
 )
 app.secret_key = CONFIGURATION.TOKEN
-app.config["LOGIN_DISABLED"] = True
 login_manager = LoginManager()
 login_manager.init_app(app)
 
