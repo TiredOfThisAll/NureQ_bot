@@ -17,7 +17,8 @@ class TelegramMessageManager:
         if self.offset is not None:
             get_updates_url += "?offset=" + str(self.offset)
 
-        with urlopen(get_updates_url, timeout=DEFAULT_NETWORK_TIMEOUT) as response:
+        with urlopen(get_updates_url, timeout=DEFAULT_NETWORK_TIMEOUT)\
+                as response:
             response_string = response.read().decode("utf-8")
         updates = json.loads(response_string)["result"]
 

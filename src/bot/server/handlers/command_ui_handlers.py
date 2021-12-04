@@ -115,7 +115,10 @@ def handle_new_queue_response(handler_context, update_context):
             reply_to_message_id=update_context.message_id
         )
         return
-    error = handler_context.repository.create_queue(queue_name)
+    error = handler_context.repository.create_queue(
+        queue_name,
+        update_context.chat_id
+    )
     handler_context.repository.commit()
     if error == "QUEUE_NAME_DUPLICATE":
         handler_context.telegram_message_manager.send_message(
@@ -339,7 +342,8 @@ def handle_show_next_queue_page_callback(handler_context, update_context):
                 handler_context.repository,
                 page_index=page_index+1,
                 page_size=constants.DEFAULT_QUEUES_PAGE_SIZE,
-                main_button_type=main_button_type
+                main_button_type=main_button_type,
+                chat_id=update_context.chat_id
             )
         if queue_pagination_reply_markup is None:
             handler_context.telegram_message_manager.send_message(
@@ -370,7 +374,8 @@ def handle_show_previous_queue_page_callback(handler_context, update_context):
                 handler_context.repository,
                 page_index=page_index-1,
                 page_size=constants.DEFAULT_QUEUES_PAGE_SIZE,
-                main_button_type=main_button_type
+                main_button_type=main_button_type,
+                chat_id=update_context.chat_id
             )
         if queue_pagination_reply_markup is None:
             handler_context.telegram_message_manager.send_message(
@@ -434,7 +439,8 @@ def handle_generic_queue_command(
         handler_context.repository,
         page_index=1,
         page_size=constants.DEFAULT_QUEUES_PAGE_SIZE,
-        main_button_type=main_button_type
+        main_button_type=main_button_type,
+        chat_id=update_context.chat_id
     )
     if queue_pagination_reply_markup is None:
         handler_context.telegram_message_manager.send_message(
@@ -454,15 +460,17 @@ def build_queue_pagination_reply_markup(
     repository,
     page_index,
     page_size,
-    main_button_type
+    main_button_type,
+    chat_id
 ):
-    total_queue_count = repository.get_total_queue_count()
+    total_queue_count = repository.get_total_queue_count(chat_id)
     if total_queue_count == 0:
         return None
 
     queues_page = repository.get_queues_page(
         page_index,
-        page_size
+        page_size,
+        chat_id
     )
 
     queue_choice_buttons = make_queue_choice_buttons(

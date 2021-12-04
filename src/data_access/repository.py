@@ -16,8 +16,10 @@ class Repository:
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS queues (
                 id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL UNIQUE,
-                last_updated_on TEXT NOT NULL
+                name TEXT NOT NULL,
+                last_updated_on TEXT NOT NULL,
+                chat_id INTEGER NOT NULL,
+                UNIQUE (name, chat_id)
             )
         """)
         self.cursor.execute("""
@@ -52,12 +54,12 @@ class Repository:
             )
         """)
 
-    def create_queue(self, queue_name):
+    def create_queue(self, queue_name, chat_id):
         try:
             self.cursor.execute("""
-                INSERT INTO queues (name, last_updated_on)
-                VALUES (?, ?)
-            """, (queue_name, datetime.utcnow()))
+                INSERT INTO queues (name, last_updated_on, chat_id)
+                VALUES (?, ?, ?)
+            """, (queue_name, datetime.utcnow(), chat_id))
         except sqlite3.IntegrityError as integrity_error:
             if str(integrity_error) == "UNIQUE constraint failed: queues.name":
                 return "QUEUE_NAME_DUPLICATE"
@@ -167,20 +169,22 @@ class Repository:
 
         return True
 
-    def get_total_queue_count(self):
+    def get_total_queue_count(self, chat_id):
         return self.cursor.execute("""
             SELECT COUNT(*)
             FROM queues
-        """).fetchone()[0]
+            WHERE chat_id = ?
+        """, (chat_id,)).fetchone()[0]
 
-    def get_queues_page(self, page_index, page_size):
+    def get_queues_page(self, page_index, page_size, chat_id):
         skip_amount = (page_index - 1) * page_size
         queue_tuples = self.cursor.execute("""
-            SELECT *
+            SELECT id, name, last_updated_on
             FROM queues
+            WHERE chat_id = ?
             ORDER BY datetime(last_updated_on) DESC
             LIMIT ?, ?
-        """, (skip_amount, page_size)).fetchall()
+        """, (chat_id, skip_amount, page_size)).fetchall()
         return list(map(Queue.from_tuple, queue_tuples))
 
     def get_queue_members_by_queue_id(self, queue_id):
