@@ -179,7 +179,7 @@ class Repository:
     def get_queues_page(self, page_index, page_size, chat_id):
         skip_amount = (page_index - 1) * page_size
         queue_tuples = self.cursor.execute("""
-            SELECT id, name, last_updated_on
+            SELECT *
             FROM queues
             WHERE chat_id = ?
             ORDER BY datetime(last_updated_on) DESC
@@ -217,7 +217,7 @@ class Repository:
         skip_amount = (page_index - 1) * page_size
         queue_tuples = self.cursor.execute("""
             SELECT queues.id, queues.name, queues.last_updated_on,
-                COUNT(queue_members.id)
+                COUNT(queue_members.id), queues.chat_id
             FROM queues
             LEFT JOIN queue_members ON queues.id == queue_members.queue_id
             GROUP BY queues.id, queues.name, queues.last_updated_on
