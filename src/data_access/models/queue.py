@@ -2,10 +2,11 @@ from datetime import datetime
 
 
 class Queue:
-    def __init__(self, id, name, last_updated_on):
+    def __init__(self, id, name, last_updated_on, chat_id):
         self.id = id
         self.name = name
         self.last_updated_on = last_updated_on
+        self.chat_id = chat_id
 
     def from_tuple(queue_tuple):
         return Queue(*queue_tuple)

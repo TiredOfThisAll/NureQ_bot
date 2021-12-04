@@ -5,13 +5,13 @@ echo "
   DELETE FROM admins;
   DELETE FROM logs;
 
-  INSERT INTO queues (name, last_updated_on)
+  INSERT INTO queues (name, last_updated_on, chat_id)
   VALUES
-    ('first', date('now')),
-    ('second', date('now')),
-    ('third', date('now')),
-    ('fourth', date('now')),
-    ('fifth', date('now'));
+    ('first', date('now'), -1001196818203),
+    ('second', date('now'), -1001196818203),
+    ('third', date('now'), -1001196818203),
+    ('fourth', date('now'), -1001196818203),
+    ('fifth', date('now'), -1001196818203);
 
   INSERT INTO queue_members
     (user_id, user_first_name, user_last_name, user_username, queue_id, crossed, position)
