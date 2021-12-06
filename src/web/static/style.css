@@ -102,3 +102,7 @@ nav > div > a {
     column-gap: 5px;
     justify-content: center;
 }
+
+.logs-table {
+    table-layout: fixed;
+}
