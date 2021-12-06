@@ -169,12 +169,17 @@ class Repository:
 
         return True
 
-    def get_total_queue_count(self, chat_id):
+    def get_total_queue_count(self, chat_id=None):
+        if chat_id:
+            return self.cursor.execute("""
+                SELECT COUNT(*)
+                FROM queues
+                WHERE chat_id = ?
+            """, (chat_id,)).fetchone()[0]
         return self.cursor.execute("""
             SELECT COUNT(*)
             FROM queues
-            WHERE chat_id = ?
-        """, (chat_id,)).fetchone()[0]
+        """).fetchone()[0]
 
     def get_queues_page(self, page_index, page_size, chat_id):
         skip_amount = (page_index - 1) * page_size
@@ -222,8 +227,8 @@ class Repository:
             LEFT JOIN queue_members ON queues.id == queue_members.queue_id
             GROUP BY queues.id, queues.name, queues.last_updated_on
             ORDER BY datetime(queues.last_updated_on) DESC
-        """).fetchall()
-        # TODO: pagination
+            LIMIT ?, ?
+        """, (skip_amount, page_size)).fetchall()
         return list(map(QueueView.from_tuple, queue_tuples))
 
     def get_queue_by_id(self, id):

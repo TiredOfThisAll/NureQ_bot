@@ -1,6 +1,7 @@
 from flask import Flask, render_template, g, request, redirect, url_for
 from flask_login import LoginManager, login_user, login_required, logout_user
 import json
+from math import ceil
 from os import path
 import time
 import traceback
@@ -19,6 +20,7 @@ from web.models.user import User
 
 # constants
 TELEGRAM_LOGIN_EXPIRY_TIME = 24 * 60 * 60  # 24 hours in seconds
+DEFAULT_PAGE_SIZE = 10
 
 # flask set-up
 app = Flask(
@@ -73,9 +75,21 @@ context = LocalProxy(inject_context)
 @app.route("/queues", endpoint="queues")
 @login_required
 def queues():
+    max_page = ceil(
+        context.repository.get_total_queue_count() / DEFAULT_PAGE_SIZE
+    )
+    try:
+        current_page = min(max_page, max(1, int(request.args.get("page", 1))))
+    except ValueError:
+        current_page = 1
     return render_template(
         "queues.html",
-        queues=context.repository.get_queue_page_view(1, 10)
+        queues=context.repository.get_queue_page_view(
+            current_page,
+            DEFAULT_PAGE_SIZE
+        ),
+        current_page=current_page,
+        max_page=max_page
     )
 
 

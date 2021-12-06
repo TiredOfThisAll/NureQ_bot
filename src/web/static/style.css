@@ -96,3 +96,9 @@ nav > div > a {
 .drop-to-lower-half {
     background-image: linear-gradient(to top, lightgreen, transparent 30%);
 }
+
+.pagination-container {
+    display: flex;
+    column-gap: 5px;
+    justify-content: center;
+}
