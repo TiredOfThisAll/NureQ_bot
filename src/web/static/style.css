@@ -103,6 +103,81 @@ nav > div > a {
     justify-content: center;
 }
 
-.logs-table {
-    table-layout: fixed;
+header {
+    display: grid;
+    background-color: #0d6efd;
+    margin: 0 -12px;
+}
+
+header > .logo > img {
+    width: 10vh;
+    height: 10vh;
+}
+
+header > a {
+    display: flex;
+    align-items: center;
+    column-gap: 10px;
+}
+
+@media (min-width: 576px) {
+    .logs-table {
+        table-layout: fixed;
+    }
+    header {
+        grid-template-areas: "logo nav";
+        grid-template-columns: auto 1fr;
+        column-gap: 40px;
+        padding: 0 2em;
+    }
+    header > i {
+        display: none;
+    }
+    header > a {
+        font-size: 1.75em;
+    }
+    header > nav {
+        display: flex;
+    }
+    header > nav a {
+        padding: 0 10px;
+        font-size: 1.5em;
+    }
+    header > nav > div {
+        display: flex;
+        align-items: center;
+    }
+    header > .logo > img {
+        padding: 0.25em;
+    }
+}
+
+@media (max-width: 576px) {
+    header {
+        padding: 1rem;
+        grid-template-areas:
+                "logo burger"
+                "nav nav";
+    }
+    header > nav {
+        display: none;
+        padding-top: 10px;
+        margin: 0 -1em -0.5em;
+    }
+    header > i {
+        grid-area: burger;
+        justify-self: end;
+        align-self: center;
+        color: white;
+        font-size: 2em;
+    }
+    header > nav a {
+        font-size: 1.25em;
+    }
+    header > a {
+        font-size: 1.5em;
+    }
+    header > nav > div {
+        padding: 0.5em 1em;
+    }
 }

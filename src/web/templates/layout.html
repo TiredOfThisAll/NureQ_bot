@@ -16,31 +16,32 @@
         <div id="spinner">
             <div class="spinner-border text-primary center-block"></div>
         </div>
-        <header class="row bg-primary bg-gradient text-light px-3">
-            <a class="link-light text-decoration-none col-3 row align-items-center py-2" href="{{ url_for('root') }}">
-                <img class="rounded-circle img-fluid col-3" src="{{ url_for('static', filename='logo.jpg') }}">
-                <div class="col-9 fs-3">NureQ Admin</div>
+        <header>
+            <a class="link-light text-decoration-none logo" style="grid-area: logo" href="{{ url_for('root') }}">
+                <img class="rounded-circle img-fluid" src="{{ url_for('static', filename='logo.jpg') }}">
+                <div>NureQ Admin</div>
             </a>
-            <nav class="col-9 align-items-stretch row">
-                <div class="d-flex col-auto align-items-center {{
+            <i class="bi bi-list" style="grid-area: burger" onclick="handleBurgerMenu()"></i>
+            <nav style="grid-area: nav">
+                <div class="{{
                     'current-page-link'
                     if request.path.startswith('/queues') or request.path == '/'
                     else ''
                 }}">
-                    <a class="text-decoration-none fs-5" href="{{ url_for('queues') }}">Очереди</a>
+                    <a class="text-decoration-none" href="{{ url_for('queues') }}">Очереди</a>
                 </div>
-                <div class="d-flex col-auto align-items-center {{
+                <div class="{{
                     request.path == url_for('logs') and 'current-page-link'
                 }}">
-                    <a class="text-decoration-none fs-5" href="{{ url_for('logs') }}">Логи</a>
+                    <a class="text-decoration-none" href="{{ url_for('logs') }}">Логи</a>
                 </div>
-                <div class="d-flex col-auto align-items-center {{
+                <div class="{{
                     request.path == url_for('login') and 'current-page-link'
                 }}">
                     {% if current_user.is_authenticated %}
-                        <a class="text-decoration-none fs-5" href="{{ url_for('logout') }}">Выйти</a>
+                        <a class="text-decoration-none" href="{{ url_for('logout') }}">Выйти</a>
                     {% else %}
-                        <a class="text-decoration-none fs-5" href="{{ url_for('login') }}">Войти</a>
+                        <a class="text-decoration-none" href="{{ url_for('login') }}">Войти</a>
                     {% endif %}
                 </div>
             </nav>
