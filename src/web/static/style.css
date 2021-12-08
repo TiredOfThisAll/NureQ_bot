@@ -196,4 +196,18 @@ header > a {
     nav > a {
         color: white;
     }
+
+    .queues-table {
+        font-size: 0.75em;
+    }
+
+    .desktop-only {
+        display: none;
+    }
+
+    .queues-table td,
+    .queues-table th {
+        text-align: center;
+        vertical-align: middle;
+    }
 }
