@@ -177,7 +177,21 @@ header > a {
     header > a {
         font-size: 1.5em;
     }
-    header > nav > div {
+    header > nav > a {
+        display: block;
         padding: 0.5em 1em;
+    }
+    nav > a:hover,
+    nav > a.current-page-link {
+        background-color: white;
+    }
+
+    nav > a:hover,
+    nav > a.current-page-link {
+        color: black;
+    }
+
+    nav > a {
+        color: white;
     }
 }
