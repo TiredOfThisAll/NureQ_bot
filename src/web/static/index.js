@@ -4,9 +4,9 @@ const setSpinnerVisibility = isVisible => {
 
 const handleBurgerMenu = () => {
     const nav = document.querySelector("header > nav");
-    if (nav.style.display === "") {
-        nav.style.display = "block";
+    if (nav.style.height === "") {
+        nav.style.height = "160px";
     } else {
-        nav.style.display = "";
+        nav.style.height = "";
     }
 };
