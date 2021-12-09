@@ -121,10 +121,12 @@ header > a {
     column-gap: 10px;
 }
 
+.logs-table {
+    table-layout: fixed;
+    overflow-wrap: break-word;
+}
+
 @media (min-width: 576px) {
-    .logs-table {
-        table-layout: fixed;
-    }
     header {
         grid-template-areas: "logo nav";
         grid-template-columns: auto 1fr;
@@ -157,6 +159,10 @@ header > a {
     .queue-controls {
         display: flex;
         column-gap: 10px;
+    }
+
+    .mobile-only {
+        display: none;
     }
 }
 
@@ -227,5 +233,9 @@ header > a {
 
     main {
         margin: 1em 0;
+    }
+
+    .logs-table {
+        font-size: 0.8em;
     }
 }
