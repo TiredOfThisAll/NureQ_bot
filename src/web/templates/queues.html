@@ -22,10 +22,8 @@
                     <td class="desktop-only">{{ queue.chat_id }}</td>
                     <td>{{ queue.number_of_members }}</td>
                     <td>
-                        <div class="mb-1">
+                        <div class="mb-1 queue-controls">
                             <i class="bi bi-trash-fill btn btn-danger" onclick="deleteQueue({{ queue.id }})"></i>
-                        </div>
-                        <div>
                             <a href="{{ url_for('edit_queue', id=queue.id) }}"><i class="bi bi-pencil-square btn btn-info"></i></a>
                         </div>
                     </td>

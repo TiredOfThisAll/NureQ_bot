@@ -1,15 +1,16 @@
-nav > div:hover,
-nav > div.current-page-link {
+nav > a:hover {
     background-color: white;
 }
 
-nav > div:hover > a,
-nav > div.current-page-link > a {
+nav > a.current-page-link {
     color: black;
+    background: white;
 }
 
-nav > div > a {
+nav > a {
     color: white;
+    display: flex;
+    align-items: center;
 }
 
 #spinner {
@@ -150,6 +151,13 @@ header > a {
     header > .logo > img {
         padding: 0.25em;
     }
+    main {
+        margin: 1em 5em;
+    }
+    .queue-controls {
+        display: flex;
+        column-gap: 10px;
+    }
 }
 
 @media (max-width: 576px) {
@@ -209,5 +217,15 @@ header > a {
     .queues-table th {
         text-align: center;
         vertical-align: middle;
+    }
+
+    .queue-controls {
+        display: flex;
+        row-gap: 10px;
+        flex-direction: column;
+    }
+
+    main {
+        margin: 1em 0;
     }
 }
