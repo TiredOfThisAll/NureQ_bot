@@ -126,6 +126,11 @@ header > a {
     overflow-wrap: break-word;
 }
 
+.queues-table {
+    overflow-wrap: break-word;
+    table-layout: fixed;
+}
+
 @media (min-width: 576px) {
     header {
         grid-template-areas: "logo nav";
@@ -164,6 +169,35 @@ header > a {
     .mobile-only {
         display: none;
     }
+
+    .id-column {
+        width: calc(100%/12);
+    }
+
+    .name-column {
+        width: calc(500%/12);
+    }
+
+    .last-updated-on-column {
+        width: calc(150%/12);
+    }
+
+    .chat-id-column {
+        width: calc(300%/12);
+    }
+
+    .number-of-members-column {
+        width: calc(100%/12);
+    }
+
+    .queue-controls-column {
+        width: 110px;
+    }
+}
+
+.queues-table{
+    overflow-wrap: break-word;
+    table-layout: fixed;
 }
 
 @media (max-width: 576px) {
@@ -237,5 +271,17 @@ header > a {
 
     .logs-table {
         font-size: 0.8em;
+    }
+
+    .last-updated-on-column {
+        width: 90px;
+    }
+
+    .number-of-members-column {
+        width: 60px;
+    }
+
+    .queue-controls-column {
+        width: 50px;
     }
 }

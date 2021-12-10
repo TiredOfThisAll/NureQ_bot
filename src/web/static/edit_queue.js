@@ -38,7 +38,7 @@ const renameQueue = (queueId, originalQueueName) => {
         alert("Имя очереди не может быть пустым или состоять из пробелов");
         return;
     }
-    if (newQueueName.length > 99){
+    if (newQueueName.length > 100){
         alert("Имя очереди не должно превышать 100 символов");
         return;
     }

@@ -7,7 +7,7 @@
         <input
             id="new_queue_name"
             class="form-control"
-            style="grid-area: textbox"
+            style="grid-area: textbox; font-size: 0.8em;"
             type="text"
             size="45"
             value="{{ queue.name|e }}"
@@ -29,7 +29,7 @@
 
         {% if queue_members %}
             <a
-                class="btn btn-outline-primary"
+                class="btn btn-outline-primary desktop-only"
                 style="grid-area: swap-page-link"
                 href="{{ url_for('swap_queue_members', queue_id=queue.id) }}"
             >
@@ -44,10 +44,10 @@
         <thead>
             <tr>
                 <th class="col-2">
-                    Номер в очереди
+                    #
                 </th>
                 <th class="col-8">
-                    Имя пользователя
+                    Имя
                 </th>
                 <th class="col-2">
                     Вычеркнут?
