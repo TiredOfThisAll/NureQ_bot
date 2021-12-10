@@ -65,7 +65,7 @@ const renameQueue = (queueId, originalQueueName) => {
 };
 
 const handleQueueNameChange = () => {
-    document.getElementById("new_queue_input_subtext").hidden = false;
+    document.getElementById("new_queue_input_subtext").style.visibility = "visible";
 
     const saveQueueNameButton = document.getElementById("save_queue_name_button");
     saveQueueNameButton.classList.remove("btn-outline-primary");

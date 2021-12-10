@@ -73,11 +73,12 @@ nav > a {
 .edit-queue-controls {
     display: grid;
     grid-template-columns: auto auto 1fr auto;
-    grid-template-rows: 3fr 5fr 3fr;
+    grid-template-rows: 3fr 5fr auto 2fr;
     grid-template-areas:
-        ".       .           . ."
         "textbox save-button . swap-page-link"
         "hint    .           . ."
+        ".       .           . ."
+        "chat-id .           . ."
     ;
 }
 
@@ -193,6 +194,10 @@ header > a {
     .queue-controls-column {
         width: 110px;
     }
+
+    .edit-queue-hint {
+        visibility: hidden;
+    }
 }
 
 .queues-table{
@@ -283,5 +288,29 @@ header > a {
 
     .queue-controls-column {
         width: 50px;
+    }
+
+    .swap-page-link-button {
+        justify-self: end;
+        align-self: center;
+    }
+
+    .edit-queue-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-rows: auto auto auto;
+        grid-template-areas:
+            "textbox textbox save-button"
+            "hint    hint           ."
+            "chat-id swap-page-link           swap-page-link"
+        ;
+    }
+
+    .mobile-font-size {
+        font-size: 0.8em;
+    }
+
+    .edit-queue-hint {
+        visibility: hidden; margin: 5px 0 20px;
     }
 }

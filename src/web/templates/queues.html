@@ -26,7 +26,7 @@
                         <div class="mb-1 queue-controls">
                             <span>
                                 <i class="bi bi-trash-fill btn btn-danger" onclick="deleteQueue({{ queue.id }})"></i>
-                            </span> <!-- Otherwise button will try to expand unexpectedly -->
+                            </span> {# Otherwise button will try to expand unexpectedly #}
                             <a href="{{ url_for('edit_queue', id=queue.id) }}"><i class="bi bi-pencil-square btn btn-info"></i></a>
                         </div>
                     </td>

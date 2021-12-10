@@ -6,15 +6,15 @@
     <div class="edit-queue-controls">
         <input
             id="new_queue_name"
-            class="form-control"
-            style="grid-area: textbox; font-size: 0.8em;"
+            class="form-control mobile-font-size"
+            style="grid-area: textbox"
             type="text"
             size="45"
             value="{{ queue.name|e }}"
             oninput="handleQueueNameChange()"
         >
 
-        <small id="new_queue_input_subtext" class="text-muted" style="grid-area: hint" hidden>
+        <small id="new_queue_input_subtext" class="text-muted mobile-font-size edit-queue-hint" style="grid-area: hint">
             Нажмите "Сохранить" чтобы подтвердить изменения
         </small>
 
@@ -27,18 +27,18 @@
             Сохранить
         </button>
 
+        <div style="grid-area: chat-id"><b>Chat ID:</b> {{ queue.chat_id }}</div>
+
         {% if queue_members %}
             <a
-                class="btn btn-outline-primary desktop-only"
+                class="btn btn-outline-primary swap-page-link-button"
                 style="grid-area: swap-page-link"
                 href="{{ url_for('swap_queue_members', queue_id=queue.id) }}"
             >
-                Поменять двух участников очереди местами <i class="bi bi-arrow-down-up"></i>
+                Поменять местами <i class="bi bi-arrow-down-up"></i>
             </a>
         {% endif %}
     </div>
-
-    <div><b>Chat ID:</b> {{ queue.chat_id }}</div>
 
     <table class="table table-striped">
         <thead>
@@ -55,7 +55,7 @@
                 <th class="col-1"></th>
             </tr>
         </thead>
-        <tbody>
+        <tbody class="mobile-font-size">
             {% for queue_member in queue_members %}
                 <tr
                     id="queue-member-{{ queue_member.user_id }}"
