@@ -1,5 +1,6 @@
 nav > a:hover {
     background-color: white;
+    color: black;
 }
 
 nav > a.current-page-link {
@@ -252,12 +253,8 @@ header > a {
 
     nav > a:hover,
     nav > a.current-page-link {
-        background-color: white;
-    }
-
-    nav > a:hover,
-    nav > a.current-page-link {
         color: black;
+        background-color: white;
     }
 
     nav > a {
