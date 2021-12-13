@@ -256,8 +256,8 @@ class Repository:
         self.cursor.execute("""
             UPDATE queue_members
             SET position = CASE position
-                WHEN :pos_1 THEN -:pos_2
-                WHEN :pos_2 THEN -:pos_1
+                WHEN :pos_1 THEN -:pos_2 -1
+                WHEN :pos_2 THEN -:pos_1 -1
             END
             WHERE queue_id = :queue_id AND position IN (:pos_1, :pos_2)
         """, {
@@ -267,7 +267,7 @@ class Repository:
         })
         self.cursor.execute("""
             UPDATE queue_members
-            SET position = -position
+            SET position = -position -1
             WHERE position < 0
         """)
 
