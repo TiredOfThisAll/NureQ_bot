@@ -325,4 +325,23 @@ header > a {
         visibility: hidden;
         margin: 5px 0 20px;
     }
+
+    .swap-member-list-container.mobile-only {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        margin: 0.5em 0;
+    }
+
+    .swap-member-list-container > * {
+        margin: 0.25em 0;
+    }
+
+    .swap-member-list-container > i {
+        align-self: center;
+    }
+
+    .swap-member-list-container > select {
+        padding: 5px;
+    }
 }
