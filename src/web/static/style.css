@@ -112,8 +112,8 @@ header {
 }
 
 header > .logo > img {
-    width: 10vh;
-    height: 10vh;
+    width: 64px;
+    height: 64px;
 }
 
 header > a {
@@ -139,29 +139,37 @@ header > a {
         column-gap: 40px;
         padding: 0 2em;
     }
+
     header > i {
         display: none;
     }
+
     header > a {
         font-size: 1.75em;
     }
+
     header > nav {
         display: flex;
     }
+
     header > nav a {
         padding: 0 10px;
         font-size: 1.5em;
     }
+
     header > nav > div {
         display: flex;
         align-items: center;
     }
+
     header > .logo > img {
         padding: 0.25em;
     }
+
     main {
         margin: 1em 5em;
     }
+
     .queue-controls {
         display: flex;
         column-gap: 10px;
@@ -212,6 +220,7 @@ header > a {
                 "logo burger"
                 "nav nav";
     }
+
     header > nav {
         height: 0;
         padding-top: 10px;
@@ -219,6 +228,7 @@ header > a {
         transition: height .2s ease;
         overflow: hidden;
     }
+
     header > i {
         grid-area: burger;
         justify-self: end;
@@ -226,16 +236,20 @@ header > a {
         color: white;
         font-size: 2em;
     }
+
     header > nav a {
         font-size: 1.25em;
     }
+
     header > a {
         font-size: 1.5em;
     }
+
     header > nav > a {
         display: block;
         padding: 0.5em 1em;
     }
+
     nav > a:hover,
     nav > a.current-page-link {
         background-color: white;
@@ -311,6 +325,7 @@ header > a {
     }
 
     .edit-queue-hint {
-        visibility: hidden; margin: 5px 0 20px;
+        visibility: hidden;
+        margin: 5px 0 20px;
     }
 }
