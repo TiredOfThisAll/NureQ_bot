@@ -133,7 +133,11 @@ header > a {
     table-layout: fixed;
 }
 
-@media (min-width: 576px) {
+.queue-members-table {
+    margin-bottom: 50px;
+}
+
+@media (min-width: 1024px) {
     header {
         grid-template-areas: "logo nav";
         grid-template-columns: auto 1fr;
@@ -209,12 +213,7 @@ header > a {
     }
 }
 
-.queues-table{
-    overflow-wrap: break-word;
-    table-layout: fixed;
-}
-
-@media (max-width: 576px) {
+@media (max-width: 1024px) {
     header {
         padding: 1rem;
         grid-template-areas:
