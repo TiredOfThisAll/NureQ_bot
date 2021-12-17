@@ -253,11 +253,15 @@ class Repository:
         if pos_1 >= queue_size or pos_2 >= queue_size:
             return "INVALID_POSITION"
 
+        # so the '- 1' part in the following query is necessary to avoid
+        # problems when negating zero, beacuse inverse of zero is zero,
+        # so under certain circumstances just negating the value without
+        # subtracting one afterwards would cause a UNIQUE constraint to fail
         self.cursor.execute("""
             UPDATE queue_members
             SET position = CASE position
-                WHEN :pos_1 THEN -:pos_2 -1
-                WHEN :pos_2 THEN -:pos_1 -1
+                WHEN :pos_1 THEN -:pos_2 - 1
+                WHEN :pos_2 THEN -:pos_1 - 1
             END
             WHERE queue_id = :queue_id AND position IN (:pos_1, :pos_2)
         """, {
@@ -309,6 +313,10 @@ class Repository:
         elif moved_down and inserted_before:
             target_position -= 1
 
+        # so the '- 1' part in the following query is necessary to avoid
+        # problems when negating zero, beacuse inverse of zero is zero,
+        # so under certain circumstances just negating the value without
+        # subtracting one afterwards would cause a UNIQUE constraint to fail
         self.cursor.execute("""
             UPDATE queue_members
             SET position = CASE position
