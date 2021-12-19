@@ -72,9 +72,21 @@ def route(update_context, bot_username):
         if update_context.responding_to_username != bot_username:
             # ignore replies to messages other than the bot's
             return noop_handler
-        return get_or_match(
+        # try to find a matching response handler
+        response_handler = get_or_match(
             registered_response_handlers,
-            update_context.response_text,
+            update_context.response_text
+        )
+        if response_handler is not None:
+            return response_handler
+        # otherwise, try to interpret it as a command
+        full_bot_username = "@" + bot_username
+        command = update_context.message_text
+        if command.endswith(full_bot_username):
+            command = command[:-len(full_bot_username)]
+        return registered_command_handlers.get(
+            command,
+            # but still use default response handler as a fallback
             registered_default_response_handler
         )
     if update_context.type == UpdateContext.Type.CALLBACK_QUERY:
