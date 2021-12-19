@@ -5,7 +5,7 @@ const swapQueueMembers = (queueId, leftPosition, rightPosition) => {
     }
 
     if (leftPosition === rightPosition) {
-        alert("Выбранные пользователи должны отличатся.");
+        alert("Выбранные пользователи должны отличаться.");
         return;
     }
 
