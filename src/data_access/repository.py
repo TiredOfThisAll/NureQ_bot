@@ -160,21 +160,33 @@ class Repository:
             WHERE queue_id = ? AND user_id = ?
         """, (queue_id, user_id))
 
-        # update all affected queue member positions
+        # update all affected queue member positions,
+        # make sure to firstly map positions to negative values in order to
+        # avoid failing UNIQUIE constraints (see related test)
         self.cursor.execute("""
             UPDATE queue_members
-            SET position = position - 1
+            SET position = -(position - 1) - 1
             WHERE queue_id = ? AND position > ?
         """, (queue_id, position))
+        self.cursor.execute("""
+            UPDATE queue_members
+            SET position = -position - 1
+            WHERE queue_id = ? AND position < 0
+        """, (queue_id,))
 
         return True
 
-    def get_total_queue_count(self, chat_id):
+    def get_total_queue_count(self, chat_id=None):
+        if chat_id:
+            return self.cursor.execute("""
+                SELECT COUNT(*)
+                FROM queues
+                WHERE chat_id = ?
+            """, (chat_id,)).fetchone()[0]
         return self.cursor.execute("""
             SELECT COUNT(*)
             FROM queues
-            WHERE chat_id = ?
-        """, (chat_id,)).fetchone()[0]
+        """).fetchone()[0]
 
     def get_queues_page(self, page_index, page_size, chat_id):
         skip_amount = (page_index - 1) * page_size
@@ -222,8 +234,8 @@ class Repository:
             LEFT JOIN queue_members ON queues.id == queue_members.queue_id
             GROUP BY queues.id, queues.name, queues.last_updated_on
             ORDER BY datetime(queues.last_updated_on) DESC
-        """).fetchall()
-        # TODO: pagination
+            LIMIT ?, ?
+        """, (skip_amount, page_size)).fetchall()
         return list(map(QueueView.from_tuple, queue_tuples))
 
     def get_queue_by_id(self, id):
@@ -248,11 +260,15 @@ class Repository:
         if pos_1 >= queue_size or pos_2 >= queue_size:
             return "INVALID_POSITION"
 
+        # so the '- 1' part in the following query is necessary to avoid
+        # problems when negating zero, beacuse inverse of zero is zero,
+        # so under certain circumstances just negating the value without
+        # subtracting one afterwards would cause a UNIQUE constraint to fail
         self.cursor.execute("""
             UPDATE queue_members
             SET position = CASE position
-                WHEN :pos_1 THEN -:pos_2
-                WHEN :pos_2 THEN -:pos_1
+                WHEN :pos_1 THEN -:pos_2 - 1
+                WHEN :pos_2 THEN -:pos_1 - 1
             END
             WHERE queue_id = :queue_id AND position IN (:pos_1, :pos_2)
         """, {
@@ -262,7 +278,7 @@ class Repository:
         })
         self.cursor.execute("""
             UPDATE queue_members
-            SET position = -position
+            SET position = -position -1
             WHERE position < 0
         """)
 
@@ -304,6 +320,10 @@ class Repository:
         elif moved_down and inserted_before:
             target_position -= 1
 
+        # so the '- 1' part in the following query is necessary to avoid
+        # problems when negating zero, beacuse inverse of zero is zero,
+        # so under certain circumstances just negating the value without
+        # subtracting one afterwards would cause a UNIQUE constraint to fail
         self.cursor.execute("""
             UPDATE queue_members
             SET position = CASE position

@@ -6,7 +6,7 @@
     <div class="edit-queue-controls">
         <input
             id="new_queue_name"
-            class="form-control"
+            class="form-control mobile-font-size"
             style="grid-area: textbox"
             type="text"
             size="45"
@@ -14,7 +14,7 @@
             oninput="handleQueueNameChange()"
         >
 
-        <small id="new_queue_input_subtext" class="text-muted" style="grid-area: hint" hidden>
+        <small id="new_queue_input_subtext" class="text-muted mobile-font-size edit-queue-hint" style="grid-area: hint">
             Нажмите "Сохранить" чтобы подтвердить изменения
         </small>
 
@@ -27,27 +27,27 @@
             Сохранить
         </button>
 
+        <div style="grid-area: chat-id"><b>Chat ID:</b> {{ queue.chat_id }}</div>
+
         {% if queue_members %}
             <a
-                class="btn btn-outline-primary"
+                class="btn btn-outline-primary swap-page-link-button"
                 style="grid-area: swap-page-link"
                 href="{{ url_for('swap_queue_members', queue_id=queue.id) }}"
             >
-                Поменять двух участников очереди местами <i class="bi bi-arrow-down-up"></i>
+                Поменять местами <i class="bi bi-arrow-down-up"></i>
             </a>
         {% endif %}
     </div>
 
-    <div><b>Chat ID:</b> {{ queue.chat_id }}</div>
-
-    <table class="table table-striped">
+    <table class="queue-members-table table table-striped">
         <thead>
             <tr>
-                <th class="col-2">
-                    Номер в очереди
+                <th class="col-2 text-center">
+                    #
                 </th>
                 <th class="col-8">
-                    Имя пользователя
+                    Имя
                 </th>
                 <th class="col-2">
                     Вычеркнут?
@@ -55,21 +55,26 @@
                 <th class="col-1"></th>
             </tr>
         </thead>
-        <tbody>
+        <tbody class="mobile-font-size">
             {% for queue_member in queue_members %}
                 <tr
                     id="queue-member-{{ queue_member.user_id }}"
                     class="align-middle"
                     draggable="true"
-                    ondragstart="handleQueueMemberRowDragstart(event)"
-                    ondragover="handleQueueMemberRowDragover(event)"
-                    ondragleave="handleQueueMemberRowDragleave(event)"
-                    ondragend="handleQueueMemberRowDragend(event)"
-                    ondrop="handleQueueMemberRowDrop(event)"
+                    ondragstart="DndDesktop.onDragStart(event)"
+                    ondragover="DndDesktop.onDragOver(event)"
+                    ondragleave="DndDesktop.onDragLeave(event)"
+                    ondragend="DndDesktop.onDragEnd(event)"
+                    ondrop="DndDesktop.onDrop(event)"
                     data-queue-member-user-id="{{ queue_member.user_id }}"
                     data-queue-id="{{ queue.id }}"
                 >
-                    <td>
+                    <td
+                        ontouchstart="DndMobile.onTouchStart(event)"
+                        ontouchmove="DndMobile.onTouchMove(event)"
+                        ontouchend="DndMobile.onTouchEnd(event)"
+                        ontouchcancel="DndMobile.onTouchEnd(event)"
+                    >
                         {# need an extra span because applying flexbox to a td breaks its height #}
                         <span class="d-flex justify-content-between">
                             <i class="bi bi-grip-vertical">{# signifies that the row is draggable #}</i>
@@ -78,8 +83,7 @@
                         </span>
                     </td>
                     <td class="col-4">
-                        {# this span is used for drag-n-drop preview #}
-                        <span>{{ queue_member.user_info.get_formatted_name()|e }}</span>
+                        {{ queue_member.user_info.get_formatted_name()|e }}
                     </td>
                     <td>
                         <input

@@ -1,17 +1,18 @@
 {% extends "layout.html" %}
 {% block content %}
-    <table class="table table-striped">
+    <table class="table table-striped logs-table">
         <thead>
             <tr>
-                <th class="col-1">ID</th>
-                <th class="col-1">Уровень</th>
-                <th class="col-2">Время</th>
-                <th class="col-8">Сообщение</th>
+                <th class="col-1 desktop-only">ID</th>
+                <th class="col-1 desktop-only">Уровень</th>
+                <th class="col-1 desktop-only">Время</th>
+                <th class="col-3 mobile-only">Уровень Время</th>
+                <th class="col-9">Сообщение</th>
             </tr>
         </thead>
         <tbody>
             {% for log in logs %}
-                <tr>
+                <tr class="desktop-only">
                     <td>{{ log.id }}</td>
 
                     {% if log.level == "INFO" %}
@@ -24,6 +25,25 @@
 
                     <td>{{ log.get_formatted_timestamp() }}</td>
 
+                    <td>{{ log.message }}</td>
+                </tr>
+                <tr class="mobile-only">
+                    <td class="fw-bold">
+                        {% if log.level == "INFO" %}
+                            <span class="text-info">
+                                {{ log.level }}
+                            </span>
+                        {% elif log.level == "WARN" %}
+                            <span class="text-warning">
+                                {{ log.level }}
+                            </span>
+                        {% elif log.level == "ERROR" %}
+                            <span class="text-danger">
+                                {{ log.level }}
+                            </span>
+                        {% endif %}
+                        {{ log.get_formatted_timestamp() }}
+                    </td>
                     <td>{{ log.message }}</td>
                 </tr>
             {% endfor %}

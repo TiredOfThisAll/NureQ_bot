@@ -1,16 +1,11 @@
-const swapQueueMembers = queueId => {
-    const leftPositionInputOrNull = document.querySelector("input[name='left-member']:checked");
-    const rightPositionInputOrNull = document.querySelector("input[name='right-member']:checked");
-    if (leftPositionInputOrNull === null || rightPositionInputOrNull === null) {
+const swapQueueMembers = (queueId, leftPosition, rightPosition) => {
+    if (leftPosition === null || rightPosition === null) {
         alert("Вы должны выбрать ровно одного пользователя из каждого из двух списков.");
         return;
     }
 
-    const leftPosition = parseInt(leftPositionInputOrNull.value);
-    const rightPosition = parseInt(rightPositionInputOrNull.value);
-
     if (leftPosition === rightPosition) {
-        alert("Выбранные пользователи должны отличатся.");
+        alert("Выбранные пользователи должны отличаться.");
         return;
     }
 
@@ -30,4 +25,22 @@ const swapQueueMembers = queueId => {
         .finally(() => {
             setSpinnerVisibility(false);
         });
+};
+
+const swapQueueMembersDesktop = queueId => {
+    const leftPositionInputOrNull = document.querySelector("input[name='left-member']:checked");
+    const rightPositionInputOrNull = document.querySelector("input[name='right-member']:checked");
+
+    const leftPosition = leftPositionInputOrNull !== null ? parseInt(leftPositionInputOrNull.value) : null;
+    const rightPosition = rightPositionInputOrNull !== null ? parseInt(rightPositionInputOrNull.value) : null;
+    swapQueueMembers(queueId, leftPosition, rightPosition);
+};
+
+const swapQueueMembersMobile = queueId => {
+    const leftPositionSelectOrNull = document.querySelector("select[name='left-member']").value;
+    const rightPositionSelectOrNull = document.querySelector("select[name='right-member']").value;
+
+    const leftPosition = leftPositionSelectOrNull !== "" ? parseInt(leftPositionSelectOrNull) : null;
+    const rightPosition = rightPositionSelectOrNull !== "" ? parseInt(rightPositionSelectOrNull) : null;
+    swapQueueMembers(queueId, leftPosition, rightPosition);
 };

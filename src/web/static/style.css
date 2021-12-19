@@ -1,15 +1,17 @@
-nav > div:hover,
-nav > div.current-page-link {
+nav > a:hover {
     background-color: white;
-}
-
-nav > div:hover > a,
-nav > div.current-page-link > a {
     color: black;
 }
 
-nav > div > a {
+nav > a.current-page-link {
+    color: black;
+    background: white;
+}
+
+nav > a {
     color: white;
+    display: flex;
+    align-items: center;
 }
 
 #spinner {
@@ -72,11 +74,12 @@ nav > div > a {
 .edit-queue-controls {
     display: grid;
     grid-template-columns: auto auto 1fr auto;
-    grid-template-rows: 3fr 5fr 3fr;
+    grid-template-rows: 3fr 5fr auto 2fr;
     grid-template-areas:
-        ".       .           . ."
         "textbox save-button . swap-page-link"
         "hint    .           . ."
+        ".       .           . ."
+        "chat-id .           . ."
     ;
 }
 
@@ -95,4 +98,249 @@ nav > div > a {
 
 .drop-to-lower-half {
     background-image: linear-gradient(to top, lightgreen, transparent 30%);
+}
+
+.pagination-container {
+    display: flex;
+    column-gap: 5px;
+    justify-content: center;
+}
+
+header {
+    display: grid;
+    background-color: #0d6efd;
+    margin: 0 -12px;
+}
+
+header > .logo > img {
+    width: 64px;
+    height: 64px;
+}
+
+header > a {
+    display: flex;
+    align-items: center;
+    column-gap: 10px;
+}
+
+.logs-table {
+    table-layout: fixed;
+    overflow-wrap: break-word;
+}
+
+.queues-table {
+    overflow-wrap: break-word;
+    table-layout: fixed;
+}
+
+.queue-members-table {
+    margin-bottom: 50px;
+}
+
+@media (min-width: 1024px) {
+    header {
+        grid-template-areas: "logo nav";
+        grid-template-columns: auto 1fr;
+        column-gap: 40px;
+        padding: 0 2em;
+    }
+
+    header > i {
+        display: none;
+    }
+
+    header > a {
+        font-size: 1.75em;
+    }
+
+    header > nav {
+        display: flex;
+    }
+
+    header > nav a {
+        padding: 0 10px;
+        font-size: 1.5em;
+    }
+
+    header > nav > div {
+        display: flex;
+        align-items: center;
+    }
+
+    header > .logo > img {
+        padding: 0.25em;
+    }
+
+    main {
+        margin: 1em 5em;
+    }
+
+    .queue-controls {
+        display: flex;
+        column-gap: 10px;
+    }
+
+    .mobile-only {
+        display: none;
+    }
+
+    .id-column {
+        width: calc(100%/12);
+    }
+
+    .name-column {
+        width: calc(500%/12);
+    }
+
+    .last-updated-on-column {
+        width: calc(150%/12);
+    }
+
+    .chat-id-column {
+        width: calc(300%/12);
+    }
+
+    .number-of-members-column {
+        width: calc(100%/12);
+    }
+
+    .queue-controls-column {
+        width: 110px;
+    }
+
+    .edit-queue-hint {
+        visibility: hidden;
+    }
+}
+
+@media (max-width: 1024px) {
+    header {
+        padding: 1rem;
+        grid-template-areas:
+                "logo burger"
+                "nav nav";
+    }
+
+    header > nav {
+        height: 0;
+        padding-top: 10px;
+        margin: 0 -1em -0.5em;
+        transition: height .2s ease;
+        overflow: hidden;
+    }
+
+    header > i {
+        grid-area: burger;
+        justify-self: end;
+        align-self: center;
+        color: white;
+        font-size: 2em;
+    }
+
+    header > nav a {
+        font-size: 1.25em;
+    }
+
+    header > a {
+        font-size: 1.5em;
+    }
+
+    header > nav > a {
+        display: block;
+        padding: 0.5em 1em;
+    }
+
+    nav > a:hover,
+    nav > a.current-page-link {
+        color: black;
+        background-color: white;
+    }
+
+    nav > a {
+        color: white;
+    }
+
+    .queues-table {
+        font-size: 0.75em;
+    }
+
+    .desktop-only {
+        display: none;
+    }
+
+    .queues-table td,
+    .queues-table th {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .queue-controls {
+        display: flex;
+        row-gap: 10px;
+        flex-direction: column;
+    }
+
+    main {
+        margin: 1em 0;
+    }
+
+    .logs-table {
+        font-size: 0.8em;
+    }
+
+    .last-updated-on-column {
+        width: 90px;
+    }
+
+    .number-of-members-column {
+        width: 60px;
+    }
+
+    .queue-controls-column {
+        width: 50px;
+    }
+
+    .swap-page-link-button {
+        justify-self: end;
+        align-self: center;
+    }
+
+    .edit-queue-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-rows: auto auto auto;
+        grid-template-areas:
+            "textbox textbox save-button"
+            "hint    hint           ."
+            "chat-id swap-page-link           swap-page-link"
+        ;
+    }
+
+    .mobile-font-size {
+        font-size: 0.8em;
+    }
+
+    .edit-queue-hint {
+        visibility: hidden;
+        margin: 5px 0 20px;
+    }
+
+    .swap-member-list-container.mobile-only {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        margin: 0.5em 0;
+    }
+
+    .swap-member-list-container > * {
+        margin: 0.25em 0;
+    }
+
+    .swap-member-list-container > i {
+        align-self: center;
+    }
+
+    .swap-member-list-container > select {
+        padding: 5px;
+    }
 }

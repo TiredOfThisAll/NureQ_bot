@@ -13,6 +13,10 @@ class UpdateContext:
     def from_update(update):
         update_context = UpdateContext()
         update_context.update = update
+        update_context.chat_type = update_context.update \
+            .get("message", {}) \
+            .get("chat", {}) \
+            .get("type")
 
         # if has text and is NOT a reply
         if update.get("message", {}).get("text") is not None \
