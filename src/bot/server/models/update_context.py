@@ -14,6 +14,7 @@ class UpdateContext:
         update_context = UpdateContext()
         update_context.update = update
         update_context.chat_type = update_context.update \
+            .get("message", {}) \
             .get("chat", {}) \
             .get("type")
 
