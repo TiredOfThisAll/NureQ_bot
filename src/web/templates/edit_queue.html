@@ -61,19 +61,19 @@
                     id="queue-member-{{ queue_member.user_id }}"
                     class="align-middle"
                     draggable="true"
-                    ondragstart="handleQueueMemberRowDragstart(event)"
-                    ondragover="handleQueueMemberRowDragover(event)"
-                    ondragleave="handleQueueMemberRowDragleave(event)"
-                    ondragend="handleQueueMemberRowDragend(event)"
-                    ondrop="handleQueueMemberRowDrop(event)"
+                    ondragstart="DndDesktop.onDragStart(event)"
+                    ondragover="DndDesktop.onDragOver(event)"
+                    ondragleave="DndDesktop.onDragLeave(event)"
+                    ondragend="DndDesktop.onDragEnd(event)"
+                    ondrop="DndDesktop.onDrop(event)"
                     data-queue-member-user-id="{{ queue_member.user_id }}"
                     data-queue-id="{{ queue.id }}"
                 >
                     <td
-                        ontouchstart="handleQueueMemberRowTouchstart(event)"
-                        ontouchmove="handleQueueMemberRowTouchmove(event)"
-                        ontouchend="handleQueueMemberRowTouchend(event)"
-                        ontouchcancel="handleQueueMemberRowTouchend(event)"
+                        ontouchstart="DndMobile.onTouchStart(event)"
+                        ontouchmove="DndMobile.onTouchMove(event)"
+                        ontouchend="DndMobile.onTouchEnd(event)"
+                        ontouchcancel="DndMobile.onTouchEnd(event)"
                     >
                         {# need an extra span because applying flexbox to a td breaks its height #}
                         <span class="d-flex justify-content-between">
@@ -83,8 +83,7 @@
                         </span>
                     </td>
                     <td class="col-4">
-                        {# this span is used for drag-n-drop preview #}
-                        <span>{{ queue_member.user_info.get_formatted_name()|e }}</span>
+                        {{ queue_member.user_info.get_formatted_name()|e }}
                     </td>
                     <td>
                         <input

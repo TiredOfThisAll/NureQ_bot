@@ -72,210 +72,379 @@ const handleQueueNameChange = () => {
     saveQueueNameButton.classList.add("btn-primary");
 };
 
-let dragState;
+class DndDesktop {
+    // state fields
+    static isStarted = false;
+    static draggedRow;
+    static thumbnailElement;
 
-const handleQueueMemberRowDragstart = event => {
-    const draggedQueueMemberRow = event.currentTarget;
-    dragState = {draggedQueueMemberRowId: draggedQueueMemberRow.id};
-    draggedQueueMemberRow.ondragover = null; // prevent dropping row on itself
+    // constants
+    static THUMBNAIL_OFFSET = {x: -15, y: -5};
 
-    // we can't the use tr or td itself for the preview, because the take up too much space visually
-    const queueMemberNameCell = draggedQueueMemberRow.querySelector("td:nth-child(2) > span")
-    event.dataTransfer.setDragImage(queueMemberNameCell, -15, -15);
-};
+    // event handlers
+    static onDragStart(dragStartEvent) {
+        DndDesktop.isStarted = true;
+        DndDesktop.draggedRow = dragStartEvent.currentTarget;
 
-const handleQueueMemberRowDragover = event => {
-    event.preventDefault(); // prevent additional event processing for this event
-
-    // If drag state is not initialized,
-    // that means that the user is trying to drag and drop something from outside the app,
-    // so just exit
-    if (dragState === undefined) {
-        event.dataTransfer.dropEffect = "none";
-        return;
+        // trim because there is some random whitespace generated for this value in our templates
+        const memberName = DndDesktop.draggedRow.children[1].textContent.trim();
+        DndDesktop.createThumbnail(memberName, dragStartEvent);
     }
 
-    // forbid trying to drag and drop a row onto itself
-    const dropTargetQueueMemberRow = event.currentTarget;
-    if (dragState.draggedQueueMemberRowId === dropTargetQueueMemberRow.id) {
-        event.dataTransfer.dropEffect = "none";
-        return;
+    static onDragOver(dragOverEvent) {
+        // prevent further processing of the event, this way we prevent the browser from overtaking these events
+        dragOverEvent.preventDefault();
+
+        // If drag state is not initialized,
+        // that means that the user is trying to drag and drop something from outside the app,
+        // so just exit
+        if (!DndDesktop.isStarted) {
+            dragOverEvent.dataTransfer.dropEffect = "none";
+            return;
+        }
+
+        // forbid trying to drag and drop a row onto itself
+        const dropTargetQueueMemberRow = dragOverEvent.currentTarget;
+        if (DndDesktop.draggedRow === dropTargetQueueMemberRow) {
+            dragOverEvent.dataTransfer.dropEffect = "none";
+            return;
+        }
+
+        // otherwise, hovering over a valid target
+        dragOverEvent.dataTransfer.dropEffect = "move";
+        DndCommon.updateHighlight(dragOverEvent.clientY, dropTargetQueueMemberRow);
     }
 
-    if (isInUpperHalf(event.clientY, dropTargetQueueMemberRow)) {
-        event.dataTransfer.dropEffect = "move";
-        dropTargetQueueMemberRow.classList.remove("drop-to-lower-half");
-        dropTargetQueueMemberRow.classList.add("drop-to-upper-half");
-    } else if (isInLowerHalf(event.clientY, dropTargetQueueMemberRow)) {
-        event.dataTransfer.dropEffect = "move";
-        dropTargetQueueMemberRow.classList.remove("drop-to-upper-half");
-        dropTargetQueueMemberRow.classList.add("drop-to-lower-half");
-    } else {
-        event.dataTransfer.dropEffect = "none";
+    static onDragLeave(dragLeaveEvent) {
+        // we get dragleave events for different children of the same row, so check for that before doing anything
+        if (DndCommon.getQueueMemberRowParent(dragLeaveEvent.fromElement) === DndCommon.getQueueMemberRowParent(dragLeaveEvent.toElement)) {
+            return;
+        }
+        DndCommon.clearHighlight();
     }
-};
 
-const handleQueueMemberRowDragleave = event => {
-    const dropTargetQueueMemberRow = event.currentTarget;
-    dropTargetQueueMemberRow.classList.remove("drop-to-lower-half", "drop-to-upper-half");
+    static onDrop(dropEvent) {
+        // If drag state is not initialized,
+        // that means that the user is trying to drag and drop something from outside the app,
+        // so just exit
+        if (!DndDesktop.isStarted) {
+            return;
+        }
+
+        DndCommon.clearHighlight();
+        const dropTargetQueueMemberRow = dropEvent.currentTarget;
+        DndCommon.dropQueueMemberRow(dropEvent.clientY, DndDesktop.draggedRow, dropTargetQueueMemberRow);
+    }
+
+    static onDragEnd() {
+        DndDesktop.isStarted = false;
+        DndDesktop.removeThumbnail();
+    }
+
+    // helper functions
+    static createThumbnail(text, dragStartEvent) {
+        DndDesktop.thumbnailElement = document.createElement("span");
+        DndDesktop.thumbnailElement.textContent = text;
+        // hide thumbnail behind the page
+        DndDesktop.thumbnailElement.style.position = "absolute";
+        DndDesktop.thumbnailElement.style.zIndex = "-1";
+        document.body.prepend(DndDesktop.thumbnailElement);
+        dragStartEvent.dataTransfer.setDragImage(DndDesktop.thumbnailElement, DndDesktop.THUMBNAIL_OFFSET.x, DndDesktop.THUMBNAIL_OFFSET.y);
+    }
+
+    static removeThumbnail() {
+        removeElementFromDom(DndDesktop.thumbnailElement);
+    }
 }
 
-const handleQueueMemberRowDragend = _event => {
-    const draggedQueueMemberRow = document.getElementById(dragState.draggedQueueMemberRowId);
-    // after dragging is finished, restore dragover event for the dragged row
-    draggedQueueMemberRow.addEventListener("dragover", handleQueueMemberRowDragover);
+// for dragging queue members on mobile devices using Touch API, because HTML5 DND API is not available there
+class DndMobile {
+    // state fields
+    static touchId = null;
+    static draggedRow;
+    static thumbnailElement;
+    static originalScrollBehavior;
 
-    dragState = undefined;
-};
+    // constants
+    static UPDATE_FPS = 60;
+    static UPDATE_MSPF = 1000 / DndMobile.UPDATE_FPS; // milliseconds per frame
+    static TOUCH_SCROLL_SPEED = 0.01; // in percentages of screen height
+    static TOUCH_SCROLL_SENSITIVITY_RANGE = 50; // in pixels
 
-const handleQueueMemberRowDrop = event => {
-    event.preventDefault(); // prevent additional event processing for this event
+    // event handlers
+    static onTouchStart(touchStartEvent) {
+        console.log("dnd touchstart");
+        const newTouchId = touchStartEvent.changedTouches[0].identifier;
+        // do not handle multiple simultaneous touches
+        if (DndMobile.touchId !== null) {
+            return;
+        }
+        DndMobile.touchId = newTouchId;
+        DndMobile.draggedRow = touchStartEvent.currentTarget.parentElement;
+        // trim because there is some random whitespace generated for this value in our templates
+        DndMobile.createThumbnail(DndMobile.draggedRow.children[1].textContent.trim());
 
-    // If drag state is not initialized,
-    // that means that the user is trying to drag and drop something from outside the app,
-    // so just exit
-    if (dragState === undefined) {
-        return;
+        // disable smooth scrolling, because we are going to be controlling the scrolling animation
+        DndMobile.originalScrollBehavior = document.documentElement.style.scrollBehavior;
+        document.documentElement.style.scrollBehavior = 'auto';
+
+        DndMobile.updatePerFrame();
     }
 
-    const draggedQueueMemberRow = document.getElementById(dragState.draggedQueueMemberRowId);
-    const dropTargetQueueMemberRow = event.currentTarget;
-
-    // clear highlighting
-    dropTargetQueueMemberRow.classList.remove("drop-to-lower-half", "drop-to-upper-half");
-
-    dropQueueMemberRow(event.clientY, draggedQueueMemberRow, dropTargetQueueMemberRow);
-};
-
-const dropQueueMemberRow = (cursorPositionY, draggedQueueMemberRow, dropTargetQueueMemberRow) => {
-    let insertedBefore;
-    if (isInUpperHalf(cursorPositionY, dropTargetQueueMemberRow)) {
-        insertBefore(draggedQueueMemberRow, dropTargetQueueMemberRow);
-        insertedBefore = true;
-    } else if (isInLowerHalf(cursorPositionY, dropTargetQueueMemberRow)) {
-        insertAfter(draggedQueueMemberRow, dropTargetQueueMemberRow);
-        insertedBefore = false;
-    } else {
-        return;
+    static onTouchMove(touchMoveEvent) {
+        touchMoveEvent.preventDefault(); // prevent the browser from reacting to this event (e.g. scrolling the page)
     }
-    renderQueuePositions();
 
-    const queueId = dropTargetQueueMemberRow.dataset.queueId;
-    const body = JSON.stringify({
-        movedUserId: Number(draggedQueueMemberRow.dataset.queueMemberUserId),
-        targetUserId: Number(dropTargetQueueMemberRow.dataset.queueMemberUserId),
-        insertedBefore,
-    });
-    fetch(`/api/queues/${queueId}/move-queue-member`, {method: "PUT", body})
-        .then(response => {
-            if (response.status !== 204) {
-                response.text().then(responseText => {
-                    alert(responseText);
-                    location.reload();
-                });
-                return Promise.reject();
+    static onTouchEnd(touchEndEvent) {
+        const touchId = touchEndEvent.changedTouches[0].identifier;
+        // do not handle multiple simultaneous touches
+        if (touchId !== DndMobile.touchId) {
+            return;
+        }
+        DndMobile.touchId = null;
+
+        DndCommon.clearHighlight();
+        DndMobile.removeThumbnail();
+        // restore original scroll behavior
+        document.documentElement.style.scrollBehavior = DndMobile.originalScrollBehavior;
+
+        const dropTargetQueueMemberRow = DndMobile.getQueueMemberRowAtPosition(CursorPositionMobile.screenPosition);
+        // do nothing if dropping on the same row or not a row element at all
+        if (dropTargetQueueMemberRow === null || DndMobile.draggedRow === dropTargetQueueMemberRow) {
+            return;
+        }
+
+        DndCommon.dropQueueMemberRow(CursorPositionMobile.screenPosition.y, DndMobile.draggedRow, dropTargetQueueMemberRow);
+    }
+
+    // helpers
+    static createThumbnail(text) {
+        DndMobile.thumbnailElement = document.createElement("span");
+        DndMobile.thumbnailElement.textContent = text;
+        DndMobile.thumbnailElement.style.userSelect = "none";
+        DndMobile.thumbnailElement.style.position = "absolute";
+        DndMobile.updateThumbnail();
+        document.body.prepend(DndMobile.thumbnailElement);
+    }
+
+    static updateThumbnail() {
+        DndMobile.thumbnailElement.style.top = `${CursorPositionMobile.pagePosition.y}px`;
+        // use Math.max to prevent thumbnail from going off the right edge of the screen
+        DndMobile.thumbnailElement.style.right = `${Math.max(0, window.innerWidth - CursorPositionMobile.pagePosition.x)}px`;
+    }
+
+    static removeThumbnail() {
+        removeElementFromDom(DndMobile.thumbnailElement);
+    }
+
+    static getQueueMemberRowAtPosition(position) {
+        const hits = document.elementsFromPoint(position.x, position.y);
+        for (const hit of hits) {
+            const queueMemberRowParent = DndCommon.getQueueMemberRowParent(hit);
+            if (queueMemberRowParent !== null) {
+                return queueMemberRowParent;
             }
-        });
-};
-
-let dragThumbnailElement = null;
-let prevHighlightedRow = null;
-let mobileDraggedElement = null;
-let currentTouchId = null;
-
-const updateDragThumbnailElementPosition = cursorPosition => {
-    // make sure to use document coordinates instead of screen coordinates
-    dragThumbnailElement.style.top = `${cursorPosition.y}px`;
-    // TODO: comment about Math.max
-    dragThumbnailElement.style.right = `${Math.max(0, window.innerWidth - cursorPosition.x)}px`;
-};
-
-const handleQueueMemberRowTouchstart = event => {
-    // do not handle multiple touches at once
-    if (currentTouchId !== null && event.changedTouches[0].identifier !== currentTouchId) {
-        return;
-    }
-    currentTouchId = event.changedTouches[0].identifier;
-    mobileDraggedElement = event.currentTarget.parentElement;
-    // create drag thumbnail
-    dragThumbnailElement = document.createElement("span");
-    dragThumbnailElement.textContent = mobileDraggedElement.children[1].textContent.trim();
-    dragThumbnailElement.style.userSelect = "none";
-    dragThumbnailElement.style.position = "absolute";
-    globalCursorPagePosition.x = event.changedTouches[0].pageX;
-    globalCursorPagePosition.y = event.changedTouches[0].pageY;
-    globalCursorPosition.x = event.changedTouches[0].clientX;
-    globalCursorPosition.y = event.changedTouches[0].clientY;
-    updateDragThumbnailElementPosition(globalCursorPagePosition);
-    document.body.prepend(dragThumbnailElement);
-};
-
-const TOUCH_SCROLL_SPEED = window.innerHeight * 0.01;
-const TOUCH_SCROLL_SENSITIVITY_RANGE = 50;
-
-const isCloseToScreenEdge = cursorPosition => {
-    if (cursorPosition.y < TOUCH_SCROLL_SENSITIVITY_RANGE) {
-        return "close_to_top_edge";
-    }
-    if (window.innerHeight - cursorPosition.y < TOUCH_SCROLL_SENSITIVITY_RANGE) {
-        return "close_to_bottom_edge";
-    }
-    return "not_close";
-};
-
-const handleQueueMemberRowTouchmove = event => {
-    event.preventDefault(); // prevent the browser from reacting to gestures, while the user is drag-n-dropping
-
-    // do not handle multiple touches at once
-    if (currentTouchId !== null && event.changedTouches[0].identifier !== currentTouchId) {
-        return;
-    }
-};
-
-const handleQueueMemberRowTouchend = event => {
-    // do not handle multiple touches at once
-    if (currentTouchId !== null && event.changedTouches[0].identifier !== currentTouchId) {
-        return;
-    }
-    currentTouchId = null;
-    // clear previous highlight
-    if (prevHighlightedRow !== null) {
-        prevHighlightedRow.classList.remove("drop-to-upper-half", "drop-to-lower-half");
+        }
+        return null;
     }
 
-    // remove drag thumbnail
-    dragThumbnailElement.parentElement.removeChild(dragThumbnailElement);
-    dragThumbnailElement = null;
-
-    const draggedQueueMemberRow = event.currentTarget.parentElement;
-    const cursorPosition = getCursorPositionForTouchEvent(event);
-    const dropTargetQueueMemberRow = getQueueMemberRowUnderCursor(cursorPosition);
-    // do nothing if dropping on the same row or not a row element at all
-    if (dropTargetQueueMemberRow === null || draggedQueueMemberRow === dropTargetQueueMemberRow) {
-        return;
-    }
-
-    dropQueueMemberRow(cursorPosition.y, draggedQueueMemberRow, dropTargetQueueMemberRow);
-};
-
-const getCursorPositionForTouchEvent = event => { // in screen coordinates
-    return {x: event.changedTouches[0].clientX, y: event.changedTouches[0].clientY};
-};
-
-const getQueueMemberRowUnderCursor = cursorPosition => {
-    const hits = document.elementsFromPoint(cursorPosition.x, cursorPosition.y);
-    for (const hit of hits) {
-        let result = hit;
-        while (result !== null) {
-            if (result.id.startsWith("queue-member-")) {
-                return result;
-            }
-            result = result.parentElement;
+    static scrollAtEdges() {
+        const proximity = CursorPositionMobile.isCloseToScreenEdge(DndMobile.TOUCH_SCROLL_SENSITIVITY_RANGE);
+        switch (proximity) {
+            case CursorEdgeProximity.CloseToTop:
+                window.scrollBy(0, -DndMobile.TOUCH_SCROLL_SPEED * window.innerHeight);
+                break;
+            case CursorEdgeProximity.CloseToBottom:
+                // do not scroll past the bottom of the page
+                if (!CursorPositionMobile.isCloseToPageBottom(DndMobile.TOUCH_SCROLL_SENSITIVITY_RANGE)) {
+                    window.scrollBy(0, DndMobile.TOUCH_SCROLL_SPEED * window.innerHeight);
+                } else {
+                    // stick to the bottom in order to avoid certain visual bugs
+                    window.scrollBy(0, document.body.parentElement.offsetHeight - window.scrollY - window.innerHeight);
+                }
+                break;
+            case CursorEdgeProximity.NotClose:
+                // do nothing
+                break;
         }
     }
-    return null;
+
+    static updatePerFrame() {
+        // stop per-frame updates if DND finished
+        if (DndMobile.touchId == null) {
+            return;
+        }
+        DndMobile.updateThumbnail();
+        DndMobile.scrollAtEdges();
+        const dropTargetQueueMemberRow = DndMobile.getQueueMemberRowAtPosition(CursorPositionMobile.screenPosition);
+        if (dropTargetQueueMemberRow !== null && dropTargetQueueMemberRow !== DndMobile.draggedRow) {
+            DndCommon.updateHighlight(CursorPositionMobile.screenPosition.y, dropTargetQueueMemberRow);
+        } else {
+            DndCommon.clearHighlight();
+        }
+        setTimeout(DndMobile.updatePerFrame, DndMobile.UPDATE_MSPF);
+    }
+}
+
+class DndCommon {
+    // state fields
+    static prevHighlightedRow = null;
+
+    // constants
+    static HIGHLIGHT_UPPER_CLASS = "drop-to-upper-half";
+    static HIGHLIGHT_LOWER_CLASS = "drop-to-lower-half";
+    static QUEUE_MEMBER_ROW_ID_PATTERN = "queue-member-";
+
+    // helper functions
+    static updateHighlight(cursorPositionY, dropTarget) {
+        switch (inWhatHalf(cursorPositionY, dropTarget)) {
+            case InWhatHalfResult.Top:
+                // make sure to do the minimum number of operations on classList in order to avoid flickering
+                if (!dropTarget.classList.contains(DndCommon.HIGHLIGHT_UPPER_CLASS)) {
+                    dropTarget.classList.add(DndCommon.HIGHLIGHT_UPPER_CLASS);
+                }
+                if (dropTarget.classList.contains(DndCommon.HIGHLIGHT_LOWER_CLASS)) {
+                    dropTarget.classList.remove(DndCommon.HIGHLIGHT_LOWER_CLASS);
+                }
+                break;
+            case InWhatHalfResult.Bottom:
+                // make sure to do the minimum number of operations on classList in order to avoid flickering
+                if (dropTarget.classList.contains(DndCommon.HIGHLIGHT_UPPER_CLASS)) {
+                    dropTarget.classList.remove(DndCommon.HIGHLIGHT_UPPER_CLASS);
+                }
+                if (!dropTarget.classList.contains(DndCommon.HIGHLIGHT_LOWER_CLASS)) {
+                    dropTarget.classList.add(DndCommon.HIGHLIGHT_LOWER_CLASS);
+                }
+                break;
+            case InWhatHalfResult.None:
+                // do nothing, because this still happens sometimes,
+                // but it's impossible to catch this happening visually, so this won't ever affect the user
+                break;
+        }
+        // if the highlighted row didn't change, then we have already taken care of clearing the previous highlight above
+        if (DndCommon.prevHighlightedRow !== null && DndCommon.prevHighlightedRow !== dropTarget) {
+            DndCommon.prevHighlightedRow.classList.remove(DndCommon.HIGHLIGHT_UPPER_CLASS, DndCommon.HIGHLIGHT_LOWER_CLASS);
+        }
+        DndCommon.prevHighlightedRow = dropTarget;
+    }
+
+    static clearHighlight() {
+        if (DndCommon.prevHighlightedRow !== null) {
+            DndCommon.prevHighlightedRow.classList.remove(DndCommon.HIGHLIGHT_UPPER_CLASS, DndCommon.HIGHLIGHT_LOWER_CLASS);
+            DndCommon.prevHighlightedRow = null;
+        }
+    }
+
+    static dropQueueMemberRow(cursorPositionY, draggedQueueMemberRow, dropTargetQueueMemberRow) {
+        let insertedBefore;
+        switch (inWhatHalf(cursorPositionY, dropTargetQueueMemberRow)) {
+            case InWhatHalfResult.Top:
+                insertBefore(draggedQueueMemberRow, dropTargetQueueMemberRow);
+                insertedBefore = true;
+                break;
+            case InWhatHalfResult.Bottom:
+                insertAfter(draggedQueueMemberRow, dropTargetQueueMemberRow);
+                insertedBefore = false;
+                break;
+            case InWhatHalfResult.None:
+                return;
+        }
+        renderQueuePositions();
+
+        const queueId = dropTargetQueueMemberRow.dataset.queueId;
+        const body = JSON.stringify({
+            movedUserId: Number(draggedQueueMemberRow.dataset.queueMemberUserId),
+            targetUserId: Number(dropTargetQueueMemberRow.dataset.queueMemberUserId),
+            insertedBefore,
+        });
+        fetch(`/api/queues/${queueId}/move-queue-member`, {method: "PUT", body})
+            .then(response => {
+                if (response.status !== 204) {
+                    response.text().then(responseText => {
+                        alert(responseText);
+                        location.reload();
+                    });
+                    return Promise.reject();
+                }
+            });
+    };
+
+    static getQueueMemberRowParent(child) {
+        while (child !== null) {
+            if (child.id.startsWith(DndCommon.QUEUE_MEMBER_ROW_ID_PATTERN)) {
+                return child;
+            }
+            child = child.parentElement;
+        }
+        return null;
+    }
+}
+
+const CursorEdgeProximity = {
+    CloseToTop: 1,
+    CloseToBottom: 2,
+    NotClose: 3,
 };
 
+class CursorPositionMobile {
+    static currentTouchId = null;
+    static screenPosition = {x: 0, y: 0};
+
+    static init() {
+        // passing true as the third parameter ensures that our handler gets called first;
+        // we don't need to do it for the rest of the handlers though
+        document.addEventListener("touchstart", CursorPositionMobile.onTouchStart, true);
+        document.addEventListener("touchmove", CursorPositionMobile.onTouchMove);
+        document.addEventListener("touchend", CursorPositionMobile.onTouchEnd);
+    }
+
+    static get pagePosition() {
+        return {x: CursorPositionMobile.screenPosition.x + window.scrollX, y: CursorPositionMobile.screenPosition.y + window.scrollY};
+    }
+
+    static onTouchStart(touchStartEvent) {
+        // track position only for one finger
+        if (CursorPositionMobile.currentTouchId === null) {
+            const touch = touchStartEvent.changedTouches[0];
+            CursorPositionMobile.currentTouchId = touch.identifier;
+            CursorPositionMobile.screenPosition.x = touch.clientX;
+            CursorPositionMobile.screenPosition.y = touch.clientY;
+        }
+    }
+
+    static onTouchMove(touchMoveEvent) {
+        // track position only for one finger
+        const touch = touchMoveEvent.changedTouches[0];
+        if (CursorPositionMobile.currentTouchId !== touch.identifier) {
+            return;
+        }
+        CursorPositionMobile.screenPosition.x = touch.clientX;
+        CursorPositionMobile.screenPosition.y = touch.clientY;
+    }
+
+    static onTouchEnd(touchEndEvent) {
+        const touch = touchEndEvent.changedTouches[0];
+        if (CursorPositionMobile.currentTouchId === touch.identifier) {
+            CursorPositionMobile.currentTouchId = null;
+        }
+    }
+
+    static isCloseToScreenEdge(range) {
+        if (CursorPositionMobile.screenPosition.y < range) {
+            return CursorEdgeProximity.CloseToTop;
+        }
+        if (window.innerHeight - CursorPositionMobile.screenPosition.y < range) {
+            return CursorEdgeProximity.CloseToBottom;
+        }
+        return CursorEdgeProximity.NotClose;
+    }
+
+    static isCloseToPageBottom(range) {
+        return CursorPositionMobile.pagePosition.y >= document.body.parentElement.offsetHeight - range;
+    }
+}
+
+// miscellaneous helper functions
 const renderQueuePositions = () => {
     document.querySelectorAll("td:first-child > span > span").forEach((td, index) => {
         td.textContent = (index + 1).toString();
@@ -292,76 +461,26 @@ const insertBefore = (elementToInsert, referenceElement) => {
     referenceElement.parentNode.insertBefore(elementToInsert, referenceElement);
 };
 
-const isInUpperHalf = (positionY, element) => {
+const removeElementFromDom = element => {
+    element.parentElement.removeChild(element);
+}
+
+const InWhatHalfResult = {
+    Top: 1,
+    Bottom: 2,
+    None: 3,
+};
+
+const inWhatHalf = (positionY, element) => {
     const elementRect = element.getBoundingClientRect();
-
     const elementMidPoint = elementRect.top + element.clientHeight / 2;
-    return isBetween(elementRect.top, positionY, elementMidPoint);
-};
-
-const isInLowerHalf = (positionY, element) => {
-    const elementRect = element.getBoundingClientRect();
-
-    const elementMidPoint = elementRect.top + element.clientHeight / 2;
-    return isBetween(elementMidPoint, positionY, elementRect.bottom);
-};
-
-const globalCursorPosition = {x: 0, y: 0};
-const globalCursorPagePosition = {x: 0, y: 0};
-
-const trackCursorPosition = touchMoveEvent => {
-    if (currentTouchId !== null && event.changedTouches[0].identifier !== currentTouchId) {
-        return;
+    if (isBetween(Math.floor(elementRect.top), positionY, elementMidPoint)) {
+        return InWhatHalfResult.Top;
     }
-    const p = getCursorPositionForTouchEvent(touchMoveEvent);
-    globalCursorPosition.x = p.x;
-    globalCursorPosition.y = p.y;
-    globalCursorPagePosition.x = touchMoveEvent.changedTouches[0].pageX;
-    globalCursorPagePosition.y = touchMoveEvent.changedTouches[0].pageY;
-};
-
-const scrollAtEdgesWhenDragNDroppingOnMobile = () => {
-    if (dragThumbnailElement !== null) {
-        const cursorPosition = globalCursorPosition;
-        const proximity = isCloseToScreenEdge(cursorPosition);
-        switch (proximity) {
-            case "close_to_top_edge":
-                window.scrollBy(0, -TOUCH_SCROLL_SPEED);
-                break;
-            case "close_to_bottom_edge":
-                if (globalCursorPagePosition.y < document.body.parentElement.offsetHeight - 50) {
-                    window.scrollBy(0, TOUCH_SCROLL_SPEED);
-                }
-                break;
-            case "not_close":
-                // do nothing
-                break;
-        }
-
-        // move drag thumbnail
-        updateDragThumbnailElementPosition(globalCursorPagePosition);
-
-        // clear previous highlight
-        if (prevHighlightedRow !== null) {
-            prevHighlightedRow.classList.remove("drop-to-upper-half", "drop-to-lower-half");
-        }
-
-        // highlight drop area
-        const dropTargetQueueMemberRow = getQueueMemberRowUnderCursor(cursorPosition);
-        const sourceQueueMemberRow = mobileDraggedElement;
-        // skip highlighting if hovering over something other than a queue member row or over the same row
-        if (dropTargetQueueMemberRow !== null && dropTargetQueueMemberRow !== sourceQueueMemberRow) {
-            if (isInUpperHalf(cursorPosition.y, dropTargetQueueMemberRow)) {
-                dropTargetQueueMemberRow.classList.add("drop-to-upper-half");
-                prevHighlightedRow = dropTargetQueueMemberRow;
-            } else if (isInLowerHalf(cursorPosition.y, dropTargetQueueMemberRow)) {
-                dropTargetQueueMemberRow.classList.add("drop-to-lower-half");
-                prevHighlightedRow = dropTargetQueueMemberRow;
-            }
-        }
+    if (isBetween(elementMidPoint, positionY, Math.ceil(elementRect.bottom))) {
+        return InWhatHalfResult.Bottom;
     }
-
-    setTimeout(scrollAtEdgesWhenDragNDroppingOnMobile, 15);
+    return InWhatHalfResult.None;
 };
 
 (() => {
@@ -371,11 +490,5 @@ const scrollAtEdgesWhenDragNDroppingOnMobile = () => {
         }
     });
 
-    document.addEventListener("scroll", () => {
-        globalCursorPagePosition.y = window.scrollY + globalCursorPosition.y;
-    });
-    document.addEventListener("touchmove", trackCursorPosition);
-
-    document.documentElement.style.scrollBehavior = 'auto';
-    scrollAtEdgesWhenDragNDroppingOnMobile();
+    CursorPositionMobile.init();
 })();
