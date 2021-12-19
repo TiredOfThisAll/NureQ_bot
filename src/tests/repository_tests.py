@@ -60,6 +60,17 @@ class RepositoryTests(unittest.TestCase):
         """, (queue_id,)).fetchall()
         self.assertEqual(position_tuples, [(0,), (1,)])
 
+    def test_remove_user_from_queue_after_swap(self):
+        self.generate_queue_member_test_data()
+        queue_id = 1
+
+        error = self.repository.swap_positions(queue_id, 0, 2)
+        self.assertIsNone(error)
+
+        successful = self.repository.remove_user_from_queue(3, queue_id)
+
+        self.assertTrue(successful)
+
     def test_move_queue_member_down_above(self):
         self.generate_queue_member_test_data()
         queue_id = 1

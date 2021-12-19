@@ -160,12 +160,19 @@ class Repository:
             WHERE queue_id = ? AND user_id = ?
         """, (queue_id, user_id))
 
-        # update all affected queue member positions
+        # update all affected queue member positions,
+        # make sure to firstly map positions to negative values in order to
+        # avoid failing UNIQUIE constraints (see related test)
         self.cursor.execute("""
             UPDATE queue_members
-            SET position = position - 1
+            SET position = -(position - 1) - 1
             WHERE queue_id = ? AND position > ?
         """, (queue_id, position))
+        self.cursor.execute("""
+            UPDATE queue_members
+            SET position = -position - 1
+            WHERE queue_id = ? AND position < 0
+        """, (queue_id,))
 
         return True
 
