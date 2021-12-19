@@ -10,25 +10,39 @@ def handle_unknown_callback(handler_context, update_context):
         LoggingLevel.ERROR,
         f"Received an unknown callback query type: {callback_type}"
     )
-    handler_context.telegram_message_manager.send_message(
-        update_context.chat_id,
-        "???"
-    )
+    if update_context.chat_type == "private":
+        handler_context.telegram_message_manager.send_message(
+            update_context.chat_id,
+            "Неизвестная команда"
+        )
     handler_context.telegram_message_manager.answer_callback_query(
         update_context.callback_query_id
     )
 
 
 @default_command_handler
-@default_response_handler
 def handle_unknown_response(handler_context, update_context):
     handler_context.logger.log(
         LoggingLevel.WARN,
-        f"Received an invalid command/response: {update_context.update}"
+        f"Received an invalid command: {update_context.update}"
     )
-    handler_context.telegram_message_manager.send_message(
-        update_context.chat_id,
-        "???"
+    if update_context.chat_type == "private":
+        handler_context.telegram_message_manager.send_message(
+            update_context.chat_id,
+            "Неизвестная команда"
+        )
+
+
+@default_response_handler
+def handle_unknown_response(handler_context, update_context):
+    if update_context.chat_type == "private":
+        handler_context.telegram_message_manager.send_message(
+            update_context.chat_id,
+            "Неизвестная команда"
+        )
+    handler_context.logger.log(
+        LoggingLevel.WARN,
+        f"Received an invalid response: {update_context.update}"
     )
 
 

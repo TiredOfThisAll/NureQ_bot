@@ -6,7 +6,7 @@
     <div class="d-flex flex-column mt-4">
         <h2 class="align-self-center">Поменять двух участников очереди {{ queue.name|e }} (ID {{ queue.id }}) местами</h2>
 
-        <div class="swap-member-list-container">
+        <div class="desktop-only swap-member-list-container">
             <div>
                 {% if not queue_members %}
                     Очередь пуста
@@ -37,6 +37,39 @@
             </div>
         </div>
 
-        <button class="btn btn-primary align-self-center" onclick="swapQueueMembers({{ queue.id }})">Поменять местами</button>
+        <div class="mobile-only swap-member-list-container">
+            {% if not queue_members %}
+                Очередь пуста
+            {% else %}
+                <select name="left-member">
+                    <option value="" selected>
+                        Выберите участника
+                    </option>
+                    {% for queue_member in queue_members %}
+                        <option value="{{ queue_member.position }}">
+                            {{ queue_member.position + 1 }}.
+                            {{ queue_member.user_info.get_formatted_name()|e }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <i class="bi bi-arrow-left-right display-4"></i>
+
+                <select name="right-member">
+                    <option value="" selected>
+                        Выберите участника
+                    </option>
+                    {% for queue_member in queue_members %}
+                        <option value="{{ queue_member.position }}">
+                            {{ queue_member.position + 1 }}.
+                            {{ queue_member.user_info.get_formatted_name()|e }}
+                        </option>
+                    {% endfor %}
+                </select>
+            {% endif %}
+        </div>
+
+        <button class="btn btn-primary align-self-center desktop-only" onclick="swapQueueMembersDesktop({{ queue.id }})">Поменять местами</button>
+        <button class="btn btn-primary align-self-center mobile-only" onclick="swapQueueMembersMobile({{ queue.id }})">Поменять местами</button>
     </div>
 {% endblock content %}
