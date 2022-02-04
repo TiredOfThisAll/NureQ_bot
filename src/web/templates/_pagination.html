@@ -1,0 +1,21 @@
+<div class="pagination-container">
+    {% if page_number > 3 %}
+        <a href="?page=1" type="button" class="btn btn-outline-primary">1</a>
+    {% endif %}
+    {% if page_number > 5 %}
+        <div type="button" class="btn btn-outline-secondary disabled">...</div>
+    {% elif page_number == 5 %}
+        <a href="?page=2" type="button" class="btn btn-outline-primary">2</a>
+    {% endif %}
+    {% for i in range([page_number-2, 1]|max, [page_number+3, total_pages + 1]|min) %}
+        <a href="?page={{ i }}" type="button" class="btn {{ 'btn-primary' if i == page_number else 'btn-outline-primary' }}">{{ i }}</a>
+    {% endfor %}
+    {% if page_number < total_pages - 4 %}
+        <div type="button" class="btn btn-outline-secondary disabled">...</div>
+    {% elif page_number == total_pages - 4 %}
+        <a href="?page={{ total_pages - 1 }}" type="button" class="btn btn-outline-primary">{{ total_pages - 1 }}</a>
+    {% endif %}
+    {% if page_number < total_pages - 2 %}
+        <a href="?page={{ total_pages }}" type="button" class="btn btn-outline-primary">{{ total_pages }}</a>
+    {% endif %}
+</div>

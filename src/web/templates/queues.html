@@ -34,25 +34,6 @@
             {% endfor %}
         </tbody>
     </table>
-    <div class="pagination-container">
-        {% if current_page > 3 %}
-            <a href="{{ url_for('queues', page=1) }}" type="button" class="btn btn-outline-primary">1</a>
-        {% endif %}
-        {% if current_page > 5 %}
-            <div type="button" class="btn btn-outline-secondary disabled">...</div>
-        {% elif current_page == 5 %}
-            <a href="{{ url_for('queues', page=2) }}" type="button" class="btn btn-outline-primary">2</a>
-        {% endif %}
-        {% for i in range([current_page-2, 1]|max, [current_page+3, max_page + 1]|min) %}
-            <a href="{{ url_for('queues', page=i) }}" type="button" class="btn {{ 'btn-primary' if i == current_page else 'btn-outline-primary' }}">{{ i }}</a>
-        {% endfor %}
-        {% if current_page < max_page - 4 %}
-            <div type="button" class="btn btn-outline-secondary disabled">...</div>
-        {% elif current_page == max_page - 4 %}
-            <a href="{{ url_for('queues', page=max_page - 1) }}" type="button" class="btn btn-outline-primary">{{ max_page - 1 }}</a>
-        {% endif %}
-        {% if current_page < max_page - 2 %}
-            <a href="{{ url_for('queues', page=max_page) }}" type="button" class="btn btn-outline-primary">{{ max_page }}</a>
-        {% endif %}
-    </div>
+
+    {% include "_pagination.html" %}
 {% endblock content %}

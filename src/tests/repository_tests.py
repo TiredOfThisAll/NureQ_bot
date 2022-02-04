@@ -1,3 +1,4 @@
+from datetime import datetime
 import sqlite3
 import unittest
 
@@ -30,6 +31,31 @@ class RepositoryTests(unittest.TestCase):
                 (2, 'Mary', 'Smith', 'marysmith', 1, 1),
                 (3, 'William', 'Turner', 'willturner', 1, 2)
         """)
+
+    def generate_log_test_data(self):
+        self.connection.execute("""
+            INSERT INTO logs (
+                level,
+                timestamp,
+                message
+            )
+            VALUES
+                ('ERROR', :now, 'Log 1'),
+                ('ERROR', :now, 'Log 2'),
+                ('ERROR', :now, 'Log 3'),
+                ('ERROR', :now, 'Log 4'),
+                ('ERROR', :now, 'Log 5'),
+                ('ERROR', :now, 'Log 6'),
+                ('ERROR', :now, 'Log 7'),
+                ('ERROR', :now, 'Log 8'),
+                ('ERROR', :now, 'Log 9'),
+                ('ERROR', :now, 'Log 10'),
+                ('ERROR', :now, 'Log 11'),
+                ('ERROR', :now, 'Log 12'),
+                ('ERROR', :now, 'Log 13'),
+                ('ERROR', :now, 'Log 14'),
+                ('ERROR', :now, 'Log 15')
+        """, {"now": datetime.utcnow()})
 
     def test_remove_user_from_queue_returns_false(self):
         self.generate_queue_member_test_data()
@@ -294,3 +320,23 @@ class RepositoryTests(unittest.TestCase):
             ORDER BY position
         """, (queue_id,)).fetchall()
         self.assertEqual(position_tuples, [(1, 0), (2, 1), (3, 2)])
+
+    def test_get_logs_page(self):
+        self.generate_log_test_data()
+        page_number = 2
+        page_size = 10
+
+        logs_page = self.repository.get_logs_page(page_number, page_size)
+        logs_page_messages = list(map(lambda log: log.message, logs_page))
+
+        self.assertEqual(
+            logs_page_messages,
+            ["Log 11", "Log 12", "Log 13", "Log 14", "Log 15"]
+        )
+
+    def test_get_logs_count(self):
+        self.generate_log_test_data()
+
+        logs_count = self.repository.get_logs_count()
+
+        self.assertEqual(logs_count, 15)
