@@ -20,7 +20,8 @@ from web.models.user import User
 
 # constants
 TELEGRAM_LOGIN_EXPIRY_TIME = 24 * 60 * 60  # 24 hours in seconds
-DEFAULT_PAGE_SIZE = 10
+QUEUE_PAGE_SIZE = 10
+LOG_PAGE_SIZE = 50
 
 # flask set-up
 app = Flask(
@@ -75,21 +76,18 @@ context = LocalProxy(inject_context)
 @app.route("/queues", endpoint="queues")
 @login_required
 def queues():
-    max_page = ceil(
-        context.repository.get_total_queue_count() / DEFAULT_PAGE_SIZE
+    total_pages = ceil(
+        context.repository.get_total_queue_count() / QUEUE_PAGE_SIZE
     )
-    try:
-        current_page = min(max_page, max(1, int(request.args.get("page", 1))))
-    except ValueError:
-        current_page = 1
+    page_number = parse_page_number(request.args, total_pages)
     return render_template(
         "queues.html",
         queues=context.repository.get_queue_page_view(
-            current_page,
-            DEFAULT_PAGE_SIZE
+            page_number,
+            QUEUE_PAGE_SIZE
         ),
-        current_page=current_page,
-        max_page=max_page
+        page_number=page_number,
+        total_pages=total_pages
     )
 
 
@@ -120,7 +118,14 @@ def swap_queue_members(queue_id):
 @app.route("/logs")
 @login_required
 def logs():
-    return render_template("logs.html", logs=context.repository.get_all_logs())
+    total_pages = ceil(context.repository.get_logs_count() / LOG_PAGE_SIZE)
+    page_number = parse_page_number(request.args, total_pages)
+    return render_template(
+        "logs.html",
+        logs=context.repository.get_logs_page(page_number, LOG_PAGE_SIZE),
+        page_number=page_number,
+        total_pages=total_pages
+    )
 
 
 @app.route("/login")
@@ -311,6 +316,21 @@ def handle_exception(e):
             logger.log(LoggingLevel.ERROR, traceback.format_exc())
 
     return (str(original_exception) if original_exception else str(e)), 500
+
+
+def parse_page_number(query_parameters, total_pages):
+    if "page" not in query_parameters:
+        return 1
+    page_number = query_parameters.get("page")
+    try:
+        page_number = int(page_number)
+    except ValueError:
+        return 1
+    if page_number < 1:
+        return 1
+    if page_number > total_pages:
+        return total_pages
+    return page_number
 
 
 waitress.serve(app, port=80, host="0.0.0.0")

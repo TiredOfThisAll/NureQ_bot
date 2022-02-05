@@ -1,4 +1,7 @@
 {% extends "layout.html" %}
+{% block head %}
+    <script type="text/javascript" async src="{{ url_for('static', filename='logs.js') }}"></script>
+{% endblock head %}
 {% block content %}
     <table class="table table-striped logs-table">
         <thead>
@@ -25,7 +28,7 @@
 
                     <td>{{ log.get_formatted_timestamp() }}</td>
 
-                    <td>{{ log.message }}</td>
+                    <td class="short-log" onclick="toggleExpandHideLog(event)">{{ log.message }}</td>
                 </tr>
                 <tr class="mobile-only">
                     <td class="fw-bold">
@@ -44,9 +47,11 @@
                         {% endif %}
                         {{ log.get_formatted_timestamp() }}
                     </td>
-                    <td>{{ log.message }}</td>
+                    <td class="short-log" onclick="toggleExpandHideLog(event)">{{ log.message }}</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
+
+    {% include "_pagination.html" %}
 {% endblock content %}

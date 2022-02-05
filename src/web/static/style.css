@@ -128,6 +128,12 @@ header > a {
     overflow-wrap: break-word;
 }
 
+.logs-table .short-log {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 .queues-table {
     overflow-wrap: break-word;
     table-layout: fixed;

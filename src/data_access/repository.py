@@ -371,13 +371,21 @@ class Repository:
         except sqlite3.IntegrityError:
             return "QUEUE_NAME_DUPLICATE"
 
-    def get_all_logs(self):
+    def get_logs_page(self, page_number, page_size):
+        skip_amount = (page_number - 1) * page_size
         log_tuples = self.cursor.execute("""
             SELECT *
             FROM logs
             ORDER BY datetime(timestamp) DESC
-        """).fetchall()
+            LIMIT ?, ?
+        """, (skip_amount, page_size)).fetchall()
         return list(map(Log.from_tuple, log_tuples))
+
+    def get_logs_count(self):
+        return self.cursor.execute("""
+            SELECT COUNT(*)
+            FROM logs
+        """).fetchone()[0]
 
     def commit(self):
         self.connection.commit()
