@@ -6,6 +6,8 @@ QUEUE_NAME_TOO_LONG_RESPONSE_TEXT \
     = "Имя очереди не должно быть длиннее {} символов"
 DEFAULT_QUEUES_PAGE_SIZE = 3
 DEFAULT_TRUNCATED_MESSAGE_PLACEHOLDER = "...\n[Обрезано]"
+NO_QUEUES_AVAILABLE_MESSAGE = "Пока что нету ни одной доступной очереди.\n" \
+    + "Создайте очередь с помощью /newqueue"
 
 
 class ButtonCallbackType:
