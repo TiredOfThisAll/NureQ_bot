@@ -60,11 +60,20 @@ def default_other_handler(function):
 
 def route(update_context, bot_username):
     if update_context.type == UpdateContext.Type.TEXT_MESSAGE:
-        full_bot_username = "@" + bot_username
         command = update_context.message_text
-        if command.endswith(full_bot_username):
-            command = command[:-len(full_bot_username)]
-        return registered_command_handlers.get(
+
+        # cut out the @BotName part if it is present
+        command_first_word = command.split()[0]
+        try:
+            at_symbol_index = command_first_word.index(f"@{bot_username}")
+        except ValueError:
+            at_symbol_index = None
+        if at_symbol_index is not None:
+            command = command[:at_symbol_index] \
+                + command[len(command_first_word):]
+
+        return get_or_match(
+            registered_command_handlers,
             command,
             registered_default_command_handler
         )
@@ -100,7 +109,12 @@ def route(update_context, bot_username):
 
 def get_or_match(dictionary, target, fallback_value=None):
     for k, v in dictionary.items():
-        if target == k or re.match(k.replace("{}", ".*"), target):
+        # replace Python's format pattern with regex's "anything" pattern
+        pattern = k.replace("{}", ".*")
+        # pattern should represent the whole message, not just what text the
+        # message starts with
+        pattern = pattern + "$"
+        if target == k or re.match(pattern, target):
             return v
     return fallback_value
 

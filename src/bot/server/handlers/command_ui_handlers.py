@@ -30,6 +30,16 @@ def handle_new_queue_command(handler_context, update_context):
     )
 
 
+@command_handler("/newqueue .*")
+def handle_new_queue_in_one_message_command(handler_context, update_context):
+    # skip first word which is the command name
+    for i in range(len(update_context.message_text)):
+        if update_context.message_text[i] == " ":
+            queue_name = update_context.message_text[i:].strip()
+            break
+    handle_create_queue(handler_context, update_context, queue_name)
+
+
 @command_handler("/showqueue")
 def handle_show_queue_command(handler_context, update_context):
     handle_generic_queue_command(
@@ -98,39 +108,7 @@ def handle_new_queue_response(handler_context, update_context):
         )
         return
     queue_name = update_context.message_text
-    queue_name_limit = handler_context.configuration.queue_name_limit
-    if len(queue_name) > queue_name_limit:
-        handler_context.logger.log(
-            LoggingLevel.WARN,
-            "Received a response to /newqueue command that exceeds the "
-            + f"configured limit of {queue_name_limit} "
-            + f"UTF-8 characters: {queue_name}"
-        )
-        handler_context.telegram_message_manager.send_message(
-            update_context.chat_id,
-            constants.QUEUE_NAME_TOO_LONG_RESPONSE_TEXT.format(
-                queue_name_limit
-            ),
-            reply_markup={"force_reply": True, "selective": True},
-            reply_to_message_id=update_context.message_id
-        )
-        return
-    error = handler_context.repository.create_queue(
-        queue_name,
-        update_context.chat_id
-    )
-    handler_context.repository.commit()
-    if error == "QUEUE_NAME_DUPLICATE":
-        handler_context.telegram_message_manager.send_message(
-            update_context.chat_id,
-            f"Очередь с именем {queue_name} уже существует"
-        )
-        return
-
-    handler_context.telegram_message_manager.send_message(
-        update_context.chat_id,
-        f"Создана новая очередь: {queue_name}"
-    )
+    handle_create_queue(handler_context, update_context, queue_name)
 
 
 @callback_handler(constants.ButtonCallbackType.ADD_ME)
@@ -544,3 +522,39 @@ def make_queue_choice_buttons(
                 }),
         },
     ]]
+
+
+def handle_create_queue(handler_context, update_context, queue_name):
+    queue_name_limit = handler_context.configuration.queue_name_limit
+    if len(queue_name) > queue_name_limit:
+        handler_context.logger.log(
+            LoggingLevel.WARN,
+            "Received a response to /newqueue command that exceeds the "
+            + f"configured limit of {queue_name_limit} "
+            + f"UTF-8 characters: {queue_name}"
+        )
+        handler_context.telegram_message_manager.send_message(
+            update_context.chat_id,
+            constants.QUEUE_NAME_TOO_LONG_RESPONSE_TEXT.format(
+                queue_name_limit
+            ),
+            reply_markup={"force_reply": True, "selective": True},
+            reply_to_message_id=update_context.message_id
+        )
+        return
+    error = handler_context.repository.create_queue(
+        queue_name,
+        update_context.chat_id
+    )
+    handler_context.repository.commit()
+    if error == "QUEUE_NAME_DUPLICATE":
+        handler_context.telegram_message_manager.send_message(
+            update_context.chat_id,
+            f"Очередь с именем {queue_name} уже существует"
+        )
+        return
+
+    handler_context.telegram_message_manager.send_message(
+        update_context.chat_id,
+        f"Создана новая очередь: {queue_name}"
+    )
