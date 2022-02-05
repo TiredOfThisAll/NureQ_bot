@@ -11,6 +11,10 @@ from bot.server.handlers.responsive_ui_handlers import \
     generate_queue_description
 
 
+NO_QUEUES_AVAILABLE_MESSAGE = "Пока что нету ни одной доступной очереди.\n" \
+    + "Создайте очередь с помощью /newqueue"
+
+
 @command_handler("/start")
 @command_handler("/start@NureQ_bot")
 def handle_start_command(handler_context, update_context):
@@ -348,7 +352,7 @@ def handle_show_next_queue_page_callback(handler_context, update_context):
         if queue_pagination_reply_markup is None:
             handler_context.telegram_message_manager.send_message(
                 update_context.chat_id,
-                "Пока что нету ни одной доступной очереди."
+                NO_QUEUES_AVAILABLE_MESSAGE
             )
             return
 
@@ -380,7 +384,7 @@ def handle_show_previous_queue_page_callback(handler_context, update_context):
         if queue_pagination_reply_markup is None:
             handler_context.telegram_message_manager.send_message(
                 update_context.chat_id,
-                "Пока что нету ни одной доступной очереди."
+                NO_QUEUES_AVAILABLE_MESSAGE
             )
             return
 
@@ -445,7 +449,7 @@ def handle_generic_queue_command(
     if queue_pagination_reply_markup is None:
         handler_context.telegram_message_manager.send_message(
             update_context.chat_id,
-            "Пока что нету ни одной доступной очереди."
+            NO_QUEUES_AVAILABLE_MESSAGE
         )
         return
 
