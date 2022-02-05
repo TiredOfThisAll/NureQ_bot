@@ -377,30 +377,7 @@ def handle_show_previous_queue_page_callback(handler_context, update_context):
 def handle_show_queue_callback(handler_context, update_context):
     try:
         queue_id = update_context.callback_query_data["queue_id"]
-
-        queue_description_data, error = generate_queue_description(
-            handler_context.repository,
-            queue_id
-        )
-        if error == "QUEUE_NOT_FOUND":
-            handler_context.logger.log(
-                LoggingLevel.WARN,
-                "Received a /showqueue request for a non-existent queue "
-                + f"with ID {queue_id}"
-            )
-            handler_context.telegram_message_manager.send_message(
-                update_context.chat_id,
-                f"Очереди с ID: {queue_id} не существует"
-            )
-            return
-
-        queue_description, entities, reply_markup = queue_description_data
-        handler_context.telegram_message_manager.send_message(
-            update_context.chat_id,
-            queue_description,
-            entities=entities,
-            reply_markup=reply_markup
-        )
+        handle_show_queue(handler_context, update_context, queue_id)
     finally:
         handler_context.telegram_message_manager.answer_callback_query(
             update_context.callback_query_id
@@ -542,7 +519,7 @@ def handle_create_queue(handler_context, update_context, queue_name):
             reply_to_message_id=update_context.message_id
         )
         return
-    error = handler_context.repository.create_queue(
+    queue_id, error = handler_context.repository.create_queue(
         queue_name,
         update_context.chat_id
     )
@@ -557,4 +534,31 @@ def handle_create_queue(handler_context, update_context, queue_name):
     handler_context.telegram_message_manager.send_message(
         update_context.chat_id,
         f"Создана новая очередь: {queue_name}"
+    )
+    handle_show_queue(handler_context, update_context, queue_id)
+
+
+def handle_show_queue(handler_context, update_context, queue_id):
+    queue_description_data, error = generate_queue_description(
+        handler_context.repository,
+        queue_id
+    )
+    if error == "QUEUE_NOT_FOUND":
+        handler_context.logger.log(
+            LoggingLevel.WARN,
+            "Received a /showqueue request for a non-existent queue "
+            + f"with ID {queue_id}"
+        )
+        handler_context.telegram_message_manager.send_message(
+            update_context.chat_id,
+            f"Очереди с ID: {queue_id} не существует"
+        )
+        return
+
+    queue_description, entities, reply_markup = queue_description_data
+    handler_context.telegram_message_manager.send_message(
+        update_context.chat_id,
+        queue_description,
+        entities=entities,
+        reply_markup=reply_markup
     )

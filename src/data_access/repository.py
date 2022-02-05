@@ -60,10 +60,11 @@ class Repository:
                 INSERT INTO queues (name, last_updated_on, chat_id)
                 VALUES (?, ?, ?)
             """, (queue_name, datetime.utcnow(), chat_id))
+            return self.cursor.lastrowid, None
         except sqlite3.IntegrityError as integrity_error:
             expected = "UNIQUE constraint failed: queues.name, queues.chat_id"
             if str(integrity_error) == expected:
-                return "QUEUE_NAME_DUPLICATE"
+                return None, "QUEUE_NAME_DUPLICATE"
             raise integrity_error
 
     def add_me_to_queue(
