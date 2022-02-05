@@ -69,7 +69,8 @@ def route(update_context, bot_username):
         except ValueError:
             at_symbol_index = None
         if at_symbol_index is not None:
-            command = command[:at_symbol_index] + command[len(command_first_word):]
+            command = command[:at_symbol_index] \
+                + command[len(command_first_word):]
 
         return get_or_match(
             registered_command_handlers,

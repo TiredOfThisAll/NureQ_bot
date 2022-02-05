@@ -29,6 +29,7 @@ def handle_new_queue_command(handler_context, update_context):
         reply_to_message_id=update_context.message_id
     )
 
+
 @command_handler("/newqueue .*")
 def handle_new_queue_in_one_message_command(handler_context, update_context):
     # skip first word which is the command name
@@ -37,6 +38,7 @@ def handle_new_queue_in_one_message_command(handler_context, update_context):
             queue_name = update_context.message_text[i:].strip()
             break
     handle_create_queue(handler_context, update_context, queue_name)
+
 
 @command_handler("/showqueue")
 def handle_show_queue_command(handler_context, update_context):
@@ -520,6 +522,7 @@ def make_queue_choice_buttons(
                 }),
         },
     ]]
+
 
 def handle_create_queue(handler_context, update_context, queue_name):
     queue_name_limit = handler_context.configuration.queue_name_limit

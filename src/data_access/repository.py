@@ -61,7 +61,8 @@ class Repository:
                 VALUES (?, ?, ?)
             """, (queue_name, datetime.utcnow(), chat_id))
         except sqlite3.IntegrityError as integrity_error:
-            if str(integrity_error) == "UNIQUE constraint failed: queues.name, queues.chat_id":
+            expected = "UNIQUE constraint failed: queues.name, queues.chat_id"
+            if str(integrity_error) == expected:
                 return "QUEUE_NAME_DUPLICATE"
             raise integrity_error
 
